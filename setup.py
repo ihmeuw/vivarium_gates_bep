@@ -27,17 +27,17 @@ if __name__ == "__main__":
         'tables<=3.4.0',
         'pandas<0.25',        
         
-        'scipy',
-        'matplotlib',
-        'seaborn',
+        'click',
+        'jinja2',
         'jupyter',
         'jupyterlab',
+        'loguru',
+        'matplotlib',
         'pytest',
         'pytest-mock',
         'pyyaml',
-        'jinja2',
-        'click',
-        'loguru',
+        'scipy',
+        'seaborn',
     ]
 
     setup(
@@ -63,5 +63,6 @@ if __name__ == "__main__":
         entry_points='''
             [console_scripts]
             make_specs=vivarium_gates_bep.tools.cli:make_specs
+            build_proj_artifact=vivarium_gates_bep.tools.cli:build_proj_artifact
         '''
     )
