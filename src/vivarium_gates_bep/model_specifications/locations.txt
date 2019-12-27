@@ -9,3 +9,11 @@
 # locations, they may be found in GBD location set 35, the model
 # results location hierarchy.
 
+Burkina Faso
+Ethiopia
+India
+Malawi
+Mali
+Nepal
+Pakistan
+Tanzania
