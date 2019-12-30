@@ -2,6 +2,7 @@ from pathlib import Path
 from loguru import logger
 
 import pandas as pd
+import numpy as np
 
 from gbd_mapping import causes
 from vivarium import Artifact
@@ -68,6 +69,39 @@ def write_demographic_data(artifact, location):
     write(artifact, key, load(key))
 
 
+def compute_aggregate_prevalence_weighted_disability_weights(disease, loader):
+    def check_mutual_exclusivity(subclass_prevalence, parent_prevalence):
+        sc_sum = sum([df.mean().mean() for df in subclass_prevalence.values()])
+        return np.isclose(sc_sum, parent_prevalence.mean().mean())
+
+    parent_cause = [c for c in causes if c.name == disease][0]
+    assert not parent_cause.most_detailed, 'Error: this is a most detailed cause'
+    sub_causes = [s.name for s in parent_cause.sub_causes]
+
+    # dictionary of dataframes with dw for each subcause
+    df_dw_for_subcauses = {name : loader(f'cause.{name}.disability_weight') for name in sub_causes}
+
+    # dictionary of dataframes with prevalence for each subcause
+    df_prev_for_subcauses = {name : loader(f'cause.{name}.prevalence') for name in sub_causes}
+
+    # parent prevalence
+    df_prev_parent = loader(f'cause.{disease}.prevalence')
+    assert check_mutual_exclusivity(df_prev_for_subcauses, df_prev_parent)
+
+    # weight each subcause
+    weights = {}
+    for i in sub_causes:
+        weights[i] = df_prev_for_subcauses[i] / df_prev_parent
+
+    # adjust the disability weights
+    weighted_dw = {}
+    for key in df_dw_for_subcauses:
+        weighted_dw[key] = df_dw_for_subcauses[key] * weights[key]
+
+    # return the aggregate of the adjusted weights
+    return sum(weighted_dw.values())
+
+
 def write_common_disease_data(artifact, location, disease):
     load = get_load(location)
 
@@ -90,16 +124,46 @@ def write_common_disease_data(artifact, location, disease):
     write(artifact, f'cause.{disease}.excess_mortality_rate', load(f'cause.{disease}.excess_mortality_rate'))
 
 
-def write_disease_data(artifact, location, disease):
-    write_common_disease_data(artifact, location, disease)
+def write_no_sequela_disease_data(artifact, location, disease):
+    load = get_load(location)
 
-    # Measures for Transitions
+    key = f'cause.{disease}.restrictions'
+    write(artifact, key, load(key))
+
+    # Measures for Disease Model
+    key = f'cause.{disease}.cause_specific_mortality_rate'
+    write(artifact, key, load(key))
+
+    # Measures for Disease States
+    key = f'cause.{disease}.prevalence'
+    write(artifact, key, load(key))
+    write(artifact, f'cause.{disease}.disability_weight',
+          compute_aggregate_prevalence_weighted_disability_weights(disease, load))
+    key = f'cause.{disease}.excess_mortality_rate'
+    write(artifact, key, load(key))
+
     load = get_load(location)
     key = f'cause.{disease}.incidence_rate'
     assert getattr(causes, disease).incidence_rate_exists
     write(artifact, key, load(key))
-    if disease != bep_globals.CAUSE_MEASLES:
-        write(artifact, f'cause.{disease}.remission_rate', load(f'cause.{disease}.remission_rate'))
+    key = f'cause.{disease}.remission_rate'
+    write(artifact, key, load(key))
+
+
+def write_disease_data(artifact, location, disease):
+    if bep_globals.CAUSE_MENINGITIS == disease:
+        write_no_sequela_disease_data(artifact, location, disease)
+    else:
+        write_common_disease_data(artifact, location, disease)
+
+        # Measures for Transitions
+        load = get_load(location)
+        key = f'cause.{disease}.incidence_rate'
+        assert getattr(causes, disease).incidence_rate_exists
+        write(artifact, key, load(key))
+        if disease != bep_globals.CAUSE_MEASLES:
+            key = f'cause.{disease}.remission_rate'
+            write(artifact, key, load(key))
 
 
 def write_neonatal_disease_data(artifact, location, disease):
