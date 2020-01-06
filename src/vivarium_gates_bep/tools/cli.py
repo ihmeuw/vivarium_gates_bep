@@ -33,8 +33,13 @@ Location = namedtuple('Location', ['proper', 'sanitized'])
 
 @click.command()
 @click.argument('location')
-def build_proj_artifact(location):
-    output_root = Path(f'/share/costeffectiveness/artifacts/{bep_globals.PROJECT_NAME}/')
+@click.option('-o', '--output-dir',
+              default=f'/share/costeffectiveness/artifacts/{bep_globals.PROJECT_NAME}/',
+              show_default=True,
+              type=click.Path(exists=True, dir_okay=True),
+              help='Specify an output directory. Directory must exist.')
+def build_proj_artifact(location, output_dir: str):
+    output_root = Path(output_dir)
     logger.info(f'Building artifact for location "{location}" in: \n\t{output_root}')
     main = handle_exceptions(artifact_builder.build_artifact, logger, with_debugger=True)
     main(output_root, location)

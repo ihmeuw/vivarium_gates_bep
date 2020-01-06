@@ -36,6 +36,8 @@ def build_artifact(path, location):
 
     write_risk_data(artifact, location, bep_globals.RISK_FACTOR_VITAMIN_A)
     write_iron_deficiency_data(artifact, location)
+    write_lbwsg_data(artifact, location)
+    write_whz_haz_data(artifact, location)
 
     logger.info('!!! Done building artifact !!!')
 
@@ -202,6 +204,44 @@ def write_iron_deficiency_data(artifact, location):
     for cat in categories_iron_deficiency:
         key = f'sequela.{cat}.disability_weight'
         write(artifact, key, load(key))
+
+
+def get_lbwsg_for_loc(key, location, default_loader):
+    mtype, category, measure = key.split('.')
+    if location in bep_globals.LBWSG_MAPPER:
+        sanitized_location =  location.replace(" ", "_").replace("'", "-")
+        store = pd.HDFStore(f'{bep_globals.LBWSG_PATH}/{sanitized_location}.hdf', 'r')
+        logger.info(f'Pulling lbwsg data from alternative location {bep_globals.LBWSG_PATH}/{sanitized_location}.hdf')
+        return store.get(f'/{mtype}/{category}/{measure}')
+    else:
+        logger.info(f'Pulling lbwsg data from GBD for "{location}"')
+        return default_loader(key)
+
+
+def write_lbwsg_data(artifact, location):
+    logger.info(f'{location}: Writing low birthweight short gestation data.')
+    load = get_load(location)
+    for measure in ['exposure', 'population_attributable_fraction', 'relative_risk']:
+        key = f'risk_factor.low_birth_weight_and_short_gestation.{measure}'
+        data = get_lbwsg_for_loc(key, location, load)
+        write(artifact, key, data)
+
+
+def write_whz_haz_data(artifact, location):
+    logger.info(f'{location}: Writing child wasting and stunting data.')
+    load = get_load(location)
+
+    for i in ['child_wasting', 'child_stunting']:
+        key = f'alternative_risk_factor.{i}.distribution'
+        write(artifact, key, load(key))
+        write_risk_data(artifact, location, i)
+
+    for measure in ['exposure', 'exposure_distribution_weights', 'exposure_standard_deviation']:
+        key = f'alternative_risk_factor.child_wasting.{measure}'
+        write(artifact, key, load(key))
+        key = f'alternative_risk_factor.child_stunting.{measure}'
+        write(artifact, key, load(key))
+
 
 
 def load_prev_dw(sequela, location):
