@@ -73,7 +73,9 @@ class LBWSGDistribution:
         self.intervals_by_category = self.categories_by_interval.reset_index().set_index('cat')
         self.max_gt_by_bw, self.max_bw_by_gt = self._get_boundary_mappings()
 
-        self.exposure_parameters = builder.lookup.build_table(get_exposure_data(builder, self.risk))
+        self.exposure_parameters = builder.lookup.build_table(get_exposure_data(builder, self.risk),
+                                                              key_columns=['sex'],
+                                                              parameter_columns=['age', 'year'])
 
     def get_birth_weight_and_gestational_age(self, index):
         category_draw = self.randomness.get_draw(index, additional_key='category')
@@ -221,10 +223,14 @@ class LBWSGRiskEffect:
 
     def setup(self, builder):
         self.randomness = builder.randomness.get_stream(f'effect_of_{self.risk.name}_on_{self.target.name}')
-        self.relative_risk = builder.lookup.build_table(self.get_relative_risk_data(builder))
-        self.population_attributable_fraction = builder.lookup.build_table(
-            data_transformations.get_population_attributable_fraction_data(builder, self.risk, self.target, self.randomness)
-        )
+        self.relative_risk = builder.lookup.build_table(self.get_relative_risk_data(builder),
+                                                        key_columns = ['sex'],
+                                                        parameter_columns = ['age', 'year'])
+
+        paf_data = data_transformations.get_population_attributable_fraction_data(builder, self.risk, self.target,
+                                                                                  self.randomness)
+        self.population_attributable_fraction = builder.lookup.build_table(paf_data, key_columns = ['sex'],
+                                                                           parameter_columns = ['age', 'year'])
 
         self.exposure_effect = data_transformations.get_exposure_effect(builder, self.risk)
 

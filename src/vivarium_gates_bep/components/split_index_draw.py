@@ -64,6 +64,11 @@ def write_data(path, key, data):
 def read_data(path, key, draw):
     with pd.HDFStore(path, mode='r') as store:
         index = store.get(f'{key}/index')
+
+        # change "excess_mortality" to "excess_mortality_rate" and correct age columns
+        index.affected_measure = 'excess_mortality_rate'
+        index.rename(columns={'age_group_start': 'age_start', 'age_group_end': 'age_end'}, inplace=True)
+
         draw = store.get(f'{key}/draw_{draw}')
         draw.rename("value", inplace=True)
     return pd.concat([index, draw], axis=1)
