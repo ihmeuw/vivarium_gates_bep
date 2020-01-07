@@ -210,9 +210,9 @@ def get_lbwsg_for_loc(key, location, default_loader):
     mtype, category, measure = key.split('.')
     if location in bep_globals.LBWSG_MAPPER:
         sanitized_location =  location.replace(" ", "_").replace("'", "-")
-        store = pd.HDFStore(f'{bep_globals.LBWSG_PATH}/{sanitized_location}.hdf', 'r')
         logger.info(f'Pulling lbwsg data from alternative location {bep_globals.LBWSG_PATH}/{sanitized_location}.hdf')
-        return store.get(f'/{mtype}/{category}/{measure}')
+        art = Artifact(f'{bep_globals.LBWSG_PATH}/{sanitized_location}.hdf')
+        return art.load(f'{mtype}.{category}.{measure}')
     else:
         logger.info(f'Pulling lbwsg data from GBD for "{location}"')
         return default_loader(key)
