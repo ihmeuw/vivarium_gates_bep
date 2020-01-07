@@ -11,7 +11,6 @@ from vivarium_public_health.risks import RiskEffect
 from . import split_index_draw as sid
 from vivarium.framework.randomness import RandomnessStream
 
-from pdb import set_trace
 
 MISSING_CATEGORY = 'cat212'
 
