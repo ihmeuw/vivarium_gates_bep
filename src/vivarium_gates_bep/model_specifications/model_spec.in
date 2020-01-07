@@ -17,11 +17,30 @@ components:
             - RiskEffect("risk_factor.vitamin_a_deficiency", "cause.measles.incidence_rate")
             - RiskEffect("risk_factor.vitamin_a_deficiency", "cause.diarrheal_diseases.incidence_rate")
             - RiskEffect("risk_factor.vitamin_a_deficiency", "cause.lower_respiratory_infections.incidence_rate")
-        metrics:
-            - MortalityObserver()
-            - DisabilityObserver()
 
-#    vivarium_gates_bep.components:
+            - Risk('alternative_risk_factor.child_wasting')
+            - RiskEffect('risk_factor.child_wasting', 'cause.diarrheal_diseases.incidence_rate')
+            - RiskEffect('risk_factor.child_wasting', 'cause.lower_respiratory_infections.incidence_rate')
+            - RiskEffect('risk_factor.child_wasting', 'cause.measles.incidence_rate')
+
+            - Risk('alternative_risk_factor.child_stunting')
+            - RiskEffect('risk_factor.child_stunting', 'cause.diarrheal_diseases.incidence_rate')
+            - RiskEffect('risk_factor.child_stunting', 'cause.lower_respiratory_infections.incidence_rate')
+            - RiskEffect('risk_factor.child_stunting', 'cause.measles.incidence_rate')
+
+    vivarium_gates_bep.components:
+            - LBWSGRisk()
+            - LBWSGRiskEffect('cause.neonatal_sepsis_and_other_neonatal_infections.excess_mortality_rate')
+            - LBWSGRiskEffect('cause.neonatal_encephalopathy_due_to_birth_asphyxia_and_trauma.excess_mortality_rate')
+            - LBWSGRiskEffect('cause.hemolytic_disease_and_other_neonatal_jaundice.excess_mortality_rate')
+            - LBWSGRiskEffect('cause.diarrheal_diseases.excess_mortality_rate')
+            - LBWSGRiskEffect('cause.lower_respiratory_infections.excess_mortality_rate')
+
+    vivarium_gates_bep.components.metrics:
+            - CatStratRiskObserver("risk_factor.child_stunting")
+            - CatStratRiskObserver("risk_factor.child_wasting")
+            - WHZDisabilityObserver()
+            - WHZMortalityObserver()
 
 configuration:
     input_data:
@@ -50,12 +69,20 @@ configuration:
         age_start: 0
         age_end: 100
 
+    child_stunting:
+        category_thresholds: [7, 8, 9]
+    child_wasting:
+        category_thresholds: [7, 8, 9]
+
     metrics:
         disability:
             by_age: False
-            by_sex: False
-            by_year: False
+            by_sex: True
+            by_year: True
+            by_whz: True
+
         mortality:
             by_age: False
-            by_sex: False
-            by_year: False
+            by_sex: True
+            by_year: True
+            by_whz: True

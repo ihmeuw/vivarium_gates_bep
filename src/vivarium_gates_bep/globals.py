@@ -4,6 +4,8 @@ from gbd_mapping import causes, risk_factors
 CLUSTER_PROJECT = 'proj_cost_effect'
 PROJECT_NAME = 'vivarium_gates_bep'
 
+LBWSG_PATH = '/share/costeffectiveness/lbwsg/artifacts/'
+
 LOCATIONS = [
     'Burkina Faso',
     'Ethiopia',
@@ -11,6 +13,16 @@ LOCATIONS = [
     'Malawi',
     'Mali',
     'Nepal',
+    'Pakistan',
+    'Tanzania',
+]
+
+
+# indicates measures that need to be pulled from specially created hdf files
+LBWSG_MAPPER = [
+    'India',
+    'Malawi',
+    'Mali',
     'Pakistan',
     'Tanzania',
 ]
