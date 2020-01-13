@@ -58,8 +58,8 @@ class WHZMortalityObserver(MortalityObserver):
 
     def on_time_step_prepare(self, event):
         # we count person time each time step if we are tracking WHZ
-        pop = self.population_view.get(event.index)
-        raw_whz_exposure = self.raw_whz_exposure(event.index)
+        pop = self.population_view.get(event.index, query='tracked == True and alive == "alive"')
+        raw_whz_exposure = self.raw_whz_exposure(pop.index)
         whz_exposure = convert_whz_to_categorical(raw_whz_exposure)
         for cat in whz_exposure.unique():
             in_cat = pop.loc[whz_exposure == cat]
@@ -84,6 +84,7 @@ class WHZMortalityObserver(MortalityObserver):
 
         # Ylls and Deaths are 'point' estimates at the time of death.
         # We can count them after-the-fact since we tracked WHZ at death.
+        pop = self.population_view.get(index, query='tracked == True and alive == "alive"')
         raw_whz_exposure = self.raw_whz_exposure(pop.index)
         whz_exposure = convert_whz_to_categorical(raw_whz_exposure)
         for cat in whz_exposure.unique():

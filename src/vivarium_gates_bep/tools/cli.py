@@ -25,7 +25,7 @@ from jinja2 import Template
 from loguru import logger
 from vivarium.framework.utilities import handle_exceptions
 
-from vivarium_gates_bep.components import artifact_builder
+from vivarium_gates_bep.tools import builder
 import vivarium_gates_bep.globals as bep_globals
 
 Location = namedtuple('Location', ['proper', 'sanitized'])
@@ -38,14 +38,19 @@ Location = namedtuple('Location', ['proper', 'sanitized'])
               show_default=True,
               type=click.Path(exists=True, dir_okay=True),
               help='Specify an output directory. Directory must exist.')
-def build_proj_artifact(location, output_dir: str):
+@click.option('-e', '--erase',
+              default=False,
+              help='Erase the existing artifact. Default is NOT to erase.')
+def build_proj_artifact(location, output_dir: str, erase: bool):
     output_root = Path(output_dir)
     logger.info(f'Building artifact for location "{location}" in: \n\t{output_root}')
-    main = handle_exceptions(artifact_builder.build_artifact, logger, with_debugger=True)
-    main(output_root, location)
+    main = handle_exceptions(builder.build_artifact, logger, with_debugger=False)
+    main(location, output_root, erase)
 
 
 MODEL_SPEC_DIR = (Path(__file__).parent.parent / 'model_specifications').resolve()
+
+
 @click.command()
 @click.option('-l', '--locations-file',
               type=click.Path(dir_okay=False),
