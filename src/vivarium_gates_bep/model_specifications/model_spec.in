@@ -65,9 +65,10 @@ configuration:
             day: 2
         step_size: 1 # Days
     population:
-        population_size: 100
+        population_size: 10_000
         age_start: 0
-        age_end: 100
+        age_end: 5
+        exit_age: 5
 
     child_stunting:
         category_thresholds: [7, 8, 9]
