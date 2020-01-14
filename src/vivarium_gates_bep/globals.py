@@ -7,12 +7,8 @@ PROJECT_NAME = 'vivarium_gates_bep'
 LBWSG_PATH = '/share/costeffectiveness/lbwsg/artifacts/'
 
 LOCATIONS = [
-    'Burkina Faso',
-    'Ethiopia',
     'India',
-    'Malawi',
     'Mali',
-    'Nepal',
     'Pakistan',
     'Tanzania',
 ]
@@ -21,7 +17,6 @@ LOCATIONS = [
 # indicates measures that need to be pulled from specially created hdf files
 LOCATIONS_WITH_DATA_PROBLEMS = [
     'India',
-    'Malawi',
     'Mali',
     'Pakistan',
     'Tanzania',
