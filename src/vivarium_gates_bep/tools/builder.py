@@ -73,8 +73,8 @@ def write_alternative_risk_data(artifact, location):
     logger.info('Writing risk data...')
 
     risks = ['child_wasting', 'child_underweight', 'child_stunting']
-    measures = ['relative_risk', 'population_attributable_fraction']
-    alternative_measures = ['exposure', 'exposure_distribution_weights', 'exposure_standard_deviation', 'distribution']
+    measures = ['relative_risk', 'population_attributable_fraction', 'distribution', 'categories']
+    alternative_measures = ['exposure', 'exposure_distribution_weights', 'exposure_standard_deviation']
     keys = [EntityKey(f'alternative_risk_factor.{r}.{m}') for r, m in itertools.product(risks, alternative_measures)]
     keys.extend([EntityKey(f'risk_factor.{r}.{m}') for r, m in itertools.product(risks, measures)])
     getters = {k: partial(loader, k, location, set()) for k in keys}
@@ -85,7 +85,15 @@ def write_lbwsg_data(artifact, location):
     logger.info('Writing low birth weight and short gestation data...')
 
     risk = 'low_birth_weight_and_short_gestation'
-    measures = ['exposure', 'population_attributable_fraction', 'relative_risk', 'categories', 'distribution']
+    
+    # the metadata keys are available via conventional means for all locations
+    #  and were not added to the special artifacts.
+    metadata = ['categories', 'distribution']
+    keys = [EntityKey(f'risk_factor.{risk}.{m}') for m in metadata]
+    getters = {k: partial(loader, k, location, set()) for k in keys}
+    safe_write(artifact, keys, getters)
+    
+    measures = ['exposure', 'population_attributable_fraction', 'relative_risk']
     keys = [EntityKey(f'risk_factor.{risk}.{m}') for m in measures]
 
     # locations whose data was saved with an incompatible tables version
