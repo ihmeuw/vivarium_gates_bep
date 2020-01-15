@@ -1,4 +1,5 @@
 import itertools
+import pandas as pd
 from functools import partial
 from pathlib import Path
 from typing import Sequence, Mapping
@@ -9,7 +10,7 @@ from vivarium.framework.artifact import EntityKey, get_location_term, Artifact
 from vivarium_inputs.data_artifact.loaders import loader
 
 import vivarium_gates_bep.globals as bep_globals
-from gbd_mapping import causes, risk_factors
+from gbd_mapping import risk_factors
 
 
 def safe_write(artifact: Artifact, keys: Sequence, getters: Mapping):
@@ -20,6 +21,25 @@ def safe_write(artifact: Artifact, keys: Sequence, getters: Mapping):
             artifact.write(key, data)
         else:
             logger.info(f'{key} found in artifact.')
+
+
+def safe_write_by_draw(path, keys, getters):
+    for key in keys:
+        logger.info(f'looking for {key} draw-level data.')
+        data = getters[key]()
+        draws_written = []
+        with pd.HDFStore(path, complevel=9, mode='a') as store:
+            store.put(f'{key.path}/index', data.index.to_frame(index=False))
+            data = data.reset_index(drop=True)
+            for c in data.columns:
+                draw_key = f'{key.path}/{c}'
+                if draw_key not in store:
+                    store.put(draw_key, data[c])
+                    draws_written.append(c)
+        if draws_written:
+            logger.info(f">>> wrote data for draws [{' '.join(draws_written)}] under {key}.")
+        else:
+            logger.info(f"all draws found for {key}.")
 
 
 def create_new_artifact(path: str, location: str) -> Artifact:
@@ -73,8 +93,8 @@ def write_alternative_risk_data(artifact, location):
     logger.info('Writing risk data...')
 
     risks = ['child_wasting', 'child_underweight', 'child_stunting']
-    measures = ['relative_risk', 'population_attributable_fraction', 'distribution', 'categories']
-    alternative_measures = ['exposure', 'exposure_distribution_weights', 'exposure_standard_deviation']
+    measures = ['relative_risk', 'population_attributable_fraction', 'categories']
+    alternative_measures = ['exposure', 'exposure_distribution_weights', 'exposure_standard_deviation', 'distribution']
     keys = [EntityKey(f'alternative_risk_factor.{r}.{m}') for r, m in itertools.product(risks, alternative_measures)]
     keys.extend([EntityKey(f'risk_factor.{r}.{m}') for r, m in itertools.product(risks, measures)])
     getters = {k: partial(loader, k, location, set()) for k in keys}
@@ -85,14 +105,6 @@ def write_lbwsg_data(artifact, location):
     logger.info('Writing low birth weight and short gestation data...')
 
     risk = 'low_birth_weight_and_short_gestation'
-    
-    # the metadata keys are available via conventional means for all locations
-    #  and were not added to the special artifacts.
-    metadata = ['categories', 'distribution']
-    keys = [EntityKey(f'risk_factor.{risk}.{m}') for m in metadata]
-    getters = {k: partial(loader, k, location, set()) for k in keys}
-    safe_write(artifact, keys, getters)
-    
     measures = ['exposure', 'population_attributable_fraction', 'relative_risk']
     keys = [EntityKey(f'risk_factor.{risk}.{m}') for m in measures]
 
@@ -103,7 +115,20 @@ def write_lbwsg_data(artifact, location):
         getters = {k: partial(reversioned_artifact.load, str(k)) for k in keys}
     else:
         getters = {k: partial(loader, k, location, set()) for k in keys}
+
+    # these measures are not tables dependent
+    metadata_measures = ['categories', 'distribution']
+    metadata_keys = [EntityKey(f'risk_factor.{risk}.{m}') for m in metadata_measures]
+    metadata_getters = {k: partial(loader, k, location, set()) for k in metadata_keys}
+    keys.extend(metadata_keys)
+    getters.update(metadata_getters)
+
+    # relative risk is written by draw to save space
+    rr_key = EntityKey(f'risk_factor.{risk}.relative_risk')
+    keys.remove(rr_key)
+
     safe_write(artifact, keys, getters)
+    safe_write_by_draw(artifact.path, [rr_key], {rr_key: getters.pop(rr_key)})
 
 
 def write_iron_deficiency_data(artifact, location):
