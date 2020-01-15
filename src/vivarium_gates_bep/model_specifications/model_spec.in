@@ -28,7 +28,7 @@ components:
             - RiskEffect('risk_factor.child_stunting', 'cause.lower_respiratory_infections.incidence_rate')
             - RiskEffect('risk_factor.child_stunting', 'cause.measles.incidence_rate')
 
-    vivarium_gates_bep.components:
+        risks.implementations.low_birth_weight_and_short_gestation:
             - LBWSGRisk()
             - LBWSGRiskEffect('cause.neonatal_sepsis_and_other_neonatal_infections.excess_mortality_rate')
             - LBWSGRiskEffect('cause.neonatal_encephalopathy_due_to_birth_asphyxia_and_trauma.excess_mortality_rate')
