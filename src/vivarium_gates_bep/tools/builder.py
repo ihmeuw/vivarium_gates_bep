@@ -93,7 +93,7 @@ def write_alternative_risk_data(artifact, location):
     logger.info('Writing risk data...')
 
     risks = ['child_wasting', 'child_underweight', 'child_stunting']
-    measures = ['relative_risk', 'population_attributable_fraction', 'categories']
+    measures = ['relative_risk', 'population_attributable_fraction', 'categories', 'distribution']
     alternative_measures = ['exposure', 'exposure_distribution_weights', 'exposure_standard_deviation', 'distribution']
     keys = [EntityKey(f'alternative_risk_factor.{r}.{m}') for r, m in itertools.product(risks, alternative_measures)]
     keys.extend([EntityKey(f'risk_factor.{r}.{m}') for r, m in itertools.product(risks, measures)])
