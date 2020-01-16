@@ -38,7 +38,6 @@ CAUSE_MEASURES = {
     'neonatal_sepsis_and_other_neonatal_infections': NEONATAL_CAUSE_LIST,
     'neonatal_encephalopathy_due_to_birth_asphyxia_and_trauma': NEONATAL_CAUSE_LIST,
     'hemolytic_disease_and_other_neonatal_jaundice': NEONATAL_CAUSE_LIST,
-    'neural_tube_defects': NEONATAL_CAUSE_LIST,
 }
 
 
