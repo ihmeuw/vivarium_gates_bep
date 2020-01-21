@@ -166,16 +166,13 @@ def write_iron_deficiency_data(artifact, location):
 
 def write_neonatal_sepsis_data(artifact, location):
     measure_map = {
-        #'cause_specific_mortality_rate': globals.MEASURES['Cause-specific mortality rate'],
-        #'excess_mortality_rate':  globals.MEASURES['Excess mortality rate'],
         'incidence_rate':  globals.MEASURES['Incidence rate'],
-        #'prevalence':  globals.MEASURES['Prevalence'],
         'remission_rate':  globals.MEASURES['Remission rate'],
     }
 
     keys = [EntityKey(f'cause.{causes.neonatal_sepsis_and_other_neonatal_infections.name}.{m}') for m in measure_map]
-    getters = {k: partial(load_em_from_meid, bep_globals.NEONATAL_SEPSIS_IR_MEID, measure_map[k.measure], location) for k in
-               keys}
+    getters = {k: partial(load_em_from_meid, bep_globals.NEONATAL_SEPSIS_IR_MEID, measure_map[k.measure], location)
+               for k in keys}
     safe_write(artifact, keys, getters)
 
 
