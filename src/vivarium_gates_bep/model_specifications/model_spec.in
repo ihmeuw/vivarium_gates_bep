@@ -9,7 +9,7 @@ components:
             - SIS('lower_respiratory_infections')
             - SIR_fixed_duration('measles', '10')  # days
             - SIS('meningitis')
-            - NeonatalSWC_without_incidence('neonatal_sepsis_and_other_neonatal_infections')
+            - SIS('neonatal_sepsis_and_other_neonatal_infections')
             - NeonatalSWC_without_incidence('neonatal_encephalopathy_due_to_birth_asphyxia_and_trauma')
             - NeonatalSWC_without_incidence('hemolytic_disease_and_other_neonatal_jaundice')
         risks:
@@ -30,7 +30,7 @@ components:
 
         risks.implementations.low_birth_weight_and_short_gestation:
             - LBWSGRisk()
-            - LBWSGRiskEffect('cause.neonatal_sepsis_and_other_neonatal_infections.excess_mortality_rate')
+            # - LBWSGRiskEffect('cause.neonatal_sepsis_and_other_neonatal_infections.excess_mortality_rate')
             - LBWSGRiskEffect('cause.neonatal_encephalopathy_due_to_birth_asphyxia_and_trauma.excess_mortality_rate')
             - LBWSGRiskEffect('cause.hemolytic_disease_and_other_neonatal_jaundice.excess_mortality_rate')
             - LBWSGRiskEffect('cause.diarrheal_diseases.excess_mortality_rate')
@@ -70,8 +70,8 @@ configuration:
     population:
         population_size: 10_000
         age_start: 0
-        age_end: 5
-        exit_age: 5
+        age_end: 2
+        exit_age: 2
 
     child_stunting:
         category_thresholds: [7, 8, 9]
@@ -81,12 +81,12 @@ configuration:
     metrics:
         disability:
             by_age: False
-            by_sex: True
-            by_year: True
+            by_sex: False
+            by_year: False
             by_whz: True
 
         mortality:
             by_age: False
-            by_sex: True
-            by_year: True
+            by_sex: False
+            by_year: False
             by_whz: True
