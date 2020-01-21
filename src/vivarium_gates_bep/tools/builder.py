@@ -7,10 +7,13 @@ from typing import Sequence, Mapping
 from loguru import logger
 
 from vivarium.framework.artifact import EntityKey, get_location_term, Artifact
+from vivarium_inputs import utilities, globals, utility_data
 from vivarium_inputs.data_artifact.loaders import loader
+from vivarium_inputs.utilities import split_interval
+
 
 import vivarium_gates_bep.globals as bep_globals
-from gbd_mapping import risk_factors
+from gbd_mapping import risk_factors, causes
 
 
 def safe_write(artifact: Artifact, keys: Sequence, getters: Mapping):
@@ -40,6 +43,21 @@ def safe_write_by_draw(path, keys, getters):
             logger.info(f">>> wrote data for draws [{' '.join(draws_written)}] under {key}.")
         else:
             logger.info(f"all draws found for {key}.")
+
+
+def load_em_from_meid(meid, measure_id, location):
+    from vivarium_gbd_access import gbd
+    location_id = utility_data.get_location_id(location)
+    data = gbd.get_modelable_entity_draws(meid, location_id)
+    data = data[data.measure_id == measure_id]
+    data = utilities.normalize(data, fill_value=0)
+    data = data.filter(globals.DEMOGRAPHIC_COLUMNS + globals.DRAW_COLUMNS)
+    data = utilities.reshape(data)
+    data = utilities.scrub_gbd_conventions(data, location)
+    data = utilities.sort_hierarchical_data(data)
+    data = split_interval(data, interval_column='age', split_column_prefix='age')
+    data = split_interval(data, interval_column='year', split_column_prefix='year')
+    return data
 
 
 def create_new_artifact(path: str, location: str) -> Artifact:
@@ -146,6 +164,18 @@ def write_iron_deficiency_data(artifact, location):
     safe_write(artifact, keys, getters)
 
 
+def write_neonatal_sepsis_data(artifact, location):
+    measure_map = {
+        'incidence_rate':  globals.MEASURES['Incidence rate'],
+        'remission_rate':  globals.MEASURES['Remission rate'],
+    }
+
+    keys = [EntityKey(f'cause.{causes.neonatal_sepsis_and_other_neonatal_infections.name}.{m}') for m in measure_map]
+    getters = {k: partial(load_em_from_meid, bep_globals.NEONATAL_SEPSIS_IR_MEID, measure_map[k.measure], location)
+               for k in keys}
+    safe_write(artifact, keys, getters)
+
+
 def build_artifact(location: str, output_dir: str, erase: bool):
     artifact_path = Path(output_dir) / f'{location.replace(" ", "_").lower()}.hdf'
     if erase and artifact_path.is_file():
@@ -158,5 +188,6 @@ def build_artifact(location: str, output_dir: str, erase: bool):
     write_risk_data(artifact, location, risk_factors.vitamin_a_deficiency.name)
     write_alternative_risk_data(artifact, location)
     write_iron_deficiency_data(artifact, location)
+    write_neonatal_sepsis_data(artifact, location)
 
     logger.info('!!! Done !!!')

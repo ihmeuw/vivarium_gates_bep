@@ -40,4 +40,6 @@ CAUSE_MEASURES = {
     'hemolytic_disease_and_other_neonatal_jaundice': NEONATAL_CAUSE_LIST,
 }
 
+NEONATAL_SEPSIS_IR_MEID=1594
+
 
