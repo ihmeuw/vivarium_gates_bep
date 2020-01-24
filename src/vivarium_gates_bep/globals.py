@@ -1,4 +1,3 @@
-from gbd_mapping import causes, risk_factors
 
 
 CLUSTER_PROJECT = 'proj_cost_effect'
@@ -34,7 +33,6 @@ CAUSE_MEASURES = {
     'lower_respiratory_infections': DEFAULT_CAUSE_LIST,
     'meningitis': DEFAULT_CAUSE_LIST,
     'measles': [c for c in DEFAULT_CAUSE_LIST if c not in ['remission_rate']],
-    'neonatal_preterm_birth': NEONATAL_CAUSE_LIST,
     'neonatal_sepsis_and_other_neonatal_infections': NEONATAL_CAUSE_LIST,
     'neonatal_encephalopathy_due_to_birth_asphyxia_and_trauma': NEONATAL_CAUSE_LIST,
     'hemolytic_disease_and_other_neonatal_jaundice': NEONATAL_CAUSE_LIST,
