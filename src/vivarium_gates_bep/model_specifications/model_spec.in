@@ -3,7 +3,6 @@ components:
         population:
             - BasePopulation()
             - Mortality()
-            - FertilityCrudeBirthRate()
         disease.models:
             - SIS('diarrheal_diseases')
             - SIS('lower_respiratory_infections')
@@ -36,11 +35,12 @@ components:
             - LBWSGRiskEffect('cause.diarrheal_diseases.excess_mortality_rate')
             - LBWSGRiskEffect('cause.lower_respiratory_infections.excess_mortality_rate')
 
+    vivarium_gates_bep.components:
+            - BEPGatesMortalityObserver()
+
     vivarium_gates_bep.components.metrics:
             - CatStratRiskObserver("risk_factor.child_stunting")
             - CatStratRiskObserver("risk_factor.child_wasting")
-            - WHZDisabilityObserver()
-            - WHZMortalityObserver()
 
 configuration:
     input_data:

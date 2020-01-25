@@ -53,6 +53,14 @@ CAUSE_MEASURES = dict(
     **{other_cause: DEFAULT_CAUSE_LIST for other_cause in OTHER_CAUSES if other_cause != causes.measles.name}
 )
 
+# Tracked risk factors
+# TODO do we use risk_factors.child_and_maternal_malnutrition?
+MALNOURISHMENT_EXPOSED = 'exposed_to_maternal_malnourishment'
+MALNOURISHMENT_UNEXPOSED = 'unexposed_to_maternal_malnourishment'
+MALNOURISHMENT_CATEGORIES = ['cat1', 'cat2']
+MALNOURISHMENT_STATES = [MALNOURISHMENT_EXPOSED, MALNOURISHMENT_UNEXPOSED]
+MALNOURISHMENT_MAP = {MALNOURISHMENT_CATEGORIES[i]: state for i, state in enumerate(MALNOURISHMENT_STATES)}
+
 # other tracked events
 LIVE_BIRTH = 'live_birth'
 LOW_BIRTH_WEIGHT = 'low_birth_weight'
@@ -186,10 +194,9 @@ COLUMN_TEMPLATES = {
 }
 
 TREATMENT_GROUPS = ['treated', 'untreated']
-AGE_GROUPS = ['0-1', '1-2']
+AGE_GROUPS = ['early_neonatal', 'late_neonatal', 'post_neonatal', '1_to_4']
 CAUSES_OF_DISABILITY = list(CAUSE_MEASURES.keys()) + ['all_causes']
 CAUSES_OF_DEATH = CAUSES_OF_DISABILITY + ['other_causes']
-MALNOURISHMENT_STATES = ['malnourished', 'not_malnourished']
 COUNT_EVENTS = [
     LIVE_BIRTH,
     LOW_BIRTH_WEIGHT,
