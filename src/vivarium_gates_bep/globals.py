@@ -170,7 +170,7 @@ YLLS_COLUMN_TEMPLATE = ('ylls_due_to_{CAUSE_OF_DEATH}_among_{MALNOURISHMENT_STAT
                         'treatment_group_{TREATMENT_GROUP}')
 DALYS_COLUMN_TEMPLATE = ('dalys_due_to_{CAUSE_OF_DEATH}_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
                          'treatment_group_{TREATMENT_GROUP}')
-DEATHS_COLUMN_TEMPLATE = ('deaths_due_to_{CAUSE_OF_DEATH}_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
+DEATHS_COLUMN_TEMPLATE = ('death_due_to_{CAUSE_OF_DEATH}_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
                           'treatment_group_{TREATMENT_GROUP}')
 COUNT_COLUMN_TEMPLATE = ('{COUNT_EVENT}_count_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
                          'treatment_group_{TREATMENT_GROUP}')
@@ -186,7 +186,7 @@ COLUMN_TEMPLATES = {
     'ylds': YLDS_COLUMN_TEMPLATE,
     'ylls': YLLS_COLUMN_TEMPLATE,
     'dalys': DALYS_COLUMN_TEMPLATE,
-    'deaths': DEATHS_COLUMN_TEMPLATE,
+    'death': DEATHS_COLUMN_TEMPLATE,
     'counts': COUNT_COLUMN_TEMPLATE,
     'means': MEAN_COLUMN_TEMPLATE,
     'standard_deviations': SD_COLUMN_TEMPLATE,
