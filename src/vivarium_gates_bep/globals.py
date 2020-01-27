@@ -162,8 +162,10 @@ STANDARD_COLUMNS = {
     'country': COUNTRY_COLUMN
 }
 
-PERSON_TIME_COLUMN_TEMPLATE = ('person_time_{STATE}_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
+PERSON_TIME_COLUMN_TEMPLATE = ('person_time_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
                                'treatment_group_{TREATMENT_GROUP}')
+PERSON_TIME_BY_STATE_COLUMN_TEMPLATE = ('person_time_{STATE}_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
+                                        'treatment_group_{TREATMENT_GROUP}')
 YLDS_COLUMN_TEMPLATE = ('ylds_due_to_{CAUSE_OF_DISABILITY}_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
                         'treatment_group_{TREATMENT_GROUP}')
 YLLS_COLUMN_TEMPLATE = ('ylls_due_to_{CAUSE_OF_DEATH}_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
@@ -183,6 +185,7 @@ TRANSITION_COLUMN_TEMPLATE = ('{TRANSITION}_event_count_among_{MALNOURISHMENT_ST
 
 COLUMN_TEMPLATES = {
     'person_time': PERSON_TIME_COLUMN_TEMPLATE,
+    'person_time_by_state': PERSON_TIME_BY_STATE_COLUMN_TEMPLATE,
     'ylds': YLDS_COLUMN_TEMPLATE,
     'ylls': YLLS_COLUMN_TEMPLATE,
     'dalys': DALYS_COLUMN_TEMPLATE,
