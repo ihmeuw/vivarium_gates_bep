@@ -65,7 +65,7 @@ MALNOURISHMENT_MAP = {MALNOURISHMENT_CATEGORIES[i]: state for i, state in enumer
 TREATMENT_GROUPS = ['treated', 'untreated']
 AGE_GROUPS = ['early_neonatal', 'late_neonatal', 'post_neonatal', '1_to_4']
 
-STRATIFICATION_GROUPS = itertools.product(MALNOURISHMENT_CATEGORIES, AGE_GROUPS, TREATMENT_GROUPS)
+STRATIFICATION_GROUPS = list(itertools.product(MALNOURISHMENT_CATEGORIES, AGE_GROUPS, TREATMENT_GROUPS))
 
 # other tracked events
 LIVE_BIRTH = 'live_birth'
