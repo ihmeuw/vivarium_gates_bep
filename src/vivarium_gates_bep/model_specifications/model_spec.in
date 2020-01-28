@@ -51,18 +51,18 @@ configuration:
         artifact_path: /share/costeffectiveness/artifacts/vivarium_gates_bep/{{ location_sanitized }}.hdf
     interpolation:
         order: 0
-        extrapolate: False
+        extrapolate: True
     randomness:
         map_size: 1_000_000
         key_columns: ['entrance_time']
         random_seed: 0
     time:
         start:
-            year: 2005
+            year: 2020
             month: 7
             day: 2
         end:
-            year: 2010
+            year: 2022
             month: 7
             day: 2
         step_size: 1 # Days
@@ -70,7 +70,6 @@ configuration:
         population_size: 10_000
         age_start: 0
         age_end: 2
-        exit_age: 2
 
     child_stunting:
         category_thresholds: [7, 8, 9]
