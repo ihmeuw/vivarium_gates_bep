@@ -118,6 +118,7 @@ class BEPGatesMockObserver():
         exclude_list = [
             'person_time',  # BEPGatesMortalityObserver
             'death'         # BEPGatesMortalityObserver
+            'ylls'          # BEPGatesMortalityObserver
             'ylds'          # BEPGatesDisabilityObserver
         ]
         need_to_mock = [i for i in list(project_globals.COLUMN_TEMPLATES.keys()) if i not in exclude_list]
