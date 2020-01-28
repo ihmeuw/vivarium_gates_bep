@@ -1,10 +1,6 @@
-import itertools
-
-import pandas as pd
-
-from vivarium_public_health.metrics import DiseaseObserver, MortalityObserver, DisabilityObserver
+from vivarium_public_health.metrics import MortalityObserver, DisabilityObserver
 from vivarium_public_health.metrics.utilities import (
-    get_output_template, QueryString, get_group_counts, to_years, get_years_lived_with_disability,
+    get_years_lived_with_disability,
     get_person_time, get_deaths, get_years_of_life_lost
 )
 
@@ -128,7 +124,7 @@ class BEPGatesMockObserver():
         mock_columns = []
         for col in need_to_mock:
             mock_columns.extend(project_globals.result_columns(col))
-        self.mocks = {i: -99.0 for i in mock_columns}
+        self.mocks = {i: project_globals.MOCKED_COLUMN_VALUE for i in mock_columns}
 
     def setup(self, builder):
         builder.value.register_value_modifier('metrics', self.metrics)

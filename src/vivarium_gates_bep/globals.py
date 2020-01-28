@@ -147,6 +147,7 @@ TRANSITIONS = (NEONATAL_SEPSIS_TRANSITIONS + NEONATAL_ENCEPHALOPATHY_TRANSITIONS
 #################################
 # Results columns and variables #
 #################################
+MOCKED_COLUMN_VALUE = -99.0
 
 TOTAL_POP_COLUMN = 'total_population'
 TOTAL_YLLS_COLUMN = 'years_of_life_lost'
