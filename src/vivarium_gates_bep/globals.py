@@ -74,6 +74,11 @@ SHORT_GESTATION = 'short_gestation'
 ALIVE_AT_6_MONTHS = 'alive_at_6_months'
 
 # tracked metrics
+PERSON_TIME = 'person_time'
+DEATH = 'death'
+YLLS = 'ylls'
+YLDS = 'ylds'
+DALYS = 'dalys'
 LAZ_AT_6_MONTHS = 'laz_at_6_months'
 WLZ_AT_6_MONTHS = 'wlz_at_6_months'
 BIRTH_WEIGHT = 'birth_weight'
@@ -169,8 +174,8 @@ STANDARD_COLUMNS = {
     'country': COUNTRY_COLUMN
 }
 
-PERSON_TIME_COLUMN_TEMPLATE = ('person_time_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
-                               'treatment_group_{TREATMENT_GROUP}')
+METRIC_COLUMN_TEMPLATE = ('{METRIC}_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
+                          'treatment_group_{TREATMENT_GROUP}')
 PERSON_TIME_BY_STATE_COLUMN_TEMPLATE = ('person_time_{STATE}_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
                                         'treatment_group_{TREATMENT_GROUP}')
 YLDS_COLUMN_TEMPLATE = ('ylds_due_to_{CAUSE_OF_DISABILITY}_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
@@ -179,27 +184,21 @@ YLLS_COLUMN_TEMPLATE = ('ylls_due_to_{CAUSE_OF_DEATH}_among_{MALNOURISHMENT_STAT
                         'treatment_group_{TREATMENT_GROUP}')
 DALYS_COLUMN_TEMPLATE = ('dalys_due_to_{CAUSE_OF_DEATH}_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
                          'treatment_group_{TREATMENT_GROUP}')
-DEATHS_COLUMN_TEMPLATE = ('death_due_to_{CAUSE_OF_DEATH}_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
-                          'treatment_group_{TREATMENT_GROUP}')
+DEATH_COLUMN_TEMPLATE = ('death_due_to_{CAUSE_OF_DEATH}_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
+                         'treatment_group_{TREATMENT_GROUP}')
 COUNT_COLUMN_TEMPLATE = ('{COUNT_EVENT}_count_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
                          'treatment_group_{TREATMENT_GROUP}')
-MEAN_COLUMN_TEMPLATE = ('mean_{METRIC}_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
-                        'treatment_group_{TREATMENT_GROUP}')
-SD_COLUMN_TEMPLATE = ('standard_deviation_{METRIC}_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
-                      'treatment_group_{TREATMENT_GROUP}')
 TRANSITION_COLUMN_TEMPLATE = ('{TRANSITION}_event_count_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
                               'treatment_group_{TREATMENT_GROUP}')
 
 COLUMN_TEMPLATES = {
-    'person_time': PERSON_TIME_COLUMN_TEMPLATE,
+    'metrics': METRIC_COLUMN_TEMPLATE,
     'person_time_by_state': PERSON_TIME_BY_STATE_COLUMN_TEMPLATE,
     'ylds': YLDS_COLUMN_TEMPLATE,
     'ylls': YLLS_COLUMN_TEMPLATE,
     'dalys': DALYS_COLUMN_TEMPLATE,
-    'death': DEATHS_COLUMN_TEMPLATE,
+    'death': DEATH_COLUMN_TEMPLATE,
     'counts': COUNT_COLUMN_TEMPLATE,
-    'means': MEAN_COLUMN_TEMPLATE,
-    'standard_deviations': SD_COLUMN_TEMPLATE,
     'transitions': TRANSITION_COLUMN_TEMPLATE
 }
 
@@ -217,7 +216,12 @@ COUNT_EVENTS = [
     f'{risk_factors.child_stunting.name}_cat3',
     ALIVE_AT_6_MONTHS
 ]
-METRICS = [LAZ_AT_6_MONTHS, WLZ_AT_6_MONTHS, BIRTH_WEIGHT, GESTATIONAL_AGE]
+
+METRICS = [PERSON_TIME, DEATH, YLLS, YLDS, DALYS] + [
+    f'{stat}_{metric}'
+    for metric in [LAZ_AT_6_MONTHS, WLZ_AT_6_MONTHS, BIRTH_WEIGHT, GESTATIONAL_AGE]
+    for stat in ['mean', 'sd']
+]
 
 TEMPLATE_FIELD_MAP = {
     'TREATMENT_GROUP': TREATMENT_GROUPS,

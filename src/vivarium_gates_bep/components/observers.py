@@ -105,10 +105,10 @@ class BEPGatesDisabilityObserver(DisabilityObserver):
             self.years_lived_with_disability.update(ylds_this_step)
 
 
-class BEPGatesMockObserver():
-    '''
+class BEPGatesMockObserver:
+    """
     Adds columns to ensure a complete output shell
-    '''
+    """
     @property
     def name(self):
         return 'mock_observer'
