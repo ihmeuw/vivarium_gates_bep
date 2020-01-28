@@ -37,6 +37,7 @@ components:
 
     vivarium_gates_bep.components:
             - BEPGatesMortalityObserver()
+            - BEPGatesDisabilityObserver()
 
     vivarium_gates_bep.components.metrics:
             - CatStratRiskObserver("risk_factor.child_stunting")

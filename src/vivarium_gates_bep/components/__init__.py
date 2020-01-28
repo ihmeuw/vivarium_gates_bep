@@ -1,1 +1,1 @@
-from .observers import BEPGatesMortalityObserver
+from .observers import BEPGatesMortalityObserver, BEPGatesDisabilityObserver

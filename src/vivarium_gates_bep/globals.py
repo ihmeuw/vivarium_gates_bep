@@ -43,7 +43,8 @@ OTHER_CAUSES = [
     causes.lower_respiratory_infections.name,
     causes.meningitis.name,
     causes.measles.name,
-    causes.protein_energy_malnutrition.name
+    # TODO uncomment when disease weight is calculated
+    # causes.protein_energy_malnutrition.name
 ]
 
 CAUSE_MEASURES = dict(
@@ -60,6 +61,11 @@ MALNOURISHMENT_UNEXPOSED = 'unexposed_to_maternal_malnourishment'
 MALNOURISHMENT_CATEGORIES = ['cat1', 'cat2']
 MALNOURISHMENT_STATES = [MALNOURISHMENT_EXPOSED, MALNOURISHMENT_UNEXPOSED]
 MALNOURISHMENT_MAP = {MALNOURISHMENT_CATEGORIES[i]: state for i, state in enumerate(MALNOURISHMENT_STATES)}
+
+TREATMENT_GROUPS = ['treated', 'untreated']
+AGE_GROUPS = ['early_neonatal', 'late_neonatal', 'post_neonatal', '1_to_4']
+
+STRATIFICATION_GROUPS = itertools.product(MALNOURISHMENT_CATEGORIES, AGE_GROUPS, TREATMENT_GROUPS)
 
 # other tracked events
 LIVE_BIRTH = 'live_birth'
@@ -196,9 +202,7 @@ COLUMN_TEMPLATES = {
     'transitions': TRANSITION_COLUMN_TEMPLATE
 }
 
-TREATMENT_GROUPS = ['treated', 'untreated']
-AGE_GROUPS = ['early_neonatal', 'late_neonatal', 'post_neonatal', '1_to_4']
-CAUSES_OF_DISABILITY = list(CAUSE_MEASURES.keys()) + ['all_causes']
+CAUSES_OF_DISABILITY = [cause for cause in CAUSE_MEASURES.keys() if cause != causes.all_causes.name]
 CAUSES_OF_DEATH = CAUSES_OF_DISABILITY + ['other_causes']
 COUNT_EVENTS = [
     LIVE_BIRTH,

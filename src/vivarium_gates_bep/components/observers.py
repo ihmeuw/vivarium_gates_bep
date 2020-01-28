@@ -36,9 +36,7 @@ class BEPGatesMortalityObserver(MortalityObserver):
             (get_years_of_life_lost, (self.life_expectancy, project_globals.CAUSES_OF_DEATH)),
         )
 
-        groups = itertools.product(project_globals.MALNOURISHMENT_CATEGORIES, project_globals.AGE_GROUPS,
-                                   project_globals.TREATMENT_GROUPS)
-        for malnourishment_category, age_group, treatment_group in groups:
+        for malnourishment_category, age_group, treatment_group in project_globals.STRATIFICATION_GROUPS:
             malnourishment_state = project_globals.MALNOURISHMENT_MAP[malnourishment_category]
             # TODO uncomment this once the pipelines have been created
             # pop_in_group = pop.loc[
@@ -62,3 +60,50 @@ class BEPGatesMortalityObserver(MortalityObserver):
         metrics['total_population_dead'] = len(the_dead)
 
         return metrics
+
+
+class BEPGatesDisabilityObserver(DisabilityObserver):
+
+    def __init__(self):
+        super().__init__()
+
+    def setup(self, builder):
+        super().setup(builder)
+        self.malnourishment = builder.value.get_value(f'maternal_malnourishment.exposure')
+        self.treatment_group = builder.value.get_value('treatment.exposure')
+        self.disability_weight_pipelines = {k: v for k, v in self.disability_weight_pipelines.items()
+                                            if k in project_globals.CAUSES_OF_DISABILITY}
+
+    def on_time_step_prepare(self, event):
+        pop = self.population_view.get(event.index, query='tracked == True and alive == "alive"')
+
+        self.update_metrics(pop)
+
+        pop.loc[:, 'years_lived_with_disability'] += self.disability_weight(pop.index)
+        self.population_view.update(pop)
+
+    def update_metrics(self, pop):
+        # TODO uncomment this once the pipelines have been created
+        # pop_malnourishment_category = self.malnourishment(pop.index)
+        # pop_treatment_group = self.treatment_group(pop.index)
+
+        for malnourishment_category, age_group, treatment_group in project_globals.STRATIFICATION_GROUPS:
+            malnourishment_state = project_globals.MALNOURISHMENT_MAP[malnourishment_category]
+            # TODO uncomment this once the pipelines have been created
+            # pop_in_group = pop.loc[
+            #     pop_malnourishment_category == malnourishment_category
+            #     & pop_treatment_group == treatment_group
+            # ]
+            #
+            # ylds_this_step = get_years_lived_with_disability(
+            #     pop_in_group, self.config.to_dict(), self.clock().year, self.step_size(), self.age_bins,
+            #     self.disability_weight_pipelines, project_globals.CAUSES_OF_DISABILITY
+            # )
+            ylds_this_step = get_years_lived_with_disability(
+                pop, self.config.to_dict(), self.clock().year, self.step_size(), self.age_bins,
+                self.disability_weight_pipelines, project_globals.CAUSES_OF_DISABILITY
+            )
+            ylds_this_step = {(f'{k}_among_{malnourishment_state}_in_age_group_{age_group}'
+                               f'_treatment_group_{treatment_group}'): v
+                              for k, v in ylds_this_step.items()}
+            self.years_lived_with_disability.update(ylds_this_step)
