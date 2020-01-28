@@ -1,10 +1,6 @@
-import itertools
-
-import pandas as pd
-
-from vivarium_public_health.metrics import DiseaseObserver, MortalityObserver, DisabilityObserver
+from vivarium_public_health.metrics import MortalityObserver, DisabilityObserver
 from vivarium_public_health.metrics.utilities import (
-    get_output_template, QueryString, get_group_counts, to_years, get_years_lived_with_disability,
+    get_years_lived_with_disability,
     get_person_time, get_deaths, get_years_of_life_lost
 )
 
@@ -107,3 +103,33 @@ class BEPGatesDisabilityObserver(DisabilityObserver):
                                f'_treatment_group_{treatment_group}'): v
                               for k, v in ylds_this_step.items()}
             self.years_lived_with_disability.update(ylds_this_step)
+
+
+class BEPGatesMockObserver():
+    '''
+    Adds columns to ensure a complete output shell
+    '''
+    @property
+    def name(self):
+        return 'mock_observer'
+
+    def __init__(self):
+        # As working observers are completed add the appropriate key to exclude the mocking behavior
+        exclude_list = [
+            'person_time',  # BEPGatesMortalityObserver
+            'death'         # BEPGatesMortalityObserver
+            'ylls'          # BEPGatesMortalityObserver
+            'ylds'          # BEPGatesDisabilityObserver
+        ]
+        need_to_mock = [i for i in list(project_globals.COLUMN_TEMPLATES.keys()) if i not in exclude_list]
+        mock_columns = []
+        for col in need_to_mock:
+            mock_columns.extend(project_globals.result_columns(col))
+        self.mocks = {i: project_globals.MOCKED_COLUMN_VALUE for i in mock_columns}
+
+    def setup(self, builder):
+        builder.value.register_value_modifier('metrics', self.metrics)
+
+    def metrics(self, index, metrics):
+        metrics.update(self.mocks)
+        return metrics
