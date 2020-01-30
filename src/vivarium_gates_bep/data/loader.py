@@ -2,10 +2,10 @@
 from db_queries import get_outputs
 from gbd_mapping import causes
 import pandas as pd
+import scipy.stats
 from vivarium.framework.artifact import EntityKey
 from vivarium_gbd_access import gbd
-from vivarium_inputs import interface, utility_data, globals as vi_globals
-
+from vivarium_inputs import interface, utilities, utility_data, globals as vi_globals
 
 from vivarium_gates_bep import globals as project_globals
 
@@ -104,7 +104,8 @@ def load_meningitis_disability_weight(key: str, location: str) -> pd.DataFrame:
         prevalence = interface.get_measure(subcause, 'prevalence', location)
         disability = interface.get_measure(subcause, 'disability_weight', location)
         sub_cause_dws.append(prevalence * disability)
-    return sum(sub_cause_dws)
+    meningitis_prevalence = interface.get_measure(meningitis, 'prevalence', location)
+    return sum(sub_cause_dws) / meningitis_prevalence
 
 
 def load_neonatal_disorders_disability_weight(key: str, location: str) -> pd.DataFrame:
@@ -116,7 +117,19 @@ def load_neonatal_disorders_disability_weight(key: str, location: str) -> pd.Dat
                        location_id=utility_data.get_location_id(location),
                        gbd_round_id=gbd.GBD_ROUND_ID,
                        measure_id=vi_globals.MEASURES['YLDs'])
-    import pdb; pdb.set_trace()
+    ylds = ylds.set_index(['age_group_id', 'location_id', 'sex_id', 'year_id'])
+    ylds['sd'] = (ylds['upper'] - ylds['lower'])/6
+    yld_draws = scipy.stats.norm(ylds['val'], ylds['sd']).rvs((1000, len(ylds))).T
+    yld_draws = pd.DataFrame(yld_draws, columns=vi_globals.DRAW_COLUMNS, index=ylds.index).reset_index()
+    yld_draws = utilities.normalize(yld_draws, fill_value=0)
+    yld_draws = utilities.reshape(yld_draws)
+    yld_draws = utilities.scrub_gbd_conventions(yld_draws, location)
+    yld_draws = utilities.split_interval(yld_draws, interval_column='age', split_column_prefix='age')
+    yld_draws = utilities.split_interval(yld_draws, interval_column='year', split_column_prefix='year')
+    yld_draws = utilities.sort_hierarchical_data(yld_draws)
+
     prevalence = interface.get_measure(causes[key.name], 'prevalence', location)
+    dw = yld_draws / prevalence
+    import pdb; pbd.set_trace()
 
 
