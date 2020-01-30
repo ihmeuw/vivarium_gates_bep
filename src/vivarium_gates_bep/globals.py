@@ -45,6 +45,13 @@ DIARRHEA_EXCESS_MORTALITY_RATE = 'cause.diarrheal_diseases.excess_mortality_rate
 DIARRHEA_DISABILITY_WEIGHT = 'cause.diarrheal_diseases.disability_weight'
 DIARRHEA_RESTRICTIONS = 'cause.diarrheal_diseases.restrictions'
 
+MEASLES_CAUSE_SPECIFIC_MORTALITY_RATE = 'cause.measles.cause_specific_mortality_rate'
+MEASLES_PREVALENCE = 'cause.measles.prevalence'
+MEASLES_INCIDENCE_RATE = 'cause.measles.incidence_rate'
+MEASLES_EXCESS_MORTALITY_RATE = 'cause.measles.excess_mortality_rate'
+MEASLES_DISABILITY_WEIGHT = 'cause.measles.disability_weight'
+MEASLES_RESTRICTIONS = 'cause.measles.restrictions'
+
 #########
 # Other #
 #########
