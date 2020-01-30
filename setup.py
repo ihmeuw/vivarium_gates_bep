@@ -19,25 +19,18 @@ if __name__ == "__main__":
     install_requirements = [
         'vivarium==0.9.3',
         'vivarium_public_health==0.10.4',
-        'vivarium_cluster_tools==1.1.1',
-        'vivarium_inputs[data]==3.1.1',
-        
-        # These are pinned for internal dependencies on IHME libraries
         'numpy<=1.15.4',
         'tables<=3.4.0',
-        'pandas<0.25',        
-        
+        'pandas<0.25',
         'click',
         'jinja2',
-        'jupyter',
-        'jupyterlab',
         'loguru',
-        'matplotlib',
-        'pytest',
-        'pytest-mock',
-        'pyyaml',
         'scipy',
-        'seaborn',
+    ]
+
+    extras_require = [
+        'vivarium_cluster_tools==1.1.1',
+        'vivarium_inputs[data]==3.1.1',
     ]
 
     setup(
@@ -57,6 +50,9 @@ if __name__ == "__main__":
         include_package_data=True,
 
         install_requires=install_requirements,
+        extras_require={
+            'dev': extras_require,
+        },
 
         zip_safe=False,
 
