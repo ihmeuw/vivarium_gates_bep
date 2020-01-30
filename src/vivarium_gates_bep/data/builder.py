@@ -190,7 +190,7 @@ def load_and_write_neonatal_data(artifact: Artifact, location: str):
         project_globals.NEONATAL_DISORDERS_PREVALENCE,
         project_globals.NEONATAL_DISORDERS_BIRTH_PREVALENCE,
         project_globals.NEONATAL_DISORDERS_EXCESS_MORTALITY_RATE,
-        project_globals.NEONATAL_DISORDERS_DISABILITY_WEIGHT,
+        project_globals.NEONATAL_DISORDERS_DISABILITY_WEIGHT,  # This will load 0 by default.
     ]
 
     for key in keys:
