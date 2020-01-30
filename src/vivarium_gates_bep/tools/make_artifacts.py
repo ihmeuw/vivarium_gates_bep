@@ -10,12 +10,14 @@ from pathlib import Path
 import shutil
 import sys
 import time
+from typing import Union
 
 import click
 from loguru import logger
 
 from vivarium_gates_bep import globals as project_globals
 from vivarium_gates_bep.utilites import sanitize_location
+from vivarium_gates_bep.tools.app_logging import add_logging_sink
 
 
 def build_artifacts(location: str, output_dir: str, append: bool, verbose: int):
@@ -82,6 +84,13 @@ def build_all_artifacts(output_dir: Path, verbose: int):
     verbose
         How noisy the logger should be.
 
+    Note
+    ----
+        This function should not be called directly.  It is intended to be
+        called by the :func:`build_artifacts` function located in the same
+        module.
+
+
     """
     from vivarium_cluster_tools.psimulate.utilities import get_drmaa
     drmaa = get_drmaa()
@@ -130,8 +139,40 @@ def build_all_artifacts(output_dir: Path, verbose: int):
     logger.info('**Done**')
 
 
-def build_single_location_artifact(path, location, log_to_file=False):
-    pass
+def build_single_location_artifact(path: Union[str, Path], location: str, log_to_file: bool = False):
+    """Builds an artifact for a single location.
+
+    Parameters
+    ----------
+    path
+        The full path to the artifact to build.
+    location
+        The location to build the artifact for.  Must be one of the locations
+        specified in the project globals.
+    log_to_file
+        Whether we should write the application logs to a file.
+
+    Note
+    ----
+        This function should not be called directly.  It is intended to be
+        called by the :func:`build_artifacts` function located in the same
+        module.
+
+    """
+    location = location.strip('"')
+    path = Path(path)
+    if log_to_file:
+        log_file = path.parent / 'logs' / f'{sanitize_location(location)}.log'
+        if log_file.exists():
+            log_file.unlink()
+        add_logging_sink(log_file, verbose=2)
+
+    # Local import to avoid data dependencies
+    from vivarium_gates_bep.data import builder
+
+    # TODO: call all the artifact building functions.
+
+    logger.info('**DONE**')
 
 
 if __name__ == "__main__":
