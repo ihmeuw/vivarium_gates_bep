@@ -1,6 +1,6 @@
-===============================
+==================
 vivarium_gates_bep
-===============================
+==================
 
 Research repository for the vivarium_gates_bep project.
 
@@ -23,8 +23,8 @@ To install the extra dependencies create a file called ~/.pip/pip.conf which
 looks like this::
 
     [global]
-    extra-index-url = http://pypi.services.ihme.washington.edu/simple
-    trusted-host = pypi.services.ihme.washington.edu
+    extra-index-url = https://artifactory.ihme.washington.edu/artifactory/api/pypi/pypi-shared/simple/
+    trusted-host = artifactory.ihme.washington.edu
 
 
 To set up a new research environment, open up a terminal on the cluster and
