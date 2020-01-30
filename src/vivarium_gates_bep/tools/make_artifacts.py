@@ -103,9 +103,15 @@ def build_all_artifacts(output_dir: Path, verbose: int):
             job_template = session.createJobTemplate()
             job_template.remoteCommand = shutil.which("python")
             job_template.args = [__file__, str(path), f'"{location}"']
-            job_template.nativeSpecification = (f'-V -b y -P {project_globals.CLUSTER_PROJECT} -q all.q '
-                                                f'-l fmem=3G -l fthread=1 -l h_rt=3:00:00 -l archive=TRUE '
-                                                f'-N {sanitize_location(location)}_artifact')
+            job_template.nativeSpecification = (f'-V '  # Export all environment variables
+                                                f'-b y '  # Command is a binary (python)
+                                                f'-P {project_globals.CLUSTER_PROJECT} '  
+                                                f'-q {project_globals.CLUSTER_QUEUE} '  
+                                                f'-l fmem={project_globals.MAKE_ARTIFACT_MEM} '
+                                                f'-l fthread={project_globals.MAKE_ARTIFACT_CPU} '
+                                                f'-l h_rt={project_globals.MAKE_ARTIFACT_RUNTIME} '
+                                                f'-l archive=TRUE '  # Need J-drive access for data
+                                                f'-N {sanitize_location(location)}_artifact')  # Name of the job
             jobs[location] = (session.runJob(job_template), drmaa.JobState.UNDETERMINED)
             logger.info(f'Submitted job {jobs[location][0]} to build artifact for {location}.')
             session.deleteJobTemplate(job_template)
