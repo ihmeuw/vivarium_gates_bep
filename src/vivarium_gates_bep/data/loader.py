@@ -61,6 +61,13 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.PEM_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.PEM_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.PEM_DISABILITY_WEIGHT: load_standard_data,
+
+        project_globals.NEONATAL_DISORDERS_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
+        project_globals.NEONATAL_DISORDERS_PREVALENCE: load_standard_data,
+        project_globals.NEONATAL_DISORDERS_BIRTH_PREVALENCE: load_standard_data,
+        project_globals.NEONATAL_DISORDERS_EXCESS_MORTALITY_RATE: load_standard_data,
+        project_globals.NEONATAL_DISORDERS_DISABILITY_WEIGHT: load_standard_data,
+
     }
     return mapping[lookup_key](lookup_key, location)
 

@@ -73,6 +73,13 @@ PEM_EXCESS_MORTALITY_RATE = 'cause.protein_energy_malnutrition.excess_mortality_
 PEM_DISABILITY_WEIGHT = 'cause.protein_energy_malnutrition.disability_weight'
 PEM_RESTRICTIONS = 'cause.protein_energy_malnutrition.restrictions'
 
+NEONATAL_DISORDERS_CAUSE_SPECIFIC_MORTALITY_RATE = 'cause.neonatal_disorders.cause_specific_mortality_rate'
+NEONATAL_DISORDERS_PREVALENCE = 'cause.neonatal_disorders.prevalence'
+NEONATAL_DISORDERS_BIRTH_PREVALENCE = 'cause.neonatal_disorders.birth_prevalence'
+NEONATAL_DISORDERS_EXCESS_MORTALITY_RATE = 'cause.neonatal_disorders.excess_mortality_rate'
+NEONATAL_DISORDERS_DISABILITY_WEIGHT = 'cause.neonatal_disorders.disability_weight'
+NEONATAL_DISORDERS_RESTRICTIONS = 'cause.neonatal_disorders.restrictions'
+
 
 #########
 # Other #

@@ -116,7 +116,8 @@ def load_and_write_diarrhea_data(artifact: Artifact, location: str):
     for key in keys:
         load_and_write_data(artifact, key, location)
 
-    write_data(artifact, project_globals.DIARRHEA_RESTRICTIONS, causes.diarrheal_diseases.restrictions.to_dict())
+    write_data(artifact, project_globals.DIARRHEA_RESTRICTIONS,
+               causes.diarrheal_diseases.restrictions.to_dict())
 
 
 def load_and_write_measles_data(artifact: Artifact, location: str):
@@ -131,7 +132,8 @@ def load_and_write_measles_data(artifact: Artifact, location: str):
     for key in keys:
         load_and_write_data(artifact, key, location)
 
-    write_data(artifact, project_globals.MEASLES_RESTRICTIONS, causes.measles.restrictions.to_dict())
+    write_data(artifact, project_globals.MEASLES_RESTRICTIONS,
+               causes.measles.restrictions.to_dict())
 
 
 def load_and_write_lri_data(artifact: Artifact, location: str):
@@ -147,7 +149,8 @@ def load_and_write_lri_data(artifact: Artifact, location: str):
     for key in keys:
         load_and_write_data(artifact, key, location)
 
-    write_data(artifact, project_globals.LRI_RESTRICTIONS, causes.lower_respiratory_infections.restrictions.to_dict())
+    write_data(artifact, project_globals.LRI_RESTRICTIONS,
+               causes.lower_respiratory_infections.restrictions.to_dict())
 
 
 def load_and_write_meningitis_data(artifact: Artifact, location: str):
@@ -163,7 +166,8 @@ def load_and_write_meningitis_data(artifact: Artifact, location: str):
     for key in keys:
         load_and_write_data(artifact, key, location)
 
-    write_data(artifact, project_globals.MENINGITIS_RESTRICTIONS, causes.meningitis.restrictions.to_dict())
+    write_data(artifact, project_globals.MENINGITIS_RESTRICTIONS,
+               causes.meningitis.restrictions.to_dict())
 
 
 def load_and_write_pem_data(artifact: Artifact, location: str):
@@ -176,4 +180,22 @@ def load_and_write_pem_data(artifact: Artifact, location: str):
     for key in keys:
         load_and_write_data(artifact, key, location)
 
-    write_data(artifact, project_globals.PEM_RESTRICTIONS, causes.protein_energy_malnutrition.restrictions.to_dict())
+    write_data(artifact, project_globals.PEM_RESTRICTIONS,
+               causes.protein_energy_malnutrition.restrictions.to_dict())
+
+
+def load_and_write_neonatal_data(artifact: Artifact, location: str):
+    keys = [
+        project_globals.NEONATAL_DISORDERS_CAUSE_SPECIFIC_MORTALITY_RATE,
+        project_globals.NEONATAL_DISORDERS_PREVALENCE,
+        project_globals.NEONATAL_DISORDERS_BIRTH_PREVALENCE,
+        project_globals.NEONATAL_DISORDERS_EXCESS_MORTALITY_RATE,
+        project_globals.NEONATAL_DISORDERS_DISABILITY_WEIGHT,
+    ]
+
+    for key in keys:
+        load_and_write_data(artifact, key, location)
+
+    write_data(artifact, project_globals.NEONATAL_DISORDERS_RESTRICTIONS,
+               causes.neonatal_disorders.restrictions.to_dict())
+
