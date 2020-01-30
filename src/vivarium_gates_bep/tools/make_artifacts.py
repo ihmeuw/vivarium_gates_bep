@@ -7,6 +7,9 @@
 
 """
 from pathlib import Path
+import shutil
+import sys
+import time
 
 import click
 from loguru import logger
@@ -69,9 +72,69 @@ def build_artifacts(location: str, output_dir: str, append: bool, verbose: int):
                          f'You specified {location}.')
 
 
-def build_all_artifacts(output_dir, verbose):
-    pass
+def build_all_artifacts(output_dir: Path, verbose: int):
+    """Builds artifacts for all locations in parallel.
+
+    Parameters
+    ----------
+    output_dir
+        The directory where the artifacts will be built.
+    verbose
+        How noisy the logger should be.
+
+    """
+    from vivarium_cluster_tools.psimulate.utilities import get_drmaa
+    drmaa = get_drmaa()
+
+    jobs = {}
+    with drmaa.Session() as session:
+        for location in project_globals.LOCATIONS:
+            path = output_dir / f'{sanitize_location(location)}.hdf'
+
+            job_template = session.createJobTemplate()
+            job_template.remoteCommand = shutil.which("python")
+            job_template.args = [__file__, str(path), f'"{location}"']
+            job_template.nativeSpecification = (f'-V -b y -P {project_globals.CLUSTER_PROJECT} -q all.q '
+                                                f'-l fmem=3G -l fthread=1 -l h_rt=3:00:00 -l archive=TRUE '
+                                                f'-N {sanitize_location(location)}_artifact')
+            jobs[location] = (session.runJob(job_template), drmaa.JobState.UNDETERMINED)
+            logger.info(f'Submitted job {jobs[location][0]} to build artifact for {location}.')
+            session.deleteJobTemplate(job_template)
+
+        decodestatus = {drmaa.JobState.UNDETERMINED: 'undetermined',
+                        drmaa.JobState.QUEUED_ACTIVE: 'queued_active',
+                        drmaa.JobState.SYSTEM_ON_HOLD: 'system_hold',
+                        drmaa.JobState.USER_ON_HOLD: 'user_hold',
+                        drmaa.JobState.USER_SYSTEM_ON_HOLD: 'user_system_hold',
+                        drmaa.JobState.RUNNING: 'running',
+                        drmaa.JobState.SYSTEM_SUSPENDED: 'system_suspended',
+                        drmaa.JobState.USER_SUSPENDED: 'user_suspended',
+                        drmaa.JobState.DONE: 'finished',
+                        drmaa.JobState.FAILED: 'failed'}
+
+        if verbose:
+            logger.info('Entering monitoring loop.')
+            logger.info('-------------------------')
+            logger.info('')
+
+            while any([job[1] not in [drmaa.JobState.DONE, drmaa.JobState.FAILED] for job in jobs.values()]):
+                for location, (job_id, status) in jobs.items():
+                    jobs[location] = (job_id, session.jobStatus(job_id))
+                    logger.info(f'{location:<35}: {decodestatus[jobs[location][1]]:>15}')
+                logger.info('')
+                time.sleep(10)
+                logger.info('Checking status again')
+                logger.info('---------------------')
+                logger.info('')
+
+    logger.info('**Done**')
 
 
 def build_single_location_artifact(path, location, log_to_file=False):
     pass
+
+
+if __name__ == "__main__":
+    artifact_path = sys.argv[1]
+    artifact_location = sys.argv[2]
+    build_single_location_artifact(artifact_path, artifact_location, log_to_file=True)
