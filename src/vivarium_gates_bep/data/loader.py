@@ -57,6 +57,10 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.MENINGITIS_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.MENINGITIS_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.MENINGITIS_DISABILITY_WEIGHT: load_meningitis_disability_weight,
+
+        project_globals.PEM_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
+        project_globals.PEM_EXCESS_MORTALITY_RATE: load_standard_data,
+        project_globals.PEM_DISABILITY_WEIGHT: load_standard_data,
     }
     return mapping[lookup_key](lookup_key, location)
 
