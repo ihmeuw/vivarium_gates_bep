@@ -8,9 +8,11 @@
 from pathlib import Path
 
 from loguru import logger
+import pandas as pd
 from vivarium.framework.artifact import Artifact, EntityKey, get_location_term
 
 from vivarium_gates_bep import globals as project_globals
+from vivarium_gates_bep.data import loader
 
 
 def open_artifact(output_path: Path, location: str) -> Artifact:
@@ -40,3 +42,48 @@ def open_artifact(output_path: Path, location: str) -> Artifact:
         artifact.write(key, [location])
 
     return artifact
+
+
+def load_and_write_data(artifact: Artifact, key: EntityKey, location: str):
+    """Loads data and writes it to the artifact if not already present.
+
+    Parameters
+    ----------
+    artifact
+        The artifact to write to.
+    key
+        The entity key associated with the data to write.
+    location
+        The location associated with the data to load and the artifact to
+        write to.
+
+    """
+    if str(key) in artifact:
+        logger.debug(f'Data for {key} already in artifact.  Skipping...')
+    else:
+        logger.debug(f'Loading data for {key} for location {location}.')
+        data = loader.get_data(key, location)
+        logger.debug(f'Writing data for {key} to artifact.')
+        artifact.write(str(key), data)
+    return artifact.load(str(key))
+
+
+def write_data(artifact: Artifact, key: EntityKey, data: pd.DataFrame):
+    """Writes data to the artifact if not already present.
+
+    Parameters
+    ----------
+    artifact
+        The artifact to write to.
+    key
+        The entity key associated with the data to write.
+    data
+        The data to write.
+
+    """
+    if str(key) in artifact:
+        logger.debug(f'Data for {key} already in artifact.  Skipping...')
+    else:
+        logger.debug(f'Writing data for {key} to artifact.')
+        artifact.write(str(key), data)
+    return artifact.load(str(key))
