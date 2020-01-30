@@ -7,6 +7,11 @@ from gbd_mapping import causes, risk_factors
 
 PROJECT_NAME = 'vivarium_gates_bep'
 CLUSTER_PROJECT = 'proj_cost_effect'
+CLUSTER_QUEUE = 'all.q'
+
+MAKE_ARTIFACT_MEM = '3G'
+MAKE_ARTIFACT_CPU = '1'
+MAKE_ARTIFACT_RUNTIME = '3:00:00'
 
 LOCATIONS = [
     'India',
