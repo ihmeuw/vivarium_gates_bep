@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import os
 
 from setuptools import setup, find_packages
@@ -31,6 +30,7 @@ if __name__ == "__main__":
     extras_require = [
         'vivarium_cluster_tools==1.1.1',
         'vivarium_inputs[data]==3.1.1',
+        'gbd_mapping==2.1.0'
     ]
 
     setup(
