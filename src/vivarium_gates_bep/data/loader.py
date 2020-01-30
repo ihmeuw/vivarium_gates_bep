@@ -69,7 +69,7 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.NEONATAL_DISORDERS_PREVALENCE: load_standard_data,
         project_globals.NEONATAL_DISORDERS_BIRTH_PREVALENCE: load_standard_data,
         project_globals.NEONATAL_DISORDERS_EXCESS_MORTALITY_RATE: load_standard_data,
-        project_globals.NEONATAL_DISORDERS_DISABILITY_WEIGHT: load_neonatal_disorders_disability_weight,
+        project_globals.NEONATAL_DISORDERS_DISABILITY_WEIGHT: load_standard_data,
 
     }
     return mapping[lookup_key](lookup_key, location)
@@ -106,30 +106,3 @@ def load_meningitis_disability_weight(key: str, location: str) -> pd.DataFrame:
         sub_cause_dws.append(prevalence * disability)
     meningitis_prevalence = interface.get_measure(meningitis, 'prevalence', location)
     return sum(sub_cause_dws) / meningitis_prevalence
-
-
-def load_neonatal_disorders_disability_weight(key: str, location: str) -> pd.DataFrame:
-    key = EntityKey(key)
-    ylds = get_outputs(topic='cause',
-                       age_group_id=utility_data.get_age_group_ids(),
-                       sex_id=gbd.MALE + gbd.FEMALE,
-                       year_id=utility_data.get_estimation_years(),
-                       location_id=utility_data.get_location_id(location),
-                       gbd_round_id=gbd.GBD_ROUND_ID,
-                       measure_id=vi_globals.MEASURES['YLDs'])
-    ylds = ylds.set_index(['age_group_id', 'location_id', 'sex_id', 'year_id'])
-    ylds['sd'] = (ylds['upper'] - ylds['lower'])/6
-    yld_draws = scipy.stats.norm(ylds['val'], ylds['sd']).rvs((1000, len(ylds))).T
-    yld_draws = pd.DataFrame(yld_draws, columns=vi_globals.DRAW_COLUMNS, index=ylds.index).reset_index()
-    yld_draws = utilities.normalize(yld_draws, fill_value=0)
-    yld_draws = utilities.reshape(yld_draws)
-    yld_draws = utilities.scrub_gbd_conventions(yld_draws, location)
-    yld_draws = utilities.split_interval(yld_draws, interval_column='age', split_column_prefix='age')
-    yld_draws = utilities.split_interval(yld_draws, interval_column='year', split_column_prefix='year')
-    yld_draws = utilities.sort_hierarchical_data(yld_draws)
-
-    prevalence = interface.get_measure(causes[key.name], 'prevalence', location)
-    dw = yld_draws / prevalence
-    import pdb; pbd.set_trace()
-
-
