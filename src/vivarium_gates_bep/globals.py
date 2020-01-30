@@ -1,10 +1,12 @@
 import itertools
 from gbd_mapping import causes, risk_factors
 
-CLUSTER_PROJECT = 'proj_cost_effect'
-PROJECT_NAME = 'vivarium_gates_bep'
+####################
+# Project metadata #
+####################
 
-LBWSG_PATH = '/share/costeffectiveness/lbwsg/artifacts/'
+PROJECT_NAME = 'vivarium_gates_bep'
+CLUSTER_PROJECT = 'proj_cost_effect'
 
 LOCATIONS = [
     'India',
@@ -22,6 +24,16 @@ LOCATIONS_WITH_DATA_PROBLEMS = [
     'Tanzania',
 ]
 
+#############
+# Data Keys #
+#############
+
+METADATA_LOCATIONS = 'metadata.locations'
+
+
+#########
+# Other #
+#########
 
 def formatted_location(location):
     return location.replace(" ", "_").lower()

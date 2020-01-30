@@ -170,7 +170,8 @@ def build_single_location_artifact(path: Union[str, Path], location: str, log_to
     # Local import to avoid data dependencies
     from vivarium_gates_bep.data import builder
 
-    # TODO: call all the artifact building functions.
+    logger.info(f'Building artifact for {location} at {str(path)}.')
+    artifact = builder.open_artifact(path, location)
 
     logger.info('**DONE**')
 
