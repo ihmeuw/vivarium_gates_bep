@@ -90,7 +90,7 @@ def load_meningitis_disability_weight(key: str, location: str) -> pd.DataFrame:
     key = EntityKey(key)
     meningitis = causes[key.name]
     sub_cause_dws = []
-    for subcause in meningitis.subcauses:
+    for subcause in meningitis.sub_causes:
         prevalence = interface.get_measure(subcause, 'prevalence', location)
         disability = interface.get_measure(subcause, 'disability_weight', location)
         sub_cause_dws.append(prevalence * disability)
