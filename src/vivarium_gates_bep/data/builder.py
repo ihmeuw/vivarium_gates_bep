@@ -7,9 +7,10 @@
 """
 from pathlib import Path
 
+from gbd_mapping import causes
 from loguru import logger
 import pandas as pd
-from vivarium.framework.artifact import Artifact, EntityKey, get_location_term
+from vivarium.framework.artifact import Artifact, get_location_term
 
 from vivarium_gates_bep import globals as project_globals
 from vivarium_gates_bep.data import loader
@@ -100,3 +101,19 @@ def load_and_write_demographic_data(artifact: Artifact, location: str):
 
     for key in keys:
         load_and_write_data(artifact, key, location)
+
+
+def load_and_write_diarrhea_data(artifact: Artifact, location: str):
+    keys = [
+        project_globals.DIARRHEA_PREVALENCE,
+        project_globals.DIARRHEA_INCIDENCE_RATE,
+        project_globals.DIARRHEA_REMISSION_RATE,
+        project_globals.DIARRHEA_CAUSE_SPECIFIC_MORTALITY_RATE,
+        project_globals.DIARRHEA_EXCESS_MORTALITY_RATE,
+        project_globals.DIARRHEA_DISABILITY_WEIGHT,
+    ]
+
+    for key in keys:
+        load_and_write_data(artifact, key, location)
+
+    write_data(artifact, project_globals.DIARRHEA_RESTRICTIONS, causes.diarrheal_diseases.restrictions)

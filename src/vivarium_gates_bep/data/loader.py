@@ -28,7 +28,7 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.POPULATION_AGE_BINS: load_age_bins,
         project_globals.POPULATION_DEMOGRAPHY: load_demographic_dimensions,
         project_globals.POPULATION_TMRLE: load_theoretical_minimum_risk_life_expectancy,
-        project_globals.ALL_CAUSE_CSMR: load_cause_specific_mortality,
+        project_globals.ALL_CAUSE_CSMR: load_standard_data,
     }
     return mapping[lookup_key](lookup_key, location)
 
@@ -49,6 +49,6 @@ def load_theoretical_minimum_risk_life_expectancy(key: str, location: str) -> pd
     return interface.get_theoretical_minimum_risk_life_expectancy()
 
 
-def load_cause_specific_mortality(key: str, location: str) -> pd.DataFrame:
+def load_standard_data(key: str, location: str) -> pd.DataFrame:
     key = EntityKey(key)
     return interface.get_measure(causes[key.name], key.measure, location)

@@ -37,6 +37,14 @@ POPULATION_TMRLE = 'population.theoretical_minimum_risk_life_expectancy'
 
 ALL_CAUSE_CSMR = 'cause.all_causes.cause_specific_mortality_rate'
 
+DIARRHEA_CAUSE_SPECIFIC_MORTALITY_RATE = 'cause.diarrheal_diseases.cause_specific_mortality_rate'
+DIARRHEA_PREVALENCE = 'cause.diarrheal_diseases.prevalence'
+DIARRHEA_INCIDENCE_RATE = 'cause.diarrheal_diseases.incidence_rate'
+DIARRHEA_REMISSION_RATE = 'cause.diarrheal_diseases.remission_rate'
+DIARRHEA_EXCESS_MORTALITY_RATE = 'cause.diarrheal_diseases.excess_mortality_rate'
+DIARRHEA_DISABILITY_WEIGHT = 'cause.diarrheal_diseases.disability_weight'
+DIARRHEA_RESTRICTIONS = 'cause.diarrheal_diseases.restrictions'
+
 #########
 # Other #
 #########

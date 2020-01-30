@@ -172,6 +172,10 @@ def build_single_location_artifact(path: Union[str, Path], location: str, log_to
 
     logger.info(f'Building artifact for {location} at {str(path)}.')
     artifact = builder.open_artifact(path, location)
+    logger.info(f'Loading and writing demographic data.')
+    builder.load_and_write_demographic_data(artifact, location)
+    logger.info(f'Loading and writing diarrhea data.')
+    builder.load_and_write_diarrhea_data(artifact, location)
 
     logger.info('**DONE**')
 
