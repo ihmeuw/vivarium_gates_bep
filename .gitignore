@@ -125,3 +125,5 @@ dmypy.json
 
 # Pycharm project settings
 .idea/
+
+src/vivarium_gates_bep/model_specifications/*.yaml
