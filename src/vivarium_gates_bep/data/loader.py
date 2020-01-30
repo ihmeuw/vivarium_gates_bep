@@ -50,6 +50,17 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.LRI_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.LRI_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.LRI_DISABILITY_WEIGHT: load_standard_data,
+
+        project_globals.MENINGITIS_PREVALENCE: load_standard_data,
+        project_globals.MENINGITIS_INCIDENCE_RATE: load_standard_data,
+        project_globals.MENINGITIS_REMISSION_RATE: load_standard_data,
+        project_globals.MENINGITIS_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
+        project_globals.MENINGITIS_EXCESS_MORTALITY_RATE: load_standard_data,
+        project_globals.MENINGITIS_DISABILITY_WEIGHT: load_meningitis_disability_weight,
+
+        project_globals.PEM_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
+        project_globals.PEM_EXCESS_MORTALITY_RATE: load_standard_data,
+        project_globals.PEM_DISABILITY_WEIGHT: load_standard_data,
     }
     return mapping[lookup_key](lookup_key, location)
 
@@ -73,3 +84,14 @@ def load_theoretical_minimum_risk_life_expectancy(key: str, location: str) -> pd
 def load_standard_data(key: str, location: str) -> pd.DataFrame:
     key = EntityKey(key)
     return interface.get_measure(causes[key.name], key.measure, location)
+
+
+def load_meningitis_disability_weight(key: str, location: str) -> pd.DataFrame:
+    key = EntityKey(key)
+    meningitis = causes[key.name]
+    sub_cause_dws = []
+    for subcause in meningitis.sub_causes:
+        prevalence = interface.get_measure(subcause, 'prevalence', location)
+        disability = interface.get_measure(subcause, 'disability_weight', location)
+        sub_cause_dws.append(prevalence * disability)
+    return sum(sub_cause_dws)

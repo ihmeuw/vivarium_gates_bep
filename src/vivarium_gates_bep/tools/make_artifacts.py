@@ -187,6 +187,10 @@ def build_single_location_artifact(path: Union[str, Path], location: str, log_to
     builder.load_and_write_measles_data(artifact, location)
     logger.info(f'Loading and writing lri data.')
     builder.load_and_write_lri_data(artifact, location)
+    logger.info(f'Loading and writing meningitis data.')
+    builder.load_and_write_meningitis_data(artifact, location)
+    logger.info(f'Loading and writing pem data.')
+    builder.load_and_write_pem_data(artifact, location)
 
     logger.info('**DONE**')
 

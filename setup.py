@@ -18,6 +18,7 @@ if __name__ == "__main__":
     install_requirements = [
         'vivarium==0.9.3',
         'vivarium_public_health==0.10.4',
+        'gbd_mapping==2.1.0',
         'numpy<=1.15.4',
         'tables<=3.4.0',
         'pandas<0.25',
@@ -30,7 +31,6 @@ if __name__ == "__main__":
     extras_require = [
         'vivarium_cluster_tools==1.1.1',
         'vivarium_inputs[data]==3.1.1',
-        'gbd_mapping==2.1.0'
     ]
 
     setup(
@@ -59,6 +59,6 @@ if __name__ == "__main__":
         entry_points='''
             [console_scripts]
             make_specs=vivarium_gates_bep.tools.cli:make_specs
-            build_proj_artifact=vivarium_gates_bep.tools.cli:build_proj_artifact
+            make_artifacts=vivarium_gates_bep.tools.cli:make_artifacts
         '''
     )

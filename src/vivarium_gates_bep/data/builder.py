@@ -116,7 +116,7 @@ def load_and_write_diarrhea_data(artifact: Artifact, location: str):
     for key in keys:
         load_and_write_data(artifact, key, location)
 
-    write_data(artifact, project_globals.DIARRHEA_RESTRICTIONS, causes.diarrheal_diseases.restrictions)
+    write_data(artifact, project_globals.DIARRHEA_RESTRICTIONS, causes.diarrheal_diseases.restrictions.to_dict())
 
 
 def load_and_write_measles_data(artifact: Artifact, location: str):
@@ -131,7 +131,7 @@ def load_and_write_measles_data(artifact: Artifact, location: str):
     for key in keys:
         load_and_write_data(artifact, key, location)
 
-    write_data(artifact, project_globals.MEASLES_RESTRICTIONS, causes.measles.restrictions)
+    write_data(artifact, project_globals.MEASLES_RESTRICTIONS, causes.measles.restrictions.to_dict())
 
 
 def load_and_write_lri_data(artifact: Artifact, location: str):
@@ -147,4 +147,33 @@ def load_and_write_lri_data(artifact: Artifact, location: str):
     for key in keys:
         load_and_write_data(artifact, key, location)
 
-    write_data(artifact, project_globals.LRI_RESTRICTIONS, causes.lower_respiratory_infections.restrictions)
+    write_data(artifact, project_globals.LRI_RESTRICTIONS, causes.lower_respiratory_infections.restrictions.to_dict())
+
+
+def load_and_write_meningitis_data(artifact: Artifact, location: str):
+    keys = [
+        project_globals.MENINGITIS_PREVALENCE,
+        project_globals.MENINGITIS_INCIDENCE_RATE,
+        project_globals.MENINGITIS_REMISSION_RATE,
+        project_globals.MENINGITIS_CAUSE_SPECIFIC_MORTALITY_RATE,
+        project_globals.MENINGITIS_EXCESS_MORTALITY_RATE,
+        project_globals.MENINGITIS_DISABILITY_WEIGHT,
+    ]
+
+    for key in keys:
+        load_and_write_data(artifact, key, location)
+
+    write_data(artifact, project_globals.MENINGITIS_RESTRICTIONS, causes.meningitis.restrictions.to_dict())
+
+
+def load_and_write_pem_data(artifact: Artifact, location: str):
+    keys = [
+        project_globals.PEM_CAUSE_SPECIFIC_MORTALITY_RATE,
+        project_globals.PEM_EXCESS_MORTALITY_RATE,
+        project_globals.PEM_DISABILITY_WEIGHT,
+    ]
+
+    for key in keys:
+        load_and_write_data(artifact, key, location)
+
+    write_data(artifact, project_globals.PEM_RESTRICTIONS, causes.protein_energy_malnutrition.restrictions.to_dict())
