@@ -31,6 +31,8 @@ if __name__ == "__main__":
     extras_require = [
         'vivarium_cluster_tools==1.1.1',
         'vivarium_inputs[data]==3.1.1',
+        'db_queries',
+        'vivarium_gbd_access==2.0.4'
     ]
 
     setup(

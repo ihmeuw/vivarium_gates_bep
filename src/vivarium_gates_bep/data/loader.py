@@ -1,8 +1,11 @@
 """Loads, standardizes and validates input data for the simulation."""
+from db_queries import get_outputs
+from gbd_mapping import causes
 import pandas as pd
 from vivarium.framework.artifact import EntityKey
-from vivarium_inputs import interface
-from gbd_mapping import causes
+from vivarium_gbd_access import gbd
+from vivarium_inputs import interface, utility_data, globals as vi_globals
+
 
 from vivarium_gates_bep import globals as project_globals
 
@@ -66,7 +69,7 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.NEONATAL_DISORDERS_PREVALENCE: load_standard_data,
         project_globals.NEONATAL_DISORDERS_BIRTH_PREVALENCE: load_standard_data,
         project_globals.NEONATAL_DISORDERS_EXCESS_MORTALITY_RATE: load_standard_data,
-        project_globals.NEONATAL_DISORDERS_DISABILITY_WEIGHT: load_standard_data,
+        project_globals.NEONATAL_DISORDERS_DISABILITY_WEIGHT: load_neonatal_disorders_disability_weight,
 
     }
     return mapping[lookup_key](lookup_key, location)
@@ -102,3 +105,18 @@ def load_meningitis_disability_weight(key: str, location: str) -> pd.DataFrame:
         disability = interface.get_measure(subcause, 'disability_weight', location)
         sub_cause_dws.append(prevalence * disability)
     return sum(sub_cause_dws)
+
+
+def load_neonatal_disorders_disability_weight(key: str, location: str) -> pd.DataFrame:
+    key = EntityKey(key)
+    ylds = get_outputs(topic='cause',
+                       age_group_id=utility_data.get_age_group_ids(),
+                       sex_id=gbd.MALE + gbd.FEMALE,
+                       year_id=utility_data.get_estimation_years(),
+                       location_id=utility_data.get_location_id(location),
+                       gbd_round_id=gbd.GBD_ROUND_ID,
+                       measure_id=vi_globals.MEASURES['YLDs'])
+    import pdb; pdb.set_trace()
+    prevalence = interface.get_measure(causes[key.name], 'prevalence', location)
+
+
