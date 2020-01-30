@@ -68,6 +68,12 @@ MENINGITIS_EXCESS_MORTALITY_RATE = 'cause.meningitis.excess_mortality_rate'
 MENINGITIS_DISABILITY_WEIGHT = 'cause.meningitis.disability_weight'
 MENINGITIS_RESTRICTIONS = 'cause.meningitis.restrictions'
 
+PEM_CAUSE_SPECIFIC_MORTALITY_RATE = 'cause.protein_energy_malnutrition.cause_specific_mortality_rate'
+PEM_EXCESS_MORTALITY_RATE = 'cause.protein_energy_malnutrition.excess_mortality_rate'
+PEM_DISABILITY_WEIGHT = 'cause.protein_energy_malnutrition.disability_weight'
+PEM_RESTRICTIONS = 'cause.protein_energy_malnutrition.restrictions'
+
+
 #########
 # Other #
 #########

@@ -164,3 +164,16 @@ def load_and_write_meningitis_data(artifact: Artifact, location: str):
         load_and_write_data(artifact, key, location)
 
     write_data(artifact, project_globals.MENINGITIS_RESTRICTIONS, causes.meningitis.restrictions.to_dict())
+
+
+def load_and_write_pem_data(artifact: Artifact, location: str):
+    keys = [
+        project_globals.PEM_CAUSE_SPECIFIC_MORTALITY_RATE,
+        project_globals.PEM_EXCESS_MORTALITY_RATE,
+        project_globals.PEM_DISABILITY_WEIGHT,
+    ]
+
+    for key in keys:
+        load_and_write_data(artifact, key, location)
+
+    write_data(artifact, project_globals.PEM_RESTRICTIONS, causes.protein_energy_malnutrition.restrictions.to_dict())
