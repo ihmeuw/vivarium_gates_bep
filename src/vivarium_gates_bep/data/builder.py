@@ -131,7 +131,7 @@ def load_and_write_measles_data(artifact: Artifact, location: str):
     for key in keys:
         load_and_write_data(artifact, key, location)
 
-    write_data(artifact, project_globals.MEASLES_RESTRICTIONS, causes.diarrheal_diseases.restrictions)
+    write_data(artifact, project_globals.MEASLES_RESTRICTIONS, causes.measles.restrictions)
 
 
 def load_and_write_lri_data(artifact: Artifact, location: str):
@@ -147,4 +147,4 @@ def load_and_write_lri_data(artifact: Artifact, location: str):
     for key in keys:
         load_and_write_data(artifact, key, location)
 
-    write_data(artifact, project_globals.LRI_RESTRICTIONS, causes.diarrheal_diseases.restrictions)
+    write_data(artifact, project_globals.LRI_RESTRICTIONS, causes.lower_respiratory_infections.restrictions)
