@@ -1,11 +1,8 @@
 """Loads, standardizes and validates input data for the simulation."""
-from db_queries import get_outputs
 from gbd_mapping import causes
 import pandas as pd
-import scipy.stats
 from vivarium.framework.artifact import EntityKey
-from vivarium_gbd_access import gbd
-from vivarium_inputs import interface, utilities, utility_data, globals as vi_globals
+from vivarium_inputs import interface
 
 from vivarium_gates_bep import globals as project_globals
 
