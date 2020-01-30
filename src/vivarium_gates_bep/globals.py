@@ -30,6 +30,12 @@ LOCATIONS_WITH_DATA_PROBLEMS = [
 
 METADATA_LOCATIONS = 'metadata.locations'
 
+POPULATION_STRUCTURE = 'population.structure'
+POPULATION_AGE_BINS = 'population.age_bins'
+POPULATION_DEMOGRAPHY = 'population.demographic_dimensions'
+POPULATION_TMRLE = 'population.theoretical_minimum_risk_life_expectancy'
+
+ALL_CAUSE_CSMR = 'cause.all_causes.cause_specific_mortality_rate'
 
 #########
 # Other #
