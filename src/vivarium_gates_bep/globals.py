@@ -60,6 +60,14 @@ LRI_EXCESS_MORTALITY_RATE = 'cause.lower_respiratory_infections.excess_mortality
 LRI_DISABILITY_WEIGHT = 'cause.lower_respiratory_infections.disability_weight'
 LRI_RESTRICTIONS = 'cause.lower_respiratory_infections.restrictions'
 
+MENINGITIS_CAUSE_SPECIFIC_MORTALITY_RATE = 'cause.meningitis.cause_specific_mortality_rate'
+MENINGITIS_PREVALENCE = 'cause.meningitis.prevalence'
+MENINGITIS_INCIDENCE_RATE = 'cause.meningitis.incidence_rate'
+MENINGITIS_REMISSION_RATE = 'cause.meningitis.remission_rate'
+MENINGITIS_EXCESS_MORTALITY_RATE = 'cause.meningitis.excess_mortality_rate'
+MENINGITIS_DISABILITY_WEIGHT = 'cause.meningitis.disability_weight'
+MENINGITIS_RESTRICTIONS = 'cause.meningitis.restrictions'
+
 #########
 # Other #
 #########
