@@ -7,9 +7,10 @@
 """
 from pathlib import Path
 
+from gbd_mapping import causes
 from loguru import logger
 import pandas as pd
-from vivarium.framework.artifact import Artifact, EntityKey, get_location_term
+from vivarium.framework.artifact import Artifact, get_location_term
 
 from vivarium_gates_bep import globals as project_globals
 from vivarium_gates_bep.data import loader
@@ -37,14 +38,14 @@ def open_artifact(output_path: Path, location: str) -> Artifact:
 
     artifact = Artifact(output_path, filter_terms=[get_location_term(location)])
 
-    key = EntityKey(project_globals.METADATA_LOCATIONS)
-    if str(key) not in artifact:
+    key = project_globals.METADATA_LOCATIONS
+    if key not in artifact:
         artifact.write(key, [location])
 
     return artifact
 
 
-def load_and_write_data(artifact: Artifact, key: EntityKey, location: str):
+def load_and_write_data(artifact: Artifact, key: str, location: str):
     """Loads data and writes it to the artifact if not already present.
 
     Parameters
@@ -58,17 +59,17 @@ def load_and_write_data(artifact: Artifact, key: EntityKey, location: str):
         write to.
 
     """
-    if str(key) in artifact:
+    if key in artifact:
         logger.debug(f'Data for {key} already in artifact.  Skipping...')
     else:
         logger.debug(f'Loading data for {key} for location {location}.')
         data = loader.get_data(key, location)
         logger.debug(f'Writing data for {key} to artifact.')
-        artifact.write(str(key), data)
-    return artifact.load(str(key))
+        artifact.write(key, data)
+    return artifact.load(key)
 
 
-def write_data(artifact: Artifact, key: EntityKey, data: pd.DataFrame):
+def write_data(artifact: Artifact, key: str, data: pd.DataFrame):
     """Writes data to the artifact if not already present.
 
     Parameters
@@ -81,9 +82,69 @@ def write_data(artifact: Artifact, key: EntityKey, data: pd.DataFrame):
         The data to write.
 
     """
-    if str(key) in artifact:
+    if key in artifact:
         logger.debug(f'Data for {key} already in artifact.  Skipping...')
     else:
         logger.debug(f'Writing data for {key} to artifact.')
-        artifact.write(str(key), data)
-    return artifact.load(str(key))
+        artifact.write(key, data)
+    return artifact.load(key)
+
+
+def load_and_write_demographic_data(artifact: Artifact, location: str):
+    keys = [
+        project_globals.POPULATION_STRUCTURE,
+        project_globals.POPULATION_AGE_BINS,
+        project_globals.POPULATION_DEMOGRAPHY,
+        project_globals.POPULATION_TMRLE,  # Theoretical life expectancy
+        project_globals.ALL_CAUSE_CSMR,
+    ]
+
+    for key in keys:
+        load_and_write_data(artifact, key, location)
+
+
+def load_and_write_diarrhea_data(artifact: Artifact, location: str):
+    keys = [
+        project_globals.DIARRHEA_PREVALENCE,
+        project_globals.DIARRHEA_INCIDENCE_RATE,
+        project_globals.DIARRHEA_REMISSION_RATE,
+        project_globals.DIARRHEA_CAUSE_SPECIFIC_MORTALITY_RATE,
+        project_globals.DIARRHEA_EXCESS_MORTALITY_RATE,
+        project_globals.DIARRHEA_DISABILITY_WEIGHT,
+    ]
+
+    for key in keys:
+        load_and_write_data(artifact, key, location)
+
+    write_data(artifact, project_globals.DIARRHEA_RESTRICTIONS, causes.diarrheal_diseases.restrictions)
+
+
+def load_and_write_measles_data(artifact: Artifact, location: str):
+    keys = [
+        project_globals.MEASLES_PREVALENCE,
+        project_globals.MEASLES_INCIDENCE_RATE,
+        project_globals.MEASLES_CAUSE_SPECIFIC_MORTALITY_RATE,
+        project_globals.MEASLES_EXCESS_MORTALITY_RATE,
+        project_globals.MEASLES_DISABILITY_WEIGHT,
+    ]
+
+    for key in keys:
+        load_and_write_data(artifact, key, location)
+
+    write_data(artifact, project_globals.MEASLES_RESTRICTIONS, causes.measles.restrictions)
+
+
+def load_and_write_lri_data(artifact: Artifact, location: str):
+    keys = [
+        project_globals.LRI_PREVALENCE,
+        project_globals.LRI_INCIDENCE_RATE,
+        project_globals.LRI_REMISSION_RATE,
+        project_globals.LRI_CAUSE_SPECIFIC_MORTALITY_RATE,
+        project_globals.LRI_EXCESS_MORTALITY_RATE,
+        project_globals.LRI_DISABILITY_WEIGHT,
+    ]
+
+    for key in keys:
+        load_and_write_data(artifact, key, location)
+
+    write_data(artifact, project_globals.LRI_RESTRICTIONS, causes.lower_respiratory_infections.restrictions)
