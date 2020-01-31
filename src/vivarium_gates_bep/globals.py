@@ -81,6 +81,16 @@ NEONATAL_DISORDERS_DISABILITY_WEIGHT = 'cause.neonatal_disorders.disability_weig
 NEONATAL_DISORDERS_RESTRICTIONS = 'cause.neonatal_disorders.restrictions'
 
 
+WASTING_DISTRIBUTION = 'risk_factor.child_wasting.distribution'
+WASTING_ALT_DISTRIBUTION = 'alternative_risk_factor.child_wasting.distribution'
+WASTING_CATEGORIES = 'risk_factor.child_wasting.categories'
+WASTING_EXPOSURE_MEAN = 'alternative_risk_factor.child_wasting.exposure'
+WASTING_EXPOSURE_SD = 'alternative_risk_factor.child_wasting.exposure_standard_deviation'
+WASTING_EXPOSURE_WEIGHTS = 'alternative_risk_factor.child_wasting.exposure_distribution_weights'
+WASTING_RELATIVE_RISK = 'risk_factor.child_wasting.relative_risk'
+WASTING_PAF = 'risk_factor.child_wasting.population_attributable_fraction'
+
+
 #########
 # Other #
 #########

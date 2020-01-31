@@ -188,6 +188,9 @@ def build_single_location_artifact(path: Union[str, Path], location: str, log_to
     logger.info(f'Loading and writing neonatal disorders data.')
     builder.load_and_write_neonatal_data(artifact, location)
 
+    logger.info(f'Loading and writing child wasting data.')
+    builder.load_and_write_wasting_data(artifact, location)
+
     logger.info('**DONE**')
 
 

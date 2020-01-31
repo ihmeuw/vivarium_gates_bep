@@ -37,12 +37,14 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.DIARRHEA_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.DIARRHEA_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.DIARRHEA_DISABILITY_WEIGHT: load_standard_data,
+        project_globals.DIARRHEA_RESTRICTIONS: load_standard_data,
 
         project_globals.MEASLES_PREVALENCE: load_standard_data,
         project_globals.MEASLES_INCIDENCE_RATE: load_standard_data,
         project_globals.MEASLES_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.MEASLES_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.MEASLES_DISABILITY_WEIGHT: load_standard_data,
+        project_globals.MEASLES_RESTRICTIONS: load_standard_data,
 
         project_globals.LRI_PREVALENCE: load_standard_data,
         project_globals.LRI_INCIDENCE_RATE: load_standard_data,
@@ -50,6 +52,7 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.LRI_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.LRI_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.LRI_DISABILITY_WEIGHT: load_standard_data,
+        project_globals.LRI_RESTRICTIONS: load_standard_data,
 
         project_globals.MENINGITIS_PREVALENCE: load_standard_data,
         project_globals.MENINGITIS_INCIDENCE_RATE: load_standard_data,
@@ -57,16 +60,19 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.MENINGITIS_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.MENINGITIS_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.MENINGITIS_DISABILITY_WEIGHT: load_meningitis_disability_weight,
+        project_globals.MENINGITIS_RESTRICTIONS: load_standard_data,
 
         project_globals.PEM_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.PEM_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.PEM_DISABILITY_WEIGHT: load_standard_data,
+        project_globals.PEM_RESTRICTIONS: load_standard_data,
 
         project_globals.NEONATAL_DISORDERS_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.NEONATAL_DISORDERS_PREVALENCE: load_standard_data,
         project_globals.NEONATAL_DISORDERS_BIRTH_PREVALENCE: load_standard_data,
         project_globals.NEONATAL_DISORDERS_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.NEONATAL_DISORDERS_DISABILITY_WEIGHT: load_standard_data,
+        project_globals.NEONATAL_DISORDERS_RESTRICTIONS: load_standard_data,
 
     }
     return mapping[lookup_key](lookup_key, location)
