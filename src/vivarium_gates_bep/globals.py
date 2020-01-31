@@ -99,6 +99,12 @@ STUNTING_EXPOSURE_WEIGHTS = 'alternative_risk_factor.child_stunting.exposure_dis
 STUNTING_RELATIVE_RISK = 'risk_factor.child_stunting.relative_risk'
 STUNTING_PAF = 'risk_factor.child_stunting.population_attributable_fraction'
 
+LBWSG_DISTRIBUTION = 'risk_factor.low_birth_weight_and_short_gestation.distribution'
+LBWSG_CATEGORIES = 'risk_factor.low_birth_weight_and_short_gestation.categories'
+LBWSG_EXPOSURE = 'risk_factor.low_birth_weight_and_short_gestation.exposure'
+LBWSG_RELATIVE_RISK = 'risk_factor.low_birth_weight_and_short_gestation.relative_risk'
+LBWSG_PAF = 'risk_factor.low_birth_weight_and_short_gestation.population_attributable_fraction'
+
 
 #########
 # Other #
