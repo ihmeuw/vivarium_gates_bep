@@ -74,6 +74,15 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.NEONATAL_DISORDERS_DISABILITY_WEIGHT: load_standard_data,
         project_globals.NEONATAL_DISORDERS_RESTRICTIONS: load_standard_data,
 
+        project_globals.WASTING_DISTRIBUTION: load_standard_data,
+        project_globals.WASTING_ALT_DISTRIBUTION: load_standard_data,
+        project_globals.WASTING_CATEGORIES: load_standard_data,
+        project_globals.WASTING_EXPOSURE_MEAN: load_standard_data,
+        project_globals.WASTING_EXPOSURE_SD: load_standard_data,
+        project_globals.WASTING_EXPOSURE_WEIGHTS: load_standard_data,
+        project_globals.WASTING_RELATIVE_RISK: load_standard_data,
+        project_globals.WASTING_PAF: load_standard_data,
+
     }
     return mapping[lookup_key](lookup_key, location)
 
