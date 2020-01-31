@@ -90,6 +90,15 @@ WASTING_EXPOSURE_WEIGHTS = 'alternative_risk_factor.child_wasting.exposure_distr
 WASTING_RELATIVE_RISK = 'risk_factor.child_wasting.relative_risk'
 WASTING_PAF = 'risk_factor.child_wasting.population_attributable_fraction'
 
+STUNTING_DISTRIBUTION = 'risk_factor.child_stunting.distribution'
+STUNTING_ALT_DISTRIBUTION = 'alternative_risk_factor.child_stunting.distribution'
+STUNTING_CATEGORIES = 'risk_factor.child_stunting.categories'
+STUNTING_EXPOSURE_MEAN = 'alternative_risk_factor.child_stunting.exposure'
+STUNTING_EXPOSURE_SD = 'alternative_risk_factor.child_stunting.exposure_standard_deviation'
+STUNTING_EXPOSURE_WEIGHTS = 'alternative_risk_factor.child_stunting.exposure_distribution_weights'
+STUNTING_RELATIVE_RISK = 'risk_factor.child_stunting.relative_risk'
+STUNTING_PAF = 'risk_factor.child_stunting.population_attributable_fraction'
+
 
 #########
 # Other #

@@ -83,6 +83,15 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.WASTING_RELATIVE_RISK: load_standard_data,
         project_globals.WASTING_PAF: load_standard_data,
 
+        project_globals.STUNTING_DISTRIBUTION: load_standard_data,
+        project_globals.STUNTING_ALT_DISTRIBUTION: load_standard_data,
+        project_globals.STUNTING_CATEGORIES: load_standard_data,
+        project_globals.STUNTING_EXPOSURE_MEAN: load_standard_data,
+        project_globals.STUNTING_EXPOSURE_SD: load_standard_data,
+        project_globals.STUNTING_EXPOSURE_WEIGHTS: load_standard_data,
+        project_globals.STUNTING_RELATIVE_RISK: load_standard_data,
+        project_globals.STUNTING_PAF: load_standard_data,
+
     }
     return mapping[lookup_key](lookup_key, location)
 
