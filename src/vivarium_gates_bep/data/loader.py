@@ -1,10 +1,10 @@
 """Loads, standardizes and validates input data for the simulation."""
-from gbd_mapping import causes
+from gbd_mapping import causes, risk_factors
 import pandas as pd
 from vivarium.framework.artifact import EntityKey
-from vivarium_inputs import interface
+from vivarium_inputs import interface, utilities, utility_data, globals as vi_globals
 
-from vivarium_gates_bep import globals as project_globals
+from vivarium_gates_bep import paths, globals as project_globals
 
 
 def get_data(lookup_key: str, location: str) -> pd.DataFrame:
@@ -136,7 +136,43 @@ def load_meningitis_disability_weight(key: str, location: str) -> pd.DataFrame:
 
 
 def load_lbwsg_exposure(key: str, location: str):
-    raise NotImplementedError()
+
+    path = paths.lbwsg_data_path('exposure', location)
+    data = pd.read_hdf(path)
+    # Fixme: pulled from vivarium inputs.  Probably don't need all this.
+    allowable_measures = [vi_globals.MEASURES['Proportion'],
+                          vi_globals.MEASURES['Continuous'],
+                          vi_globals.MEASURES['Prevalence']]
+    proper_measure_id = set(data.measure_id).intersection(allowable_measures)
+    if len(proper_measure_id) != 1:
+        raise ValueError(f'Exposure data have {len(proper_measure_id)} measure id(s). Data should have '
+                         f'exactly one id out of {allowable_measures} but came back with {proper_measure_id}.')
+    else:
+        data = data[data.measure_id == proper_measure_id.pop()]
+
+    data = data.drop('modelable_entity_id', 'columns')
+    data = data[data.parameter != 'cat124']  # LBWSG data has an extra residual category added by get_draws.
+    data = utilities.filter_data_by_restrictions(data, risk_factors.low_birth_weight_and_short_gestation,
+                                                 'outer', utility_data.get_age_group_ids())
+    tmrel_cat = 'cat56'
+    exposed = data[data.parameter != tmrel_cat]
+    unexposed = data[data.parameter == tmrel_cat]
+    #  FIXME: We fill 1 as exposure of tmrel category, which is not correct.
+    data = pd.concat([utilities.normalize(exposed, fill_value=0), utilities.normalize(unexposed, fill_value=1)],
+                     ignore_index=True)
+
+    # normalize so all categories sum to 1
+    cols = list(set(data.columns).difference(vi_globals.DRAW_COLUMNS + ['parameter']))
+    sums = data.groupby(cols)[vi_globals.DRAW_COLUMNS].sum()
+    data = (data.groupby('parameter')
+            .apply(lambda df: df.set_index(cols).loc[:, vi_globals.DRAW_COLUMNS].divide(sums))
+            .reset_index())
+    data = data.filter(vi_globals.DEMOGRAPHIC_COLUMNS + vi_globals.DRAW_COLUMNS + ['parameter'])
+    data = utilities.reshape(data)
+    data = utilities.scrub_gbd_conventions(data, location)
+    data = utilities.split_interval(data, interval_column='age', split_column_prefix='age')
+    data = utilities.split_interval(data, interval_column='year', split_column_prefix='year')
+    return utilities.sort_hierarchical_data(data)
 
 
 def load_lbwsg_relative_risk(key: str, location: str):
