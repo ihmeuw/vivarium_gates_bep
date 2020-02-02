@@ -192,6 +192,8 @@ def build_single_location_artifact(path: Union[str, Path], location: str, log_to
     builder.load_and_write_wasting_data(artifact, location)
     logger.info(f'Loading and writing child stunting data.')
     builder.load_and_write_stunting_data(artifact, location)
+    logger.info(f'Loading and writing lbwsg data.')
+    builder.load_and_write_lbwsg_data(artifact, location)
 
     logger.info('**DONE**')
 

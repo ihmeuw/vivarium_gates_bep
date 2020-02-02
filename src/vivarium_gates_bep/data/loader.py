@@ -92,6 +92,12 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.STUNTING_RELATIVE_RISK: load_standard_data,
         project_globals.STUNTING_PAF: load_standard_data,
 
+        project_globals.LBWSG_DISTRIBUTION: load_standard_data,
+        project_globals.LBWSG_CATEGORIES: load_standard_data,
+        project_globals.LBWSG_EXPOSURE: load_lbwsg_exposure,
+        project_globals.LBWSG_RELATIVE_RISK: load_lbwsg_relative_risk,
+        project_globals.LBWSG_PAF: load_lbwsg_paf,
+
     }
     return mapping[lookup_key](lookup_key, location)
 
@@ -127,3 +133,15 @@ def load_meningitis_disability_weight(key: str, location: str) -> pd.DataFrame:
         sub_cause_dws.append(prevalence * disability)
     meningitis_prevalence = interface.get_measure(meningitis, 'prevalence', location)
     return sum(sub_cause_dws) / meningitis_prevalence
+
+
+def load_lbwsg_exposure(key: str, location: str):
+    raise NotImplementedError()
+
+
+def load_lbwsg_relative_risk(key: str, location: str):
+    raise NotImplementedError()
+
+
+def load_lbwsg_paf(key: str, location: str):
+    raise NotImplementedError()
