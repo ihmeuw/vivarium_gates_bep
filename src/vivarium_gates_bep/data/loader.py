@@ -141,7 +141,7 @@ def load_meningitis_disability_weight(key: str, location: str) -> pd.DataFrame:
 
 def load_lbwsg_exposure(key: str, location: str):
     path = paths.lbwsg_data_path('exposure', location)
-    data = pd.read_hdf(path)
+    data = pd.read_hdf(path)  # type: pd.DataFrame
     data['rei_id'] = risk_factors.low_birth_weight_and_short_gestation.gbd_id
     # Fixme: pulled from vivarium inputs.  Probably don't need all this.
     allowable_measures = [vi_globals.MEASURES['Proportion'],
@@ -183,14 +183,11 @@ def load_lbwsg_exposure(key: str, location: str):
 
 def load_lbwsg_relative_risk(key: str, location: str):
     path = paths.lbwsg_data_path('relative_risk', location)
-    data = pd.read_hdf(path)
+    data = pd.read_hdf(path)  # type: pd.DataFrame
     data['rei_id'] = risk_factors.low_birth_weight_and_short_gestation.gbd_id
     data = utilities.convert_affected_entity(data, 'cause_id')
-    morbidity = data.morbidity == 1
-    mortality = data.mortality == 1
-    data.loc[morbidity & mortality, 'affected_measure'] = 'incidence_rate'
-    data.loc[morbidity & ~mortality, 'affected_measure'] = 'incidence_rate'
-    data.loc[~morbidity & mortality, 'affected_measure'] = 'excess_mortality_rate'
+    # All lbwsg risk is about mortality.
+    data.loc[:, 'affected_measure'] = 'excess_mortality_rate'
     data = filter_relative_risk_to_cause_restrictions(data)
     data = data.filter(vi_globals.DEMOGRAPHIC_COLUMNS
                        + ['affected_entity', 'affected_measure', 'parameter']
@@ -243,4 +240,35 @@ def filter_relative_risk_to_cause_restrictions(data: pd.DataFrame) -> pd.DataFra
 
 
 def load_lbwsg_paf(key: str, location: str):
-    raise NotImplementedError()
+    path = paths.lbwsg_data_path('population_attributable_fraction', location)
+    data = pd.read_hdf(path)  # type: pd.DataFrame
+    data['rei_id'] = risk_factors.low_birth_weight_and_short_gestation.gbd_id
+    data = data[data.metric_id == vi_globals.METRICS['Percent']]
+    # All lbwsg risk is about mortality.
+    data = data[data.measure_id.isin([vi_globals.MEASURES['YLLs']])]
+
+    temp = []
+    causes_map = {c.gbd_id: c for c in causes}
+    # We filter paf age groups by cause level restrictions.
+    for (c_id, measure), df in data.groupby(['cause_id', 'measure_id']):
+        cause = causes_map[c_id]
+        measure = 'yll' if measure == vi_globals.MEASURES['YLLs'] else 'yld'
+        df = utilities.filter_data_by_restrictions(df, cause, measure, utility_data.get_age_group_ids())
+        temp.append(df)
+    data = pd.concat(temp, ignore_index=True)
+
+    data = utilities.convert_affected_entity(data, 'cause_id')
+    data.loc[data['measure_id'] == vi_globals.MEASURES['YLLs'], 'affected_measure'] = 'excess_mortality_rate'
+    data = (data.groupby(['affected_entity', 'affected_measure'])
+            .apply(utilities.normalize, fill_value=0)
+            .reset_index(drop=True))
+    data = data.filter(vi_globals.DEMOGRAPHIC_COLUMNS
+                       + ['affected_entity', 'affected_measure']
+                       + vi_globals.DRAW_COLUMNS)
+    data = utilities.reshape(data)
+    data = utilities.scrub_gbd_conventions(data, location)
+    validation.validate_for_simulation(data, risk_factors.low_birth_weight_and_short_gestation,
+                                       'population_attributable_fraction', location)
+    data = utilities.split_interval(data, interval_column='age', split_column_prefix='age')
+    data = utilities.split_interval(data, interval_column='year', split_column_prefix='year')
+    return utilities.sort_hierarchical_data(data)
