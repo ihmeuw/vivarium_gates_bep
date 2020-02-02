@@ -37,12 +37,14 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.DIARRHEA_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.DIARRHEA_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.DIARRHEA_DISABILITY_WEIGHT: load_standard_data,
+        project_globals.DIARRHEA_RESTRICTIONS: load_standard_data,
 
         project_globals.MEASLES_PREVALENCE: load_standard_data,
         project_globals.MEASLES_INCIDENCE_RATE: load_standard_data,
         project_globals.MEASLES_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.MEASLES_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.MEASLES_DISABILITY_WEIGHT: load_standard_data,
+        project_globals.MEASLES_RESTRICTIONS: load_standard_data,
 
         project_globals.LRI_PREVALENCE: load_standard_data,
         project_globals.LRI_INCIDENCE_RATE: load_standard_data,
@@ -50,6 +52,7 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.LRI_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.LRI_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.LRI_DISABILITY_WEIGHT: load_standard_data,
+        project_globals.LRI_RESTRICTIONS: load_standard_data,
 
         project_globals.MENINGITIS_PREVALENCE: load_standard_data,
         project_globals.MENINGITIS_INCIDENCE_RATE: load_standard_data,
@@ -57,16 +60,43 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.MENINGITIS_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.MENINGITIS_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.MENINGITIS_DISABILITY_WEIGHT: load_meningitis_disability_weight,
+        project_globals.MENINGITIS_RESTRICTIONS: load_standard_data,
 
         project_globals.PEM_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.PEM_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.PEM_DISABILITY_WEIGHT: load_standard_data,
+        project_globals.PEM_RESTRICTIONS: load_standard_data,
 
         project_globals.NEONATAL_DISORDERS_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.NEONATAL_DISORDERS_PREVALENCE: load_standard_data,
         project_globals.NEONATAL_DISORDERS_BIRTH_PREVALENCE: load_standard_data,
         project_globals.NEONATAL_DISORDERS_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.NEONATAL_DISORDERS_DISABILITY_WEIGHT: load_standard_data,
+        project_globals.NEONATAL_DISORDERS_RESTRICTIONS: load_standard_data,
+
+        project_globals.WASTING_DISTRIBUTION: load_standard_data,
+        project_globals.WASTING_ALT_DISTRIBUTION: load_standard_data,
+        project_globals.WASTING_CATEGORIES: load_standard_data,
+        project_globals.WASTING_EXPOSURE_MEAN: load_standard_data,
+        project_globals.WASTING_EXPOSURE_SD: load_standard_data,
+        project_globals.WASTING_EXPOSURE_WEIGHTS: load_standard_data,
+        project_globals.WASTING_RELATIVE_RISK: load_standard_data,
+        project_globals.WASTING_PAF: load_standard_data,
+
+        project_globals.STUNTING_DISTRIBUTION: load_standard_data,
+        project_globals.STUNTING_ALT_DISTRIBUTION: load_standard_data,
+        project_globals.STUNTING_CATEGORIES: load_standard_data,
+        project_globals.STUNTING_EXPOSURE_MEAN: load_standard_data,
+        project_globals.STUNTING_EXPOSURE_SD: load_standard_data,
+        project_globals.STUNTING_EXPOSURE_WEIGHTS: load_standard_data,
+        project_globals.STUNTING_RELATIVE_RISK: load_standard_data,
+        project_globals.STUNTING_PAF: load_standard_data,
+
+        project_globals.LBWSG_DISTRIBUTION: load_standard_data,
+        project_globals.LBWSG_CATEGORIES: load_standard_data,
+        project_globals.LBWSG_EXPOSURE: load_lbwsg_exposure,
+        project_globals.LBWSG_RELATIVE_RISK: load_lbwsg_relative_risk,
+        project_globals.LBWSG_PAF: load_lbwsg_paf,
 
     }
     return mapping[lookup_key](lookup_key, location)
@@ -103,3 +133,15 @@ def load_meningitis_disability_weight(key: str, location: str) -> pd.DataFrame:
         sub_cause_dws.append(prevalence * disability)
     meningitis_prevalence = interface.get_measure(meningitis, 'prevalence', location)
     return sum(sub_cause_dws) / meningitis_prevalence
+
+
+def load_lbwsg_exposure(key: str, location: str):
+    raise NotImplementedError()
+
+
+def load_lbwsg_relative_risk(key: str, location: str):
+    raise NotImplementedError()
+
+
+def load_lbwsg_paf(key: str, location: str):
+    raise NotImplementedError()
