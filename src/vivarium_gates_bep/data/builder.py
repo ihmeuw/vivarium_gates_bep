@@ -202,3 +202,32 @@ def load_and_write_wasting_data(artifact: Artifact, location: str):
 
     for key in keys:
         load_and_write_data(artifact, key, location)
+
+
+def load_and_write_stunting_data(artifact: Artifact, location: str):
+    keys = [
+        project_globals.STUNTING_DISTRIBUTION,
+        project_globals.STUNTING_ALT_DISTRIBUTION,
+        project_globals.STUNTING_CATEGORIES,
+        project_globals.STUNTING_EXPOSURE_MEAN,
+        project_globals.STUNTING_EXPOSURE_SD,
+        project_globals.STUNTING_EXPOSURE_WEIGHTS,
+        project_globals.STUNTING_RELATIVE_RISK,
+        project_globals.STUNTING_PAF,
+    ]
+
+    for key in keys:
+        load_and_write_data(artifact, key, location)
+
+
+def load_and_write_lbwsg_data(artifact: Artifact, location: str):
+    keys = [
+        project_globals.LBWSG_DISTRIBUTION,
+        project_globals.LBWSG_CATEGORIES,
+        project_globals.LBWSG_EXPOSURE,
+        project_globals.LBWSG_RELATIVE_RISK,
+        project_globals.LBWSG_PAF
+    ]
+
+    for key in keys:
+        load_and_write_data(artifact, key, location)
