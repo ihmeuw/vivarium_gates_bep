@@ -187,6 +187,9 @@ def load_lbwsg_relative_risk(key: str, location: str):
     data = pd.read_hdf(path)  # type: pd.DataFrame
     data['rei_id'] = risk_factors.low_birth_weight_and_short_gestation.gbd_id
     data = utilities.convert_affected_entity(data, 'cause_id')
+    # RRs for all causes are the same.
+    data = data[data.affected_entity == 'diarrheal_diseases']
+    data['affected_entity'] = 'all'
     # All lbwsg risk is about mortality.
     data.loc[:, 'affected_measure'] = 'excess_mortality_rate'
     data = filter_relative_risk_to_cause_restrictions(data)
