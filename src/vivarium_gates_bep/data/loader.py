@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from vivarium.framework.artifact import EntityKey
 from vivarium_inputs import interface, utilities, utility_data, globals as vi_globals
+from vivarium_inputs.mapping_extension import alternative_risk_factors
 import vivarium_inputs.validation.sim as validation
 
 from vivarium_gates_bep import paths, globals as project_globals
@@ -124,7 +125,13 @@ def load_theoretical_minimum_risk_life_expectancy(key: str, location: str) -> pd
 
 def load_standard_data(key: str, location: str) -> pd.DataFrame:
     key = EntityKey(key)
-    return interface.get_measure(causes[key.name], key.measure, location)
+    type_map = {
+        'cause': causes,
+        'risk_factor': risk_factors,
+        'alternative_risk_factor': alternative_risk_factors
+    }
+    entity = type_map[key.type][key.name]
+    return interface.get_measure(entity, key.measure, location)
 
 
 def load_meningitis_disability_weight(key: str, location: str) -> pd.DataFrame:
