@@ -192,7 +192,6 @@ def load_lbwsg_relative_risk(key: str, location: str):
     data['affected_entity'] = 'all'
     # All lbwsg risk is about mortality.
     data.loc[:, 'affected_measure'] = 'excess_mortality_rate'
-    data = filter_relative_risk_to_cause_restrictions(data)
     data = data.filter(vi_globals.DEMOGRAPHIC_COLUMNS
                        + ['affected_entity', 'affected_measure', 'parameter']
                        + vi_globals.DRAW_COLUMNS)
@@ -218,29 +217,6 @@ def load_lbwsg_relative_risk(key: str, location: str):
     data = utilities.split_interval(data, interval_column='age', split_column_prefix='age')
     data = utilities.split_interval(data, interval_column='year', split_column_prefix='year')
     return utilities.sort_hierarchical_data(data)
-
-
-def filter_relative_risk_to_cause_restrictions(data: pd.DataFrame) -> pd.DataFrame:
-    """ It applies age restrictions according to affected causes
-    and affected measures. If affected measure is incidence_rate,
-    it applies the yld_age_restrictions. If affected measure is
-    excess_mortality_rate, it applies the yll_age_restrictions to filter
-    the relative_risk data"""
-
-    causes_map = {c.name: c for c in causes}
-    temp = []
-    affected_entities = set(data.affected_entity)
-    affected_measures = set(data.affected_measure)
-    for cause, measure in itertools.product(affected_entities, affected_measures):
-        df = data[(data.affected_entity == cause) & (data.affected_measure == measure)]
-        cause = causes_map[cause]
-        if measure == 'excess_mortality_rate':
-            start, end = utilities.get_age_group_ids_by_restriction(cause, 'yll')
-        else:  # incidence_rate
-            start, end = utilities.get_age_group_ids_by_restriction(cause, 'yld')
-        temp.append(df[df.age_group_id.isin(range(start, end + 1))])
-    data = pd.concat(temp)
-    return data
 
 
 def load_lbwsg_paf(key: str, location: str):
