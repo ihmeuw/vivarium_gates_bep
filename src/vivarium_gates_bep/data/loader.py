@@ -42,14 +42,14 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.DIARRHEA_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.DIARRHEA_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.DIARRHEA_DISABILITY_WEIGHT: load_standard_data,
-        project_globals.DIARRHEA_RESTRICTIONS: load_standard_data,
+        project_globals.DIARRHEA_RESTRICTIONS: load_metadata,
 
         project_globals.MEASLES_PREVALENCE: load_standard_data,
         project_globals.MEASLES_INCIDENCE_RATE: load_standard_data,
         project_globals.MEASLES_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.MEASLES_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.MEASLES_DISABILITY_WEIGHT: load_standard_data,
-        project_globals.MEASLES_RESTRICTIONS: load_standard_data,
+        project_globals.MEASLES_RESTRICTIONS: load_metadata,
 
         project_globals.LRI_PREVALENCE: load_standard_data,
         project_globals.LRI_INCIDENCE_RATE: load_standard_data,
@@ -57,7 +57,7 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.LRI_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.LRI_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.LRI_DISABILITY_WEIGHT: load_standard_data,
-        project_globals.LRI_RESTRICTIONS: load_standard_data,
+        project_globals.LRI_RESTRICTIONS: load_metadata,
 
         project_globals.MENINGITIS_PREVALENCE: load_standard_data,
         project_globals.MENINGITIS_INCIDENCE_RATE: load_standard_data,
@@ -65,40 +65,40 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.MENINGITIS_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.MENINGITIS_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.MENINGITIS_DISABILITY_WEIGHT: load_meningitis_disability_weight,
-        project_globals.MENINGITIS_RESTRICTIONS: load_standard_data,
+        project_globals.MENINGITIS_RESTRICTIONS: load_metadata,
 
         project_globals.PEM_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.PEM_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.PEM_DISABILITY_WEIGHT: load_standard_data,
-        project_globals.PEM_RESTRICTIONS: load_standard_data,
+        project_globals.PEM_RESTRICTIONS: load_metadata,
 
         project_globals.NEONATAL_DISORDERS_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.NEONATAL_DISORDERS_PREVALENCE: load_standard_data,
         project_globals.NEONATAL_DISORDERS_BIRTH_PREVALENCE: load_standard_data,
         project_globals.NEONATAL_DISORDERS_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.NEONATAL_DISORDERS_DISABILITY_WEIGHT: load_standard_data,
-        project_globals.NEONATAL_DISORDERS_RESTRICTIONS: load_standard_data,
+        project_globals.NEONATAL_DISORDERS_RESTRICTIONS: load_metadata,
 
-        project_globals.WASTING_DISTRIBUTION: load_standard_data,
-        project_globals.WASTING_ALT_DISTRIBUTION: load_standard_data,
-        project_globals.WASTING_CATEGORIES: load_standard_data,
+        project_globals.WASTING_DISTRIBUTION: load_metadata,
+        project_globals.WASTING_ALT_DISTRIBUTION: load_metadata,
+        project_globals.WASTING_CATEGORIES: load_metadata,
         project_globals.WASTING_EXPOSURE_MEAN: load_standard_data,
         project_globals.WASTING_EXPOSURE_SD: load_standard_data,
         project_globals.WASTING_EXPOSURE_WEIGHTS: load_standard_data,
         project_globals.WASTING_RELATIVE_RISK: load_standard_data,
         project_globals.WASTING_PAF: load_standard_data,
 
-        project_globals.STUNTING_DISTRIBUTION: load_standard_data,
-        project_globals.STUNTING_ALT_DISTRIBUTION: load_standard_data,
-        project_globals.STUNTING_CATEGORIES: load_standard_data,
+        project_globals.STUNTING_DISTRIBUTION: load_metadata,
+        project_globals.STUNTING_ALT_DISTRIBUTION: load_metadata,
+        project_globals.STUNTING_CATEGORIES: load_metadata,
         project_globals.STUNTING_EXPOSURE_MEAN: load_standard_data,
         project_globals.STUNTING_EXPOSURE_SD: load_standard_data,
         project_globals.STUNTING_EXPOSURE_WEIGHTS: load_standard_data,
         project_globals.STUNTING_RELATIVE_RISK: load_standard_data,
         project_globals.STUNTING_PAF: load_standard_data,
 
-        project_globals.LBWSG_DISTRIBUTION: load_standard_data,
-        project_globals.LBWSG_CATEGORIES: load_standard_data,
+        project_globals.LBWSG_DISTRIBUTION: load_metadata,
+        project_globals.LBWSG_CATEGORIES: load_metadata,
         project_globals.LBWSG_EXPOSURE: load_lbwsg_exposure,
         project_globals.LBWSG_RELATIVE_RISK: load_lbwsg_relative_risk,
         project_globals.LBWSG_PAF: load_lbwsg_paf,
@@ -125,18 +125,21 @@ def load_theoretical_minimum_risk_life_expectancy(key: str, location: str) -> pd
 
 def load_standard_data(key: str, location: str) -> pd.DataFrame:
     key = EntityKey(key)
-    type_map = {
-        'cause': causes,
-        'risk_factor': risk_factors,
-        'alternative_risk_factor': alternative_risk_factors
-    }
-    entity = type_map[key.type][key.name]
+    entity = get_entity(key)
     return interface.get_measure(entity, key.measure, location)
 
 
-def load_meningitis_disability_weight(key: str, location: str) -> pd.DataFrame:
+def load_metadata(key: str, location: str):
     key = EntityKey(key)
-    meningitis = causes[key.name]
+    entity = get_entity(key)
+    metadata = entity[entity.measure]
+    if hasattr(metadata, 'to_dict'):
+        metadata = metadata.to_dict()
+    return metadata
+
+
+def load_meningitis_disability_weight(key: str, location: str) -> pd.DataFrame:
+    meningitis = get_entity(key)
     sub_cause_dws = []
     for subcause in meningitis.sub_causes:
         prevalence = interface.get_measure(subcause, 'prevalence', location)
@@ -280,3 +283,14 @@ def load_lbwsg_paf(key: str, location: str):
     data = utilities.split_interval(data, interval_column='age', split_column_prefix='age')
     data = utilities.split_interval(data, interval_column='year', split_column_prefix='year')
     return utilities.sort_hierarchical_data(data)
+
+
+def get_entity(key: str):
+    # Map of entity types to their gbd mappings.
+    type_map = {
+        'cause': causes,
+        'risk_factor': risk_factors,
+        'alternative_risk_factor': alternative_risk_factors
+    }
+    key = EntityKey(key)
+    return type_map[key.type][key.name]
