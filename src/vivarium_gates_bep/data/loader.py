@@ -150,7 +150,6 @@ def load_meningitis_disability_weight(key: str, location: str) -> pd.DataFrame:
 
 
 def load_lbwsg_exposure(key: str, location: str):
-    import pdb; pdb.set_trace()
     path = paths.lbwsg_data_path('exposure', location)
     data = pd.read_hdf(path)  # type: pd.DataFrame
     data['rei_id'] = risk_factors.low_birth_weight_and_short_gestation.gbd_id
@@ -183,6 +182,7 @@ def load_lbwsg_exposure(key: str, location: str):
 
 
 def load_lbwsg_relative_risk(key: str, location: str):
+    import pdb; pdb.set_trace()
     path = paths.lbwsg_data_path('relative_risk', location)
     data = pd.read_hdf(path)  # type: pd.DataFrame
     data['rei_id'] = risk_factors.low_birth_weight_and_short_gestation.gbd_id
