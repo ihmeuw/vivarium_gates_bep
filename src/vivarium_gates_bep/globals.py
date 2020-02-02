@@ -78,6 +78,38 @@ PEM_EXCESS_MORTALITY_RATE = 'cause.protein_energy_malnutrition.excess_mortality_
 PEM_DISABILITY_WEIGHT = 'cause.protein_energy_malnutrition.disability_weight'
 PEM_RESTRICTIONS = 'cause.protein_energy_malnutrition.restrictions'
 
+NEONATAL_DISORDERS_CAUSE_SPECIFIC_MORTALITY_RATE = 'cause.neonatal_disorders.cause_specific_mortality_rate'
+NEONATAL_DISORDERS_PREVALENCE = 'cause.neonatal_disorders.prevalence'
+NEONATAL_DISORDERS_BIRTH_PREVALENCE = 'cause.neonatal_disorders.birth_prevalence'
+NEONATAL_DISORDERS_EXCESS_MORTALITY_RATE = 'cause.neonatal_disorders.excess_mortality_rate'
+NEONATAL_DISORDERS_DISABILITY_WEIGHT = 'cause.neonatal_disorders.disability_weight'
+NEONATAL_DISORDERS_RESTRICTIONS = 'cause.neonatal_disorders.restrictions'
+
+
+WASTING_DISTRIBUTION = 'risk_factor.child_wasting.distribution'
+WASTING_ALT_DISTRIBUTION = 'alternative_risk_factor.child_wasting.distribution'
+WASTING_CATEGORIES = 'risk_factor.child_wasting.categories'
+WASTING_EXPOSURE_MEAN = 'alternative_risk_factor.child_wasting.exposure'
+WASTING_EXPOSURE_SD = 'alternative_risk_factor.child_wasting.exposure_standard_deviation'
+WASTING_EXPOSURE_WEIGHTS = 'alternative_risk_factor.child_wasting.exposure_distribution_weights'
+WASTING_RELATIVE_RISK = 'risk_factor.child_wasting.relative_risk'
+WASTING_PAF = 'risk_factor.child_wasting.population_attributable_fraction'
+
+STUNTING_DISTRIBUTION = 'risk_factor.child_stunting.distribution'
+STUNTING_ALT_DISTRIBUTION = 'alternative_risk_factor.child_stunting.distribution'
+STUNTING_CATEGORIES = 'risk_factor.child_stunting.categories'
+STUNTING_EXPOSURE_MEAN = 'alternative_risk_factor.child_stunting.exposure'
+STUNTING_EXPOSURE_SD = 'alternative_risk_factor.child_stunting.exposure_standard_deviation'
+STUNTING_EXPOSURE_WEIGHTS = 'alternative_risk_factor.child_stunting.exposure_distribution_weights'
+STUNTING_RELATIVE_RISK = 'risk_factor.child_stunting.relative_risk'
+STUNTING_PAF = 'risk_factor.child_stunting.population_attributable_fraction'
+
+LBWSG_DISTRIBUTION = 'risk_factor.low_birth_weight_and_short_gestation.distribution'
+LBWSG_CATEGORIES = 'risk_factor.low_birth_weight_and_short_gestation.categories'
+LBWSG_EXPOSURE = 'risk_factor.low_birth_weight_and_short_gestation.exposure'
+LBWSG_RELATIVE_RISK = 'risk_factor.low_birth_weight_and_short_gestation.relative_risk'
+LBWSG_PAF = 'risk_factor.low_birth_weight_and_short_gestation.population_attributable_fraction'
+
 
 #########
 # Other #
