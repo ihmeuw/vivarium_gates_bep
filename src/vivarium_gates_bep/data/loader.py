@@ -154,16 +154,6 @@ def load_lbwsg_exposure(key: str, location: str):
     path = paths.lbwsg_data_path('exposure', location)
     data = pd.read_hdf(path)  # type: pd.DataFrame
     data['rei_id'] = risk_factors.low_birth_weight_and_short_gestation.gbd_id
-    # Fixme: pulled from vivarium inputs.  Probably don't need all this.
-    allowable_measures = [vi_globals.MEASURES['Proportion'],
-                          vi_globals.MEASURES['Continuous'],
-                          vi_globals.MEASURES['Prevalence']]
-    proper_measure_id = set(data.measure_id).intersection(allowable_measures)
-    if len(proper_measure_id) != 1:
-        raise ValueError(f'Exposure data have {len(proper_measure_id)} measure id(s). Data should have '
-                         f'exactly one id out of {allowable_measures} but came back with {proper_measure_id}.')
-    else:
-        data = data[data.measure_id == proper_measure_id.pop()]
 
     data = data.drop('modelable_entity_id', 'columns')
     data = data[data.parameter != 'cat124']  # LBWSG data has an extra residual category added by get_draws.
