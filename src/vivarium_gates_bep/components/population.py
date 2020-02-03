@@ -32,7 +32,7 @@ class NewbornPopulation:
         }, index=pop_data.index)
         self.register_simulants(pop)
         sexes = self.sex_probability.index.to_list()
-        pop['age'] = 0
+        pop['age'] = 0.
         pop['sex'] = self.randomness.choice(pop_data.index, sexes, self.sex_probability[sexes].values)
         pop['alive'] = 'alive'
         pop['location'] = self.location
