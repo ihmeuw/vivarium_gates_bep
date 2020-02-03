@@ -24,7 +24,8 @@ class NewbornPopulation:
                                                  creates_columns=columns)
         self.register_simulants = builder.randomness.register_simulants
 
-        builder.event.register_listener('time_step', self.on_time_step)
+        # Need to age people after everything else since age is used for all the data.
+        builder.event.register_listener('time_step__cleanup', self.on_time_step_cleanup)
 
     def on_initialize_simulants(self, pop_data):
         pop = pd.DataFrame({
@@ -40,7 +41,7 @@ class NewbornPopulation:
         pop['exit_time'] = pd.NaT
         self.population_view.update(pop)
 
-    def on_time_step(self, event):
+    def on_time_step_cleanup(self, event):
         """Ages simulants each time step."""
         population = self.population_view.get(event.index, query="alive == 'alive'")
         population['age'] += utilities.to_years(event.step_size)
