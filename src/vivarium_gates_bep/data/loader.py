@@ -1,6 +1,4 @@
 """Loads, standardizes and validates input data for the simulation."""
-import itertools
-
 from gbd_mapping import causes, risk_factors
 import numpy as np
 import pandas as pd
