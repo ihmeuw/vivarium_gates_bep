@@ -2,12 +2,23 @@ components:
     vivarium_public_health:
         population:
             - Mortality()
-        disease.models:
+        disease:
             - SIS('diarrheal_diseases')
-            - SIR_fixed_duration('measles', '10')
+            - models.SIR_fixed_duration('measles', '10')
             - SIS('lower_respiratory_infections')
             - SIS('meningitis')
             - NeonatalSWC_without_incidence('neonatal_disorders')
+            - RiskAttributableDisease('cause.protein_energy_malnutrition', 'risk_factor.child_wasting')
+        risks:
+            - Risk('alternative_risk_factor.child_wasting')
+            - RiskEffect('risk_factor.child_wasting', 'cause.diarrheal_diseases.incidence_rate')
+            - RiskEffect('risk_factor.child_wasting', 'cause.measles.incidence_rate')
+            - RiskEffect('risk_factor.child_wasting', 'cause.lower_respiratory_infections.incidence_rate')
+
+            - Risk('alternative_risk_factor.child_stunting')
+            - RiskEffect('risk_factor.child_stunting', 'cause.diarrheal_diseases.incidence_rate')
+            - RiskEffect('risk_factor.child_stunting', 'cause.measles.incidence_rate')
+            - RiskEffect('risk_factor.child_stunting', 'cause.lower_respiratory_infections.incidence_rate')
         metrics:
             - MortalityObserver()
             - DisabilityObserver()
@@ -18,6 +29,8 @@ components:
         - DiseaseObserver('lower_respiratory_infections')
         - DiseaseObserver('meningitis')
         - NeonatalDisordersObserver()
+        - DiseaseObserver('protein_energy_malnutrition')
+        - ChildGrowthFailureObserver()
 
 configuration:
     input_data:
@@ -40,11 +53,19 @@ configuration:
             year: 2022
             month: 7
             day: 2
-        step_size: 1 # Days
+        step_size: 30 # Days
     population:
         population_size: 10_000
         age_start: 0
         age_end: 2
+    child_wasting:
+        category_thresholds: [7, 8, 9]
+    child_stunting:
+        category_thresholds: [7, 8, 9]
+    protein_energy_malnutrition:
+        threshold: ['cat1', 'cat2']
+        mortality: True
+        recoverable: True
     metrics:
         mortality:
             by_age: True
@@ -66,7 +87,15 @@ configuration:
             by_age: True
             by_sex: True
             by_year: True
+        meningitis_observer:
+            by_age: True
+            by_sex: True
+            by_year: True
         neonatal_disorders_observer:
+            by_age: True
+            by_sex: True
+            by_year: True
+        protein_energy_malnutrition_observer:
             by_age: True
             by_sex: True
             by_year: True
