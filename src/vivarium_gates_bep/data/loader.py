@@ -219,8 +219,6 @@ def load_lbwsg_relative_risk(key: str, location: str):
 
 
 def load_lbwsg_paf(key: str, location: str):
-    import pdb;
-    pdb.set_trace()
     path = paths.lbwsg_data_path('population_attributable_fraction', location)
     data = pd.read_hdf(path)  # type: pd.DataFrame
     data['rei_id'] = risk_factors.low_birth_weight_and_short_gestation.gbd_id
