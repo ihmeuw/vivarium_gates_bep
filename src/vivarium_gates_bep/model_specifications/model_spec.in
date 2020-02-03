@@ -4,12 +4,16 @@ components:
             - Mortality()
         disease.models:
             - SIS('diarrheal_diseases')
+            - SIR_fixed_duration('measles', '10')
+            - SIS('lower_respiratory_infections')
         metrics:
             - MortalityObserver()
             - DisabilityObserver()
     vivarium_gates_bep.components:
         - NewbornPopulation()
         - DiseaseObserver('diarrheal_diseases')
+        - DiseaseObserver('measles')
+        - DiseaseObserver('lower_respiratory_infections')
 
 configuration:
     input_data:
@@ -47,6 +51,14 @@ configuration:
             by_sex: True
             by_year: True
         diarrheal_diseases_observer:
+            by_age: True
+            by_sex: True
+            by_year: True
+        measles_observer:
+            by_age: True
+            by_sex: True
+            by_year: True
+        lower_respiratory_infections_observer:
             by_age: True
             by_sex: True
             by_year: True
