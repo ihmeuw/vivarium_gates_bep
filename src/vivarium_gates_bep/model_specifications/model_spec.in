@@ -1,20 +1,18 @@
 components:
-    vivarium_public_health:
-        population:
-            - BasePopulation()
-            - Mortality()
+    vivarium_gates_bep.components:
+        - NewbornPopulation()
 
 configuration:
     input_data:
         location: {{ location_proper }}
         input_draw_number: 0
-        artifact_path: /share/costeffectiveness/artifacts/vivarium_gates_bep/{{ location_sanitized }}.hdf
+        artifact_path: /home/collijk/{{ location_sanitized }}.hdf
     interpolation:
         order: 0
         extrapolate: True
     randomness:
         map_size: 1_000_000
-        key_columns: ['entrance_time', 'age']
+        key_columns: ['index']
         random_seed: 0
     time:
         start:

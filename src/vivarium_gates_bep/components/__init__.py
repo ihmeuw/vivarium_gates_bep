@@ -1,1 +1,2 @@
+from .population import NewbornPopulation
 from .observers import BEPGatesMortalityObserver, BEPGatesDisabilityObserver, BEPGatesMockObserver
