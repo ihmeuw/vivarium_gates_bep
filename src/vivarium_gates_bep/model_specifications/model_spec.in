@@ -4,6 +4,7 @@ components:
             - Mortality()
         metrics:
             - MortalityObserver()
+            - DisabilityObserver()
     vivarium_gates_bep.components:
         - NewbornPopulation()
 
