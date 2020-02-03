@@ -1,4 +1,9 @@
 components:
+    vivarium_public_health:
+        population:
+            - Mortality()
+        metrics:
+            - MortalityObserver()
     vivarium_gates_bep.components:
         - NewbornPopulation()
 
@@ -28,3 +33,8 @@ configuration:
         population_size: 10_000
         age_start: 0
         age_end: 2
+    metrics:
+        mortality:
+            by_age: True
+            by_sex: True
+            by_year: True
