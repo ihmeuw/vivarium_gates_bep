@@ -103,6 +103,27 @@ LBWSG_RELATIVE_RISK = 'risk_factor.low_birth_weight_and_short_gestation.relative
 LBWSG_PAF = 'risk_factor.low_birth_weight_and_short_gestation.population_attributable_fraction'
 
 
+###########################
+# Disease Model variables #
+###########################
+
+DIARRHEA_MODEL_NAME = 'diarrheal_diseases'
+DIARRHEA_SUSCEPTIBLE_STATE_NAME = f'susceptible_to_{DIARRHEA_MODEL_NAME}'
+DIARRHEA_WITH_CONDITION_STATE_NAME = DIARRHEA_MODEL_NAME
+DIARRHEA_MODEL_STATES = (DIARRHEA_SUSCEPTIBLE_STATE_NAME, DIARRHEA_WITH_CONDITION_STATE_NAME)
+DIARRHEA_MODEL_TRANSITIONS = [
+    f'{DIARRHEA_SUSCEPTIBLE_STATE_NAME}_TO_{DIARRHEA_WITH_CONDITION_STATE_NAME}',
+    f'{DIARRHEA_WITH_CONDITION_STATE_NAME}_TO_{DIARRHEA_SUSCEPTIBLE_STATE_NAME}',
+]
+
+
+DISEASE_MODELS = [DIARRHEA_MODEL_NAME]
+DISEASE_MODEL_MAP = {
+    DIARRHEA_MODEL_NAME: {
+        'states': DIARRHEA_MODEL_STATES,
+        'transitions': DIARRHEA_MODEL_TRANSITIONS,
+    }
+}
 #################################
 # Results columns and variables #
 #################################
@@ -121,12 +142,19 @@ TOTAL_POPULATION_COLUMN_TEMPLATE = 'total_population_{POP_STATE}'
 PERSON_TIME_COLUMN_TEMPLATE = 'person_time_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
 DEATH_COLUMN_TEMPLATE = 'death_due_to_{CAUSE_OF_DEATH}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
 YLLS_COLUMN_TEMPLATE = 'ylls_due_to_{CAUSE_OF_DEATH}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
+YLDS_COLUMN_TEMPLATE = 'ylds_due_to_{CAUSE_OF_DISABILITY}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
+STATE_PERSON_TIME_COLUMN_TEMPLATE = '{STATE}_person_time_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
+TRANSITION_COUNT_COLUMN_TEMPLATE = '{TRANSITION}_event_count_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
+
 
 COLUMN_TEMPLATES = {
     'population': TOTAL_POPULATION_COLUMN_TEMPLATE,
     'person_time': PERSON_TIME_COLUMN_TEMPLATE,
     'deaths': DEATH_COLUMN_TEMPLATE,
-    'ylls': YLLS_COLUMN_TEMPLATE
+    'ylls': YLLS_COLUMN_TEMPLATE,
+    'ylds': YLDS_COLUMN_TEMPLATE,
+    'state_person_time': STATE_PERSON_TIME_COLUMN_TEMPLATE,
+    'transition_count': TRANSITION_COUNT_COLUMN_TEMPLATE,
 }
 
 
@@ -134,7 +162,10 @@ POP_STATES = ['living', 'dead', 'tracked', 'untracked']
 YEARS = ['2020', '2021', '2022']
 SEXES = ['male', 'female']
 AGE_GROUPS = ['early_neonatal', 'late_neonatal', 'post_neonatal', '1_to_4']
-CAUSES_OF_DEATH = ['other_causes']
+CAUSES_OF_DEATH = ['other_causes', DIARRHEA_MODEL_NAME]
+CAUSES_OF_DISABILITY = [DIARRHEA_MODEL_NAME]
+STATES = [state for model in DISEASE_MODELS for state in DISEASE_MODEL_MAP[model]['states']]
+TRANSITIONS = [transition for model in DISEASE_MODELS for transition in DISEASE_MODEL_MAP[model]['transitions']]
 
 
 TEMPLATE_FIELD_MAP = {
@@ -205,7 +236,6 @@ MALNOURISHMENT_STATES = [MALNOURISHMENT_EXPOSED, MALNOURISHMENT_UNEXPOSED]
 MALNOURISHMENT_MAP = {MALNOURISHMENT_CATEGORIES[i]: state for i, state in enumerate(MALNOURISHMENT_STATES)}
 
 TREATMENT_GROUPS = ['treated', 'untreated']
-AGE_GROUPS = ['early_neonatal', 'late_neonatal', 'post_neonatal', '1_to_4']
 
 STRATIFICATION_GROUPS = list(itertools.product(MALNOURISHMENT_CATEGORIES, AGE_GROUPS, TREATMENT_GROUPS))
 
@@ -252,11 +282,6 @@ NEONATAL_JAUNDICE_STATES = [SUSCEPTIBLE_NEONATAL_JAUNDICE, ACTIVE_NEONATAL_JAUND
 NEONATAL_JAUNDICE_TRANSITIONS = [get_transition(SUSCEPTIBLE_NEONATAL_JAUNDICE, ACTIVE_NEONATAL_JAUNDICE),
                                  get_transition(ACTIVE_NEONATAL_JAUNDICE, SUSCEPTIBLE_NEONATAL_JAUNDICE)]
 
-SUSCEPTIBLE_DIARRHEA = 'susceptible_diarrhea'
-ACTIVE_DIARRHEA = 'active_diarrhea'
-DIARRHEA_STATES = [SUSCEPTIBLE_DIARRHEA, ACTIVE_DIARRHEA]
-DIARRHEA_TRANSITIONS = [get_transition(SUSCEPTIBLE_DIARRHEA, ACTIVE_DIARRHEA),
-                        get_transition(ACTIVE_DIARRHEA, SUSCEPTIBLE_DIARRHEA)]
 
 SUSCEPTIBLE_LRI = 'susceptible_lower_respiratory_infection'
 ACTIVE_LRI = 'active_lower_respiratory_infection'
@@ -284,13 +309,6 @@ MEASLES_STATES = [SUSCEPTIBLE_MEASLES, ACTIVE_MEASLES, EXPOSED_MEASLES]
 MEASLES_TRANSITIONS = [get_transition(SUSCEPTIBLE_MEASLES, ACTIVE_MEASLES),
                        get_transition(ACTIVE_MEASLES, EXPOSED_MEASLES)]
 
-STATES = (NEONATAL_SEPSIS_STATES + NEONATAL_ENCEPHALOPATHY_STATES + NEONATAL_JAUNDICE_STATES + DIARRHEA_STATES
-          + LRI_STATES + MENINGITIS_STATES + MEASLES_STATES + PROTEIN_ENERGY_MALNUTRITION_STATES)
-
-TRANSITIONS = (NEONATAL_SEPSIS_TRANSITIONS + NEONATAL_ENCEPHALOPATHY_TRANSITIONS + NEONATAL_JAUNDICE_TRANSITIONS
-               + DIARRHEA_TRANSITIONS + LRI_TRANSITIONS + MENINGITIS_TRANSITIONS + MEASLES_TRANSITIONS
-               + PROTEIN_ENERGY_MALNUTRITION_TRANSITIONS)
-
 #################################
 # Results columns and variables #
 #################################
@@ -305,21 +323,14 @@ COUNTRY_COLUMN = 'country'
 
 METRIC_COLUMN_TEMPLATE = ('{METRIC}_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
                           'treatment_group_{TREATMENT_GROUP}')
-PERSON_TIME_BY_STATE_COLUMN_TEMPLATE = ('person_time_{STATE}_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
-                                        'treatment_group_{TREATMENT_GROUP}')
 
 DALYS_COLUMN_TEMPLATE = ('dalys_due_to_{CAUSE_OF_DEATH}_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
                          'treatment_group_{TREATMENT_GROUP}')
 
 COUNT_COLUMN_TEMPLATE = ('{COUNT_EVENT}_count_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
                          'treatment_group_{TREATMENT_GROUP}')
-TRANSITION_COLUMN_TEMPLATE = ('{TRANSITION}_event_count_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
-                              'treatment_group_{TREATMENT_GROUP}')
 
 
-
-CAUSES_OF_DISABILITY = [cause for cause in CAUSE_MEASURES.keys() if cause != causes.all_causes.name]
-CAUSES_OF_DEATH = CAUSES_OF_DISABILITY + ['other_causes']
 COUNT_EVENTS = [
     LIVE_BIRTH,
     LOW_BIRTH_WEIGHT,

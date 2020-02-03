@@ -2,11 +2,14 @@ components:
     vivarium_public_health:
         population:
             - Mortality()
+        disease.models:
+            - SIS('diarrheal_diseases')
         metrics:
             - MortalityObserver()
             - DisabilityObserver()
     vivarium_gates_bep.components:
         - NewbornPopulation()
+        - DiseaseObserver('diarrheal_diseases')
 
 configuration:
     input_data:
@@ -36,6 +39,14 @@ configuration:
         age_end: 2
     metrics:
         mortality:
+            by_age: True
+            by_sex: True
+            by_year: True
+        disability:
+            by_age: True
+            by_sex: True
+            by_year: True
+        diarrheal_diseases_observer:
             by_age: True
             by_sex: True
             by_year: True
