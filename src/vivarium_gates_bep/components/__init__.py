@@ -1,2 +1,2 @@
 from .population import NewbornPopulation
-from .observers import DiseaseObserver
+from .observers import DiseaseObserver, NeonatalDisordersObserver

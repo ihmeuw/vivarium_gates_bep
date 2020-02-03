@@ -144,6 +144,15 @@ MENINGITIS_MODEL_TRANSITIONS = (
     f'{MENINGITIS_WITH_CONDITION_STATE_NAME}_TO_{MENINGITIS_SUSCEPTIBLE_STATE_NAME}',
 )
 
+NEONATAL_DISORDERS_MODEL_NAME = 'neonatal_disorders'
+NEONATAL_DISORDERS_SUSCEPTIBLE_STATE_NAME = f'susceptible_to_{NEONATAL_DISORDERS_MODEL_NAME}'
+NEONATAL_DISORDERS_WITH_CONDITION_STATE_NAME = NEONATAL_DISORDERS_MODEL_NAME
+NEONATAL_DISORDERS_MODEL_STATES = (
+    NEONATAL_DISORDERS_SUSCEPTIBLE_STATE_NAME,
+    NEONATAL_DISORDERS_WITH_CONDITION_STATE_NAME
+)
+NEONATAL_DISORDERS_MODEL_TRANSITIONS = ()
+
 DISEASE_MODELS = (DIARRHEA_MODEL_NAME, MEASLES_MODEL_NAME, LRI_MODEL_NAME, MENINGITIS_MODEL_NAME)
 DISEASE_MODEL_MAP = {
     DIARRHEA_MODEL_NAME: {
@@ -161,6 +170,10 @@ DISEASE_MODEL_MAP = {
     MENINGITIS_MODEL_NAME: {
         'states': MENINGITIS_MODEL_STATES,
         'transitions': MENINGITIS_MODEL_TRANSITIONS,
+    },
+    NEONATAL_DISORDERS_MODEL_NAME: {
+        'states': NEONATAL_DISORDERS_MODEL_STATES,
+        'transitions': NEONATAL_DISORDERS_MODEL_TRANSITIONS,
     }
 }
 
@@ -185,6 +198,7 @@ YLLS_COLUMN_TEMPLATE = 'ylls_due_to_{CAUSE_OF_DEATH}_in_{YEAR}_among_{SEX}_in_ag
 YLDS_COLUMN_TEMPLATE = 'ylds_due_to_{CAUSE_OF_DISABILITY}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
 STATE_PERSON_TIME_COLUMN_TEMPLATE = '{STATE}_person_time_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
 TRANSITION_COUNT_COLUMN_TEMPLATE = '{TRANSITION}_event_count_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
+BIRTH_PREVALENCE_COUNT_COLUMN_TEMPLATE = '{BIRTH_STATE}_prevalent_count_at_birth_among_{SEX}'
 
 
 COLUMN_TEMPLATES = {
@@ -195,17 +209,31 @@ COLUMN_TEMPLATES = {
     'ylds': YLDS_COLUMN_TEMPLATE,
     'state_person_time': STATE_PERSON_TIME_COLUMN_TEMPLATE,
     'transition_count': TRANSITION_COUNT_COLUMN_TEMPLATE,
+    'birth_prevalence': BIRTH_PREVALENCE_COUNT_COLUMN_TEMPLATE,
 }
 
 
-POP_STATES = ['living', 'dead', 'tracked', 'untracked']
-YEARS = ['2020', '2021', '2022']
-SEXES = ['male', 'female']
-AGE_GROUPS = ['early_neonatal', 'late_neonatal', 'post_neonatal', '1_to_4']
-CAUSES_OF_DEATH = ['other_causes', DIARRHEA_MODEL_NAME, MEASLES_MODEL_NAME, LRI_MODEL_NAME, MENINGITIS_MODEL_NAME]
-CAUSES_OF_DISABILITY = [DIARRHEA_MODEL_NAME, MEASLES_MODEL_NAME, LRI_MODEL_NAME, MENINGITIS_MODEL_NAME]
-STATES = [state for model in DISEASE_MODELS for state in DISEASE_MODEL_MAP[model]['states']]
-TRANSITIONS = [transition for model in DISEASE_MODELS for transition in DISEASE_MODEL_MAP[model]['transitions']]
+POP_STATES = ('living', 'dead', 'tracked', 'untracked')
+YEARS = ('2020', '2021', '2022')
+SEXES = ('male', 'female')
+AGE_GROUPS = ('early_neonatal', 'late_neonatal', 'post_neonatal', '1_to_4')
+CAUSES_OF_DEATH = (
+    'other_causes',
+    DIARRHEA_WITH_CONDITION_STATE_NAME,
+    MEASLES_WITH_CONDITION_STATE_NAME,
+    LRI_WITH_CONDITION_STATE_NAME,
+    MENINGITIS_WITH_CONDITION_STATE_NAME,
+    NEONATAL_DISORDERS_WITH_CONDITION_STATE_NAME,
+)
+CAUSES_OF_DISABILITY = (
+    DIARRHEA_WITH_CONDITION_STATE_NAME,
+    MEASLES_WITH_CONDITION_STATE_NAME,
+    LRI_WITH_CONDITION_STATE_NAME,
+    MENINGITIS_WITH_CONDITION_STATE_NAME,
+)
+STATES = (state for model in DISEASE_MODELS for state in DISEASE_MODEL_MAP[model]['states'])
+TRANSITIONS = (transition for model in DISEASE_MODELS for transition in DISEASE_MODEL_MAP[model]['transitions'])
+BIRTH_STATES = (NEONATAL_DISORDERS_WITH_CONDITION_STATE_NAME,)
 
 
 TEMPLATE_FIELD_MAP = {
@@ -214,6 +242,10 @@ TEMPLATE_FIELD_MAP = {
     'SEX': SEXES,
     'AGE_GROUP': AGE_GROUPS,
     'CAUSE_OF_DEATH': CAUSES_OF_DEATH,
+    'CAUSE_OF_DISABILITY': CAUSES_OF_DISABILITY,
+    'STATES': STATES,
+    'TRANSITIONS': TRANSITIONS,
+    'BIRTH_STATES': BIRTH_STATES,
 }
 
 
@@ -239,33 +271,6 @@ def RESULT_COLUMNS(kind='all'):
 # Other #
 #########
 
-
-DEFAULT_CAUSE_LIST = ['cause_specific_mortality_rate', 'excess_mortality_rate', 'disability_weight',
-         'incidence_rate', 'prevalence', 'remission_rate', 'restrictions']
-NEONATAL_CAUSE_LIST = ['cause_specific_mortality_rate', 'excess_mortality_rate', 'disability_weight',
-         'birth_prevalence', 'prevalence', 'restrictions']
-
-NEONATAL_CAUSES = [
-    causes.neonatal_sepsis_and_other_neonatal_infections.name,
-    causes.neonatal_encephalopathy_due_to_birth_asphyxia_and_trauma.name,
-    causes.hemolytic_disease_and_other_neonatal_jaundice.name
-]
-
-OTHER_CAUSES = [
-    causes.diarrheal_diseases.name,
-    causes.lower_respiratory_infections.name,
-    causes.meningitis.name,
-    causes.measles.name,
-    # TODO uncomment when disease weight is calculated
-    # causes.protein_energy_malnutrition.name
-]
-
-CAUSE_MEASURES = dict(
-    {causes.all_causes.name: ['cause_specific_mortality_rate'],
-     causes.measles.name: [c for c in DEFAULT_CAUSE_LIST if c != 'remission_rate']},
-    **{neonatal_cause: NEONATAL_CAUSE_LIST for neonatal_cause in NEONATAL_CAUSES},
-    **{other_cause: DEFAULT_CAUSE_LIST for other_cause in OTHER_CAUSES if other_cause != causes.measles.name}
-)
 
 # Tracked risk factors
 # TODO do we use risk_factors.child_and_maternal_malnutrition?
@@ -301,38 +306,6 @@ def get_transition(state_a, state_b):
     return f'{state_a}_to_{state_b}'
 
 
-# States and Transitions
-SUSCEPTIBLE_NEONATAL_SEPSIS = 'susceptible_neonatal_sepsis'
-ACTIVE_NEONATAL_SEPSIS = 'active_neonatal_sepsis'
-NEONATAL_SEPSIS_STATES = [SUSCEPTIBLE_NEONATAL_SEPSIS, ACTIVE_NEONATAL_SEPSIS]
-NEONATAL_SEPSIS_TRANSITIONS = [get_transition(SUSCEPTIBLE_NEONATAL_SEPSIS, ACTIVE_NEONATAL_SEPSIS),
-                               get_transition(ACTIVE_NEONATAL_SEPSIS, SUSCEPTIBLE_NEONATAL_SEPSIS)]
-
-SUSCEPTIBLE_NEONATAL_ENCEPHALOPATHY = 'susceptible_neonatal_encephalopathy'
-ACTIVE_NEONATAL_ENCEPHALOPATHY = 'active_neonatal_encephalopathy'
-NEONATAL_ENCEPHALOPATHY_STATES = [SUSCEPTIBLE_NEONATAL_ENCEPHALOPATHY, ACTIVE_NEONATAL_ENCEPHALOPATHY]
-NEONATAL_ENCEPHALOPATHY_TRANSITIONS = [
-    get_transition(SUSCEPTIBLE_NEONATAL_ENCEPHALOPATHY, ACTIVE_NEONATAL_ENCEPHALOPATHY),
-    get_transition(ACTIVE_NEONATAL_ENCEPHALOPATHY, SUSCEPTIBLE_NEONATAL_ENCEPHALOPATHY)
-]
-
-SUSCEPTIBLE_NEONATAL_JAUNDICE = 'susceptible_neonatal_jaundice'
-ACTIVE_NEONATAL_JAUNDICE = 'active_neonatal_jaundice'
-NEONATAL_JAUNDICE_STATES = [SUSCEPTIBLE_NEONATAL_JAUNDICE, ACTIVE_NEONATAL_JAUNDICE]
-NEONATAL_JAUNDICE_TRANSITIONS = [get_transition(SUSCEPTIBLE_NEONATAL_JAUNDICE, ACTIVE_NEONATAL_JAUNDICE),
-                                 get_transition(ACTIVE_NEONATAL_JAUNDICE, SUSCEPTIBLE_NEONATAL_JAUNDICE)]
-
-
-SUSCEPTIBLE_LRI = 'susceptible_lower_respiratory_infection'
-ACTIVE_LRI = 'active_lower_respiratory_infection'
-LRI_STATES = [SUSCEPTIBLE_LRI, ACTIVE_LRI]
-LRI_TRANSITIONS = [get_transition(SUSCEPTIBLE_LRI, ACTIVE_LRI), get_transition(ACTIVE_LRI, SUSCEPTIBLE_LRI)]
-
-SUSCEPTIBLE_MENINGITIS = 'susceptible_meningitis'
-ACTIVE_MENINGITIS = 'active_meningitis'
-MENINGITIS_STATES = [SUSCEPTIBLE_MENINGITIS, ACTIVE_MENINGITIS]
-MENINGITIS_TRANSITIONS = [get_transition(SUSCEPTIBLE_MENINGITIS, ACTIVE_MENINGITIS),
-                          get_transition(ACTIVE_MENINGITIS, SUSCEPTIBLE_MENINGITIS)]
 
 SUSCEPTIBLE_PROTEIN_ENERGY_MALNUTRITION = 'susceptible_protein_energy_malnutrition'
 ACTIVE_PROTEIN_ENERGY_MALNUTRITION = 'active_protein_energy_malnutrition'
@@ -342,12 +315,6 @@ PROTEIN_ENERGY_MALNUTRITION_TRANSITIONS = [
     get_transition(ACTIVE_PROTEIN_ENERGY_MALNUTRITION, SUSCEPTIBLE_PROTEIN_ENERGY_MALNUTRITION)
 ]
 
-SUSCEPTIBLE_MEASLES = 'susceptible_measles'
-ACTIVE_MEASLES = 'active_measles'
-EXPOSED_MEASLES = 'exposed_measles'
-MEASLES_STATES = [SUSCEPTIBLE_MEASLES, ACTIVE_MEASLES, EXPOSED_MEASLES]
-MEASLES_TRANSITIONS = [get_transition(SUSCEPTIBLE_MEASLES, ACTIVE_MEASLES),
-                       get_transition(ACTIVE_MEASLES, EXPOSED_MEASLES)]
 
 #################################
 # Results columns and variables #
@@ -359,17 +326,8 @@ INPUT_DRAW_COLUMN = 'input_draw'
 SCENARIO_COLUMN = 'scenario'
 COUNTRY_COLUMN = 'country'
 
-
-
 METRIC_COLUMN_TEMPLATE = ('{METRIC}_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
                           'treatment_group_{TREATMENT_GROUP}')
-
-DALYS_COLUMN_TEMPLATE = ('dalys_due_to_{CAUSE_OF_DEATH}_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
-                         'treatment_group_{TREATMENT_GROUP}')
-
-COUNT_COLUMN_TEMPLATE = ('{COUNT_EVENT}_count_among_{MALNOURISHMENT_STATE}_in_age_group_{AGE_GROUP}_'
-                         'treatment_group_{TREATMENT_GROUP}')
-
 
 COUNT_EVENTS = [
     LIVE_BIRTH,
@@ -389,8 +347,3 @@ METRICS = [PERSON_TIME, DEATH, YLLS, YLDS, DALYS] + [
     for metric in [LAZ_AT_6_MONTHS, WLZ_AT_6_MONTHS, BIRTH_WEIGHT, GESTATIONAL_AGE]
     for stat in ['mean', 'sd']
 ]
-
-
-NEONATAL_SEPSIS_IR_MEID=1594
-
-
