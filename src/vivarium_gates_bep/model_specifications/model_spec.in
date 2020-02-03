@@ -6,6 +6,7 @@ components:
             - SIS('diarrheal_diseases')
             - SIR_fixed_duration('measles', '10')
             - SIS('lower_respiratory_infections')
+            - SIS('meningitis')
         metrics:
             - MortalityObserver()
             - DisabilityObserver()
@@ -14,6 +15,7 @@ components:
         - DiseaseObserver('diarrheal_diseases')
         - DiseaseObserver('measles')
         - DiseaseObserver('lower_respiratory_infections')
+        - DiseaseObserver('meningitis')
 
 configuration:
     input_data:
