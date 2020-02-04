@@ -1,4 +1,2 @@
-input_draw_count: 10
-random_seed_count: 5
-
-branches:
+input_draw_count: 50
+random_seed_count: 10

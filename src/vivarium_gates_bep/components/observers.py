@@ -1,10 +1,25 @@
 from collections import Counter
 
 import pandas as pd
-from vivarium_public_health.metrics.utilities import (get_age_bins, get_output_template, get_group_counts,
+from vivarium_public_health.metrics import (MortalityObserver as MortalityObserver_,
+                                            DisabilityObserver as DisabilityObserver_)
+from vivarium_public_health.metrics.utilities import (get_output_template, get_group_counts,
                                                       QueryString, to_years)
 
 from vivarium_gates_bep import globals as project_globals
+
+
+class MortalityObserver(MortalityObserver_):
+
+    def setup(self, builder):
+        super().setup(builder)
+        self.age_bins = get_age_bins()
+
+
+class DisabilityObserver(DisabilityObserver_):
+    def setup(self, builder):
+        super().setup(builder)
+        self.age_bins = get_age_bins()
 
 
 class DiseaseObserver:
@@ -59,7 +74,7 @@ class DiseaseObserver:
     def setup(self, builder):
         self.config = builder.configuration['metrics'][f'{self.disease}_observer'].to_dict()
         self.clock = builder.time.clock()
-        self.age_bins = get_age_bins(builder)
+        self.age_bins = get_age_bins()
         self.counts = Counter()
         self.person_time = Counter()
 
@@ -301,3 +316,11 @@ def get_prevalent_at_birth_count(pop, config, disease, state, age_bins):
     base_filter = QueryString(f'{disease} == "{state}"')
     prevalent_count = get_group_counts(pop, base_filter, base_key, config, age_bins)
     return prevalent_count
+
+
+def get_age_bins():
+    return pd.DataFrame({
+        'age_start': [0.,       0.019178, 0.076712, 0.5, 1.],
+        'age_end':   [0.019178, 0.076712, 0.5,      1.,  4.],
+        'age_group_name': ['Early Neonatal', 'Late Neonatal', '1mo to 6mo', '6mo to 1', '1 to 4']
+    })
