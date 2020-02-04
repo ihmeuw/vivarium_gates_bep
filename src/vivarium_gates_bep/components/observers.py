@@ -188,6 +188,94 @@ class NeonatalDisordersObserver:
         return f"DiseaseObserver({self.disease})"
 
 
+class ChildGrowthFailureObserver():
+
+    @property
+    def name(self):
+        return f'risk_observer.child_growth_failure'
+
+    def setup(self, builder):
+        self.wasting = builder.value.get_value('child_wasting.exposure')
+        self.stunting = builder.value.get_value('child_stunting.exposure')
+
+        self.record_age = 0.5  # years
+        self.results = {}
+
+        self.population_view = builder.population.get_view(['age', 'sex'], query='alive == "alive"')
+
+        builder.event.register_listener('collect_metrics', self.on_collect_metrics)
+        builder.value.register_value_modifier('metrics', self.metrics)
+
+    def on_collect_metrics(self, event):
+        pop = self.population_view.get(event.index)
+        pop = pop[(self.record_age <= pop.age) & (pop.age < self.record_age + to_years(event.step_size))]
+        if not pop.empty:
+            pop = pop.drop(columns='age')
+            pop['wasting_z'] = self.wasting(pop.index, skip_post_processor=True)
+            pop['wasting_cat'] = self.wasting(pop.index)
+            pop['stunting_z'] = self.stunting(pop.index, skip_post_processor=True)
+            pop['stunting_cat'] = self.stunting(pop.index)
+            for sex in pop.sex.unique():
+                sex_pop = pop[pop.sex == sex]
+                sex = sex.lower()
+                self.results[f'wasting_z_score_mean_at_six_months_among_{sex}'] = sex_pop.wasting_z.mean()
+                self.results[f'wasting_z_score_sd_at_six_months_among_{sex}'] = sex_pop.wasting_z.std()
+                self.results[f'stunting_z_score_mean_at_six_months_among_{sex}'] = sex_pop.wasting_z.mean()
+                self.results[f'stunting_z_score_sd_at_six_months_among_{sex}'] = sex_pop.wasting_z.std()
+                for cat, value in dict(pop.wasting_cat.value_counts()).items():
+                    self.results[f'wasting_{cat}_exposed_at_six_months_among_{sex}'] = value
+                for cat, value in dict(pop.stunting_cat.value_counts()).items():
+                    self.results[f'stunting_{cat}_exposed_at_six_months_among_{sex}'] = value
+
+    def metrics(self, index, metrics):
+        metrics.update(self.results)
+        return metrics
+
+
+class LBWSGObserver:
+
+    @property
+    def name(self):
+        return f'risk_observer.low_birth_weight_and_short_gestation'
+
+    def setup(self, builder):
+        value_key = 'low_birth_weight_and_short_gestation.exposure'
+        self.lbwsg = builder.value.get_value(value_key)
+        builder.value.register_value_modifier('metrics', self.metrics)
+        self.results = {}
+        self.population_view = builder.population.get_view(['sex'])
+        builder.population.initializes_simulants(self.on_initialize_simulants,
+                                                 requires_columns=['sex'],
+                                                 requires_values=[value_key])
+
+    def on_initialize_simulants(self, pop_data):
+        pop = self.population_view.get(pop_data.index)
+        raw_exposure = self.lbwsg(pop_data.index, skip_post_processor=True)
+        exposure = self.lbwsg(pop_data.index)
+        pop = pd.concat([pop, raw_exposure, exposure], axis=1)
+        for sex in pop.sex.unique():
+            sex_pop = pop[pop.sex == sex]
+            sex = sex.lower()
+            self.results[f'birth_weight_mean_among_{sex}'] = sex_pop.birth_weight.mean()
+            self.results[f'birth_weight_sd_among_{sex}'] = sex_pop.birth_weight.std()
+            self.results[f'birth_weight_proportion_below_2500g_among_{sex}'] = (
+                    len(sex_pop[sex_pop.birth_weight < 2500]) / len(sex_pop)
+            )
+            self.results[f'gestational_age_mean_among_{sex}'] = sex_pop.gestation_time.mean()
+            self.results[f'gestational_age_sd_among_{sex}'] = sex_pop.gestation_time.std()
+            self.results[f'gestational_age_proportion_below_37w_among_{sex}'] = (
+                    len(sex_pop[sex_pop.gestation_time < 37]) / len(sex_pop)
+            )
+
+    def metrics(self, index, metrics):
+        metrics.update(self.results)
+        return metrics
+
+
+
+
+
+
 def get_state_person_time(pop, config, disease, state, current_year, step_size, age_bins):
     """Custom person time getter that handles state column name assumptions"""
     base_key = get_output_template(**config).substitute(measure=f'{state}_person_time',
