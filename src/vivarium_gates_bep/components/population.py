@@ -6,6 +6,14 @@ from vivarium_gates_bep import globals as project_globals
 
 class NewbornPopulation:
     """Component for producing and aging simulants based on demographic data."""
+    # These are not used by the component, but are used by observers.
+    configuration_defaults = {
+        'population': {
+            'age_start': 0,
+            'age_end': 0,
+            'exit_age': 4,  # FIXME: Hack for the observers
+        }
+    }
 
     @property
     def name(self):
