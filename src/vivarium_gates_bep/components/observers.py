@@ -154,7 +154,7 @@ class NeonatalDisordersObserver:
         self.disease = 'neonatal_disorders'
         self.config = builder.configuration['metrics'][f'{self.disease}_observer'].to_dict()
         self.clock = builder.time.clock()
-        self.age_bins = get_age_bins(builder)
+        self.age_bins = get_age_bins()
         self.counts = Counter()
         self.person_time = Counter()
 
