@@ -24,6 +24,13 @@ components:
             - DisabilityObserver()
     vivarium_gates_bep.components:
         - NewbornPopulation()
+
+        - LBWSGRisk()
+        - LBWSGRiskEffect('cause.diarrheal_diseases.excess_mortality_rate')
+        - LBWSGRiskEffect('cause.lower_respiratory_infections.excess_mortality_rate')
+        - LBWSGRiskEffect('cause.meningitis.excess_mortality_rate')
+        - LBWSGRiskEffect('cause.neonatal_disorders.excess_mortality_rate')
+
         - DiseaseObserver('diarrheal_diseases')
         - DiseaseObserver('measles')
         - DiseaseObserver('lower_respiratory_infections')
