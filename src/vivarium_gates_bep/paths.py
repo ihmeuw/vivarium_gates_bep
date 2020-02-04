@@ -10,4 +10,4 @@ LBWSG_DATA_ROOT = Path(f'/share/costeffectiveness/lbwsg_new/data')
 
 def lbwsg_data_path(measure: str, location: str):
     sanitized_location = utilites.sanitize_location(location)
-    return LBWSG_DATA_ROOT / measure / sanitized_location
+    return LBWSG_DATA_ROOT / measure / f'{sanitized_location}.hdf'
