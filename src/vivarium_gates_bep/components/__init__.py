@@ -1,2 +1,3 @@
 from .population import NewbornPopulation
-from .observers import BEPGatesMortalityObserver, BEPGatesDisabilityObserver, BEPGatesMockObserver
+from .observers import DiseaseObserver, NeonatalDisordersObserver, ChildGrowthFailureObserver, LBWSGObserver
+from .lbwsg import LBWSGRisk, LBWSGRiskEffect
