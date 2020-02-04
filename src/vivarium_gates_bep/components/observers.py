@@ -272,10 +272,6 @@ class LBWSGObserver:
         return metrics
 
 
-
-
-
-
 def get_state_person_time(pop, config, disease, state, current_year, step_size, age_bins):
     """Custom person time getter that handles state column name assumptions"""
     base_key = get_output_template(**config).substitute(measure=f'{state}_person_time',
@@ -305,4 +301,3 @@ def get_prevalent_at_birth_count(pop, config, disease, state, age_bins):
     base_filter = QueryString(f'{disease} == "{state}"')
     prevalent_count = get_group_counts(pop, base_filter, base_key, config, age_bins)
     return prevalent_count
-
