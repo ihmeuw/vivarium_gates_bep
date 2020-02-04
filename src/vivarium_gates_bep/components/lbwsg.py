@@ -8,6 +8,7 @@ risk data loader that expects data saved in keys by draw.
 from typing import Tuple
 
 import pandas as pd
+from vivarium import Artifact
 from vivarium_public_health.risks import data_transformations as data_transformations
 from vivarium_public_health.utilities import EntityString, TargetString
 from vivarium_public_health.risks.data_transformations import pivot_categorical
@@ -140,7 +141,12 @@ class LBWSGDistribution:
 
     @staticmethod
     def get_exposure_data(builder):
-        exposure = builder.data.load('risk_factor.low_birth_weight_and_short_gestation.exposure')
+        art = Artifact(builder.configuration.input_data.artifact_path)
+        draw = builder.configuration.input_data.input_draw_number
+        exposure = art.load('risk_factor.low_birth_weight_and_short_gestation.exposure')
+        exposure = exposure.loc[:, f'draw_{draw}'].rename(columns={f'draw_{draw}': 'value'})
+        exposure = exposure.reset_index().drop(columns='location')
+        import pdb; pdb.set_trace()
         exposure = pivot_categorical(exposure)
         exposure[MISSING_CATEGORY] = 0.0
         return exposure

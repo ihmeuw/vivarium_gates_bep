@@ -7,10 +7,9 @@
 """
 from pathlib import Path
 
-from gbd_mapping import causes
 from loguru import logger
 import pandas as pd
-from vivarium.framework.artifact import Artifact, get_location_term
+from vivarium.framework.artifact import Artifact, get_location_term, EntityKey
 
 from vivarium_gates_bep import globals as project_globals
 from vivarium_gates_bep.data import loader
@@ -88,6 +87,15 @@ def write_data(artifact: Artifact, key: str, data: pd.DataFrame):
         logger.debug(f'Writing data for {key} to artifact.')
         artifact.write(key, data)
     return artifact.load(key)
+
+
+def write_data_by_draw(artifact: Artifact, key: str, data: pd.DataFrame):
+    with pd.HDFStore(artifact.path, complevel=9, mode='a') as store:
+        key = EntityKey(key)
+        store.put(f'{key.path}/index', data.index.to_frame(index=False))
+        data = data.reset_index(drop=True)
+        for c in data.columns:
+            store.put(f'{key.path}/{c}', data[c])
 
 
 def load_and_write_demographic_data(artifact: Artifact, location: str):
@@ -224,6 +232,8 @@ def load_and_write_lbwsg_data(artifact: Artifact, location: str):
     keys = [
         project_globals.LBWSG_DISTRIBUTION,
         project_globals.LBWSG_CATEGORIES,
+    ]
+    draw_keys = [
         project_globals.LBWSG_EXPOSURE,
         project_globals.LBWSG_RELATIVE_RISK,
         project_globals.LBWSG_PAF
@@ -231,3 +241,9 @@ def load_and_write_lbwsg_data(artifact: Artifact, location: str):
 
     for key in keys:
         load_and_write_data(artifact, key, location)
+    for key in draw_keys:
+        if key in artifact:
+            logger.debug(f'Data for {key} already in artifact.  Skipping...')
+        else:
+            data = loader.get_data(key, location)
+            write_data_by_draw(artifact, key, data)

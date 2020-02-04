@@ -231,6 +231,34 @@ class ChildGrowthFailureObserver():
         return metrics
 
 
+class LBWSGObserver:
+
+    @property
+    def name(self):
+        return f'risk_observer.low_birth_weight_and_short_gestation'
+
+    def setup(self, builder):
+        value_key = 'low_birth_weight_and_short_gestation.exposure'
+        self.lbwsg = builder.value.get_value(value_key)
+        builder.value.register_value_modifier('metrics', self.metrics)
+        self.results = {}
+        self.population_view = builder.population.get_view(['sex'])
+        builder.population.initializes_simulants(self.on_initialize_simulants,
+                                                 requires_columns=['sex'],
+                                                 requires_values=[value_key])
+
+    def on_initialize_simulants(self, pop_data):
+        pop = self.population_view.get(pop_data.index)
+        raw_exposure = self.lbwsg(pop_data.index, skip_post_processor=True)
+        exposure = self.lbwsg(pop_data.index)
+        pop = pd.concat([pop, raw_exposure, exposure], axis=1)
+        import pdb; pdb.set_trace()
+
+    def metrics(self, index, metrics):
+        metrics.update(self.results)
+        return metrics
+
+
 
 
 
