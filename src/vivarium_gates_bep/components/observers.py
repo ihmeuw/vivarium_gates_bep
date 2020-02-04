@@ -217,6 +217,7 @@ class ChildGrowthFailureObserver():
             pop['stunting_cat'] = self.stunting(pop.index)
             for sex in pop.sex.unique():
                 sex_pop = pop[pop.sex == sex]
+                sex = sex.lower()
                 self.results[f'wasting_z_score_mean_at_six_months_among_{sex}'] = sex_pop.wasting_z.mean()
                 self.results[f'wasting_z_score_sd_at_six_months_among_{sex}'] = sex_pop.wasting_z.std()
                 self.results[f'stunting_z_score_mean_at_six_months_among_{sex}'] = sex_pop.wasting_z.mean()
@@ -252,7 +253,19 @@ class LBWSGObserver:
         raw_exposure = self.lbwsg(pop_data.index, skip_post_processor=True)
         exposure = self.lbwsg(pop_data.index)
         pop = pd.concat([pop, raw_exposure, exposure], axis=1)
-        import pdb; pdb.set_trace()
+        for sex in pop.sex.unique():
+            sex_pop = pop[pop.sex == sex]
+            sex = sex.lower()
+            self.results[f'birth_weight_mean_among_{sex}'] = sex_pop.birth_weight.mean()
+            self.results[f'birth_weight_sd_among_{sex}'] = sex_pop.birth_weight.std()
+            self.results[f'birth_weight_proportion_below_2500g_among_{sex}'] = (
+                    len(sex_pop[sex_pop.birth_weight < 2500]) / len(sex_pop)
+            )
+            self.results[f'gestational_age_mean_among_{sex}'] = sex_pop.gestation_time.mean()
+            self.results[f'gestational_age_sd_among_{sex}'] = sex_pop.gestation_time.std()
+            self.results[f'gestational_age_proportion_below_37w_among_{sex}'] = (
+                    len(sex_pop[sex_pop.gestation_time < 37]) / len(sex_pop)
+            )
 
     def metrics(self, index, metrics):
         metrics.update(self.results)

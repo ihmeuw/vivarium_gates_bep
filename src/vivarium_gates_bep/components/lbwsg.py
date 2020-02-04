@@ -8,8 +8,6 @@ risk data loader that expects data saved in keys by draw.
 from typing import Tuple
 
 import pandas as pd
-from vivarium import Artifact
-from vivarium_public_health.risks import data_transformations as data_transformations
 from vivarium_public_health.utilities import EntityString, TargetString
 from vivarium_public_health.risks.data_transformations import pivot_categorical
 
@@ -26,9 +24,11 @@ class LBWSGRisk:
         self.risk = EntityString('risk_factor.low_birth_weight_and_short_gestation')
         self.exposure_distribution = LBWSGDistribution(builder)
 
-        columns = ['raw_birth_weight', 'raw_gestation_time']
+        columns = ['birth_weight', 'gestation_time']
         self.population_view = builder.population.get_view(columns)
-        builder.population.initializes_simulants(self.on_initialize_simulants, creates_columns=columns)
+        builder.population.initializes_simulants(self.on_initialize_simulants,
+                                                 creates_columns=columns,
+                                                 requires_columns=['age', 'sex'])
 
         self._raw_exposure = builder.value.register_value_producer(
             f'{self.risk.name}.raw_exposure',
@@ -45,8 +45,8 @@ class LBWSGRisk:
     def on_initialize_simulants(self, pop_data):
         exposure = self.exposure_distribution.get_birth_weight_and_gestational_age(pop_data.index)
         self.population_view.update(pd.DataFrame({
-            'raw_birth_weight': exposure['birth_weight'],
-            'raw_gestation_time': exposure['gestation_time']
+            'birth_weight': exposure['birth_weight'],
+            'gestation_time': exposure['gestation_time']
         }, index=pop_data.index))
 
 
@@ -71,7 +71,6 @@ class LBWSGDistribution:
         category_index = (exposure_sum.T < category_draw).T.sum('columns')
         categorical_exposure = pd.Series(self.categories_by_interval.values[category_index],
                                          index=index, name='cat')
-
         return self._convert_to_continuous(categorical_exposure)
 
     def convert_to_categorical(self, exposure, _):
@@ -141,12 +140,7 @@ class LBWSGDistribution:
 
     @staticmethod
     def get_exposure_data(builder):
-        art = Artifact(builder.configuration.input_data.artifact_path)
-        draw = builder.configuration.input_data.input_draw_number
-        exposure = art.load('risk_factor.low_birth_weight_and_short_gestation.exposure')
-        exposure = exposure.loc[:, f'draw_{draw}'].rename(columns={f'draw_{draw}': 'value'})
-        exposure = exposure.reset_index().drop(columns='location')
-        import pdb; pdb.set_trace()
+        exposure = read_data_by_draw(builder, 'risk_factor.low_birth_weight_and_short_gestation.exposure')
         exposure = pivot_categorical(exposure)
         exposure[MISSING_CATEGORY] = 0.0
         return exposure
@@ -211,20 +205,21 @@ class LBWSGRiskEffect:
                                                                            key_columns=['sex'],
                                                                            parameter_columns=['age', 'year'])
 
-        self.exposure_effect = data_transformations.get_exposure_effect(builder, self.risk)
+        self.exposure_effect = self.get_exposure_effect(builder)
 
         builder.value.register_value_modifier(f'{self.target.name}.{self.target.measure}',
                                               modifier=self.adjust_target)
-        builder.value.register_value_modifier(f'{self.target.name}.{self.target.measure}.paf',
-                                              modifier=self.population_attributable_fraction)
+        builder.value.register_value_modifier(
+            f'{self.target.name}.{self.target.measure}.population_attributable_fraction',
+            modifier=self.population_attributable_fraction)
 
     def adjust_target(self, index, target):
         return self.exposure_effect(target, self.relative_risk(index))
 
     def get_relative_risk_data(self, builder):
-        relative_risk_data = builder.data.load(f'{self.risk.name}.relative_risk')
+        relative_risk_data = read_data_by_draw(builder, f'{self.risk}.relative_risk')
         correct_target = ((relative_risk_data['affected_entity'] == 'all')
-                          & (relative_risk_data['affected_measure'] == 'excess_mortality'))
+                          & (relative_risk_data['affected_measure'] == 'excess_mortality_rate'))
         relative_risk_data = (relative_risk_data[correct_target]
                               .drop(['affected_entity', 'affected_measure'], 'columns'))
         relative_risk_data = pivot_categorical(relative_risk_data)
@@ -232,9 +227,31 @@ class LBWSGRiskEffect:
         return relative_risk_data
 
     def get_population_attributable_fraction_data(self, builder):
-        paf_data = builder.data.load(f'{self.risk.name}.population_attributable_fraction')
+        paf_data = read_data_by_draw(builder, f'{self.risk}.population_attributable_fraction')
         correct_target = ((paf_data['affected_entity'] == self.target.name)
                           & (paf_data['affected_measure'] == self.target.measure))
         paf_data = (paf_data[correct_target]
                     .drop(['affected_entity', 'affected_measure'], 'columns'))
         return paf_data
+
+    def get_exposure_effect(self, builder):
+        risk_exposure = builder.value.get_value(f'{self.risk.name}.exposure')
+
+        def exposure_effect(rates, rr):
+            exposure = risk_exposure(rr.index)
+            return rates * (rr.lookup(exposure.index, exposure))
+
+        return exposure_effect
+
+
+def read_data_by_draw(builder, key):
+    path = builder.configuration.input_data.artifact_path
+    draw = builder.configuration.input_data.input_draw_number
+    key = key.replace(".", "/")
+    with pd.HDFStore(path, mode='r') as store:
+        index = store.get(f'{key}/index')
+        draw = store.get(f'{key}/draw_{draw}')
+    draw = draw.rename("value")
+    data = pd.concat([index, draw], axis=1)
+    data = data.drop(columns='location')
+    return data
