@@ -21,6 +21,84 @@ LOCATIONS = [
 ]
 
 
+###################
+# Model Constants #
+###################
+# This is a collection of constants used in data generation or as
+# invariant model parameters.
+
+def twenty_percent_of_mean_variance(mean):
+    ninety_five_percent_spread = .2 * mean
+    std_dev = ninety_five_percent_spread / (2 * 1.96)
+    return std_dev ** 2
+
+
+def confidence_interval_variance(upper, lower):
+    ninety_five_percent_spread = (upper - lower) / 2
+    std_dev = ninety_five_percent_spread / (2 * 1.96)
+    return std_dev ** 2
+
+
+MALNOURISHED_MOTHERS_PROPORTION_MEAN = {
+    'India': .168,
+    'Mali': .103,
+    'Pakistan': .107,
+    'Tanzania': .095
+}
+MALNOURISHED_MOTHERS_PROPORTION_VARIANCE = {location: twenty_percent_of_mean_variance(mean)
+                                            for location, mean in MALNOURISHED_MOTHERS_PROPORTION_MEAN.items()}
+
+
+IFA_COVERAGE_AMONG_ANC_MEAN = {
+    'India': .387,
+    'Mali': .280,
+    'Pakistan': .294,
+    'Tanzania': .214
+}
+IFA_COVERAGE_AMONG_ANC_VARIANCE = {location: twenty_percent_of_mean_variance(mean)
+                                   for location, mean in IFA_COVERAGE_AMONG_ANC_MEAN.items()}
+
+IFA_BIRTH_WEIGHT_SHIFT_SIZE_MEAN = 57.73
+IFA_BIRTH_WEIGHT_SHIFT_SIZE_LOWER = 7.66
+IFA_BIRTH_WEIGHT_SHIFT_SIZE_UPPER = 107.79
+IFA_BIRTH_WEIGHT_SHIFT_SIZE_LOWER_BOUND = 0
+IFA_BIRTH_WEIGHT_SHIFT_SIZE_UPPER_BOUND = 120
+IFA_BIRTH_WEIGHT_SHIFT_SIZE_VARIANCE = confidence_interval_variance(IFA_BIRTH_WEIGHT_SHIFT_SIZE_UPPER,
+                                                                    IFA_BIRTH_WEIGHT_SHIFT_SIZE_LOWER)
+
+MMN_BIRTH_WEIGHT_SHIFT_SIZE_MEAN = 22.4
+MMN_BIRTH_WEIGHT_SHIFT_SIZE_LOWER = 8.3
+MMN_BIRTH_WEIGHT_SHIFT_SIZE_UPPER = 36.4
+MMN_BIRTH_WEIGHT_SHIFT_SIZE_LOWER_BOUND = 0
+MMN_BIRTH_WEIGHT_SHIFT_SIZE_UPPER_BOUND = 45
+MMN_BIRTH_WEIGHT_SHIFT_SIZE_VARIANCE = confidence_interval_variance(MMN_BIRTH_WEIGHT_SHIFT_SIZE_UPPER,
+                                                                    MMN_BIRTH_WEIGHT_SHIFT_SIZE_LOWER)
+
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_MEAN = 75
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_LOWER = 65
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_UPPER = 85
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_LOWER_BOUND = 50
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_UPPER_BOUND = 100
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_VARIANCE = confidence_interval_variance(BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_UPPER,
+                                                                           BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_LOWER)
+
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_MEAN = 100
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_LOWER = 90
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_UPPER = 110
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_LOWER_BOUND = 75
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_UPPER_BOUND = 125
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_VARIANCE = confidence_interval_variance(BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_UPPER,
+                                                                                 BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_LOWER)
+
+BEP_CGF_SHIFT_SIZE_MEAN = 0.3
+BEP_CGF_SHIFT_SIZE_LOWER = 0.2
+BEP_CGF_SHIFT_SIZE_UPPER = 0.4
+BEP_CGF_SHIFT_SIZE_LOWER_BOUND = 0.
+BEP_CGF_SHIFT_SIZE_UPPER_BOUND = 1.
+BEP_CGF_SHIFT_SIZE_VARIANCE = confidence_interval_variance(BEP_CGF_SHIFT_SIZE_UPPER,
+                                                           BEP_CGF_SHIFT_SIZE_LOWER)
+
+
 #############
 # Data Keys #
 #############
@@ -33,6 +111,9 @@ POPULATION_DEMOGRAPHY = 'population.demographic_dimensions'
 POPULATION_TMRLE = 'population.theoretical_minimum_risk_life_expectancy'
 
 ALL_CAUSE_CSMR = 'cause.all_causes.cause_specific_mortality_rate'
+
+COVARIATE_ANC1_COVERAGE = 'covariate.antenatal_care_1_visit_coverage_proportion.estimate'
+COVARIATE_LIVE_BIRTHS_BY_SEX = 'covariate.live_births_by_sex.estimate'
 
 DIARRHEA_CAUSE_SPECIFIC_MORTALITY_RATE = 'cause.diarrheal_diseases.cause_specific_mortality_rate'
 DIARRHEA_PREVALENCE = 'cause.diarrheal_diseases.prevalence'
@@ -229,7 +310,8 @@ COLUMN_TEMPLATES = {
     'birth_prevalence': BIRTH_PREVALENCE_COUNT_COLUMN_TEMPLATE,
     'z_scores': Z_SCORE_COLUMNS,
     'category_counts': CATEGORY_COUNT_COLUMNS,
-    'birth_weight': BIRTH_WEIGHT_COLUMNS
+    'birth_weight': BIRTH_WEIGHT_COLUMNS,
+    'gestational_age': GESTATIONAL_AGE_COLUMNS,
 }
 
 

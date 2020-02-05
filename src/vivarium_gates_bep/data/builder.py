@@ -105,6 +105,8 @@ def load_and_write_demographic_data(artifact: Artifact, location: str):
         project_globals.POPULATION_DEMOGRAPHY,
         project_globals.POPULATION_TMRLE,  # Theoretical life expectancy
         project_globals.ALL_CAUSE_CSMR,
+        project_globals.COVARIATE_LIVE_BIRTHS_BY_SEX,
+        project_globals.COVARIATE_ANC1_COVERAGE,
     ]
 
     for key in keys:
