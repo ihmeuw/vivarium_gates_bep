@@ -87,6 +87,9 @@ class MaternalMalnutritionRiskEffect:
         return exposure
 
 
+# TODO: A bunch of code here should be shared with the lbwsg component,
+# but just trying to make things work for now.  Cleanup later.
+
 def load_exposure(location, draw):
     key = f'maternal_malnutrition_exposure_draw_{draw}'
     seed = get_hash(key)
