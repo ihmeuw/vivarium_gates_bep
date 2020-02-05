@@ -313,28 +313,31 @@ DISEASE_MODEL_MAP = {
 # Results columns and variables #
 #################################
 
+# Standard columns from core components.
 TOTAL_POPULATION_COLUMN = 'total_population'
 TOTAL_YLDS_COLUMN = 'years_lived_with_disability'
 TOTAL_YLLS_COLUMN = 'years_of_life_lost'
 
-STANDARD_COLUMNS = {
-    'total_population': TOTAL_POPULATION_COLUMN,
-    'total_ylls': TOTAL_YLLS_COLUMN,
-    'total_ylds': TOTAL_YLDS_COLUMN,
-}
+# Data columns for randomly sampled data
+MALNOURISHED_MOTHERS_PROPORTION_COLUMN = 'maternal_malnourishment_proportion'
+
+
+SINGLE_COLUMNS = (TOTAL_POPULATION_COLUMN, TOTAL_YLLS_COLUMN, TOTAL_YLDS_COLUMN,
+                  MALNOURISHED_MOTHERS_PROPORTION_COLUMN)
+
 
 TOTAL_POPULATION_COLUMN_TEMPLATE = 'total_population_{POP_STATE}'
-PERSON_TIME_COLUMN_TEMPLATE = 'person_time_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
-DEATH_COLUMN_TEMPLATE = 'death_due_to_{CAUSE_OF_DEATH}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
-YLLS_COLUMN_TEMPLATE = 'ylls_due_to_{CAUSE_OF_DEATH}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
-YLDS_COLUMN_TEMPLATE = 'ylds_due_to_{CAUSE_OF_DISABILITY}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
-STATE_PERSON_TIME_COLUMN_TEMPLATE = '{STATE}_person_time_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
-TRANSITION_COUNT_COLUMN_TEMPLATE = '{TRANSITION}_event_count_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
-BIRTH_PREVALENCE_COUNT_COLUMN_TEMPLATE = '{BIRTH_STATE}_prevalent_count_at_birth_among_{SEX}'
-Z_SCORE_COLUMNS = '{CGF_RISK}_z_score_{STATS_MEASURE}_at_six_months_among_{SEX}'
-CATEGORY_COUNT_COLUMNS = '{CGF_RISK}_{RISK_CATEGORY}_exposed_at_six_months_among_{SEX}'
-BIRTH_WEIGHT_COLUMNS = 'birth_weight_{BIRTH_WEIGHT_MEASURE}_among_{SEX}'
-GESTATIONAL_AGE_COLUMNS = 'gestational_age_{GESTATIONAL_AGE_MEASURE}_among_{SEX}'
+PERSON_TIME_COLUMN_TEMPLATE = 'person_time_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}'
+DEATH_COLUMN_TEMPLATE = 'death_due_to_{CAUSE_OF_DEATH}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}'
+YLLS_COLUMN_TEMPLATE = 'ylls_due_to_{CAUSE_OF_DEATH}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}'
+YLDS_COLUMN_TEMPLATE = 'ylds_due_to_{CAUSE_OF_DISABILITY}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}'
+STATE_PERSON_TIME_COLUMN_TEMPLATE = '{STATE}_person_time_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}'
+TRANSITION_COUNT_COLUMN_TEMPLATE = '{TRANSITION}_event_count_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}'
+BIRTH_PREVALENCE_COUNT_COLUMN_TEMPLATE = '{BIRTH_STATE}_prevalent_count_at_birth_among_{SEX}_mother_{MALNOURISHMENT_CATEGORY}'
+Z_SCORE_COLUMNS = '{CGF_RISK}_z_score_{STATS_MEASURE}_at_six_months_among_{SEX}_mother_{MALNOURISHMENT_CATEGORY}'
+CATEGORY_COUNT_COLUMNS = '{CGF_RISK}_{RISK_CATEGORY}_exposed_at_six_months_among_{SEX}_mother_{MALNOURISHMENT_CATEGORY}'
+BIRTH_WEIGHT_COLUMNS = 'birth_weight_{BIRTH_WEIGHT_MEASURE}_among_{SEX}_mother_{MALNOURISHMENT_CATEGORY}'
+GESTATIONAL_AGE_COLUMNS = 'gestational_age_{GESTATIONAL_AGE_MEASURE}_among_{SEX}_mother_{MALNOURISHMENT_CATEGORY}'
 
 
 COLUMN_TEMPLATES = {
@@ -381,6 +384,7 @@ STATS_MEASURES = ('mean', 'sd')
 RISK_CATEGORIES = ('cat1', 'cat2', 'cat3', 'cat4')
 BIRTH_WEIGHT_MEASURES = STATS_MEASURES + ('proportion_below_2500g',)
 GESTATIONAL_AGE_MEASURES = STATS_MEASURES + ('proportion_below_37w',)
+MALNOURISHMENT_CATEGORIES = ('malnourished', 'not_malnourished')
 
 
 TEMPLATE_FIELD_MAP = {
@@ -398,6 +402,7 @@ TEMPLATE_FIELD_MAP = {
     'RISK_CATEGORY': RISK_CATEGORIES,
     'BIRTH_WEIGHT_MEASURE': BIRTH_WEIGHT_MEASURES,
     'GESTATIONAL_AGE_MEASURE': GESTATIONAL_AGE_MEASURES,
+    'MALNOURISHMENT_CATEGORY': MALNOURISHMENT_CATEGORIES,
 }
 
 
@@ -408,7 +413,7 @@ def RESULT_COLUMNS(kind='all'):
     if kind == 'all':
         for k in COLUMN_TEMPLATES:
             columns += RESULT_COLUMNS(k)
-        columns = list(STANDARD_COLUMNS.values()) + columns
+        columns = list(SINGLE_COLUMNS) + columns
     else:
         template = COLUMN_TEMPLATES[kind]
         filtered_field_map = {field: values
