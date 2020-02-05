@@ -74,6 +74,10 @@ class LBWSGDistribution:
         return self._convert_to_continuous(categorical_exposure)
 
     def convert_to_categorical(self, exposure, _):
+        # FIXME: DIRTY HACK.  The problem with absolute shifts is that
+        #  they can take you way out of a realistic domain for your
+        #  values.  Like giving people negative birth weights
+        exposure.loc[exposure.birth_weight < 100, 'birth_weight'] = 100
         exposure = self._convert_boundary_cases(exposure)
         categorical_exposure = self.categories_by_interval.iloc[self._get_categorical_index(exposure)]
         categorical_exposure.index = exposure.index
