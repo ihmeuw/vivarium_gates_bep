@@ -40,6 +40,8 @@ components:
         - ChildGrowthFailureObserver()
         - LBWSGObserver()
 
+        - MaternalMalnutrition()
+
 configuration:
     input_data:
         location: {{ location_proper }}

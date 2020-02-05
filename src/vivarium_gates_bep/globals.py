@@ -313,15 +313,18 @@ DISEASE_MODEL_MAP = {
 # Results columns and variables #
 #################################
 
+# Standard columns from core components.
 TOTAL_POPULATION_COLUMN = 'total_population'
 TOTAL_YLDS_COLUMN = 'years_lived_with_disability'
 TOTAL_YLLS_COLUMN = 'years_of_life_lost'
 
-STANDARD_COLUMNS = {
-    'total_population': TOTAL_POPULATION_COLUMN,
-    'total_ylls': TOTAL_YLLS_COLUMN,
-    'total_ylds': TOTAL_YLDS_COLUMN,
-}
+# Data columns for randomly sampled data
+MALNOURISHED_MOTHERS_PROPORTION_COLUMN = 'maternal_malnourishment_proportion'
+
+
+SINGLE_COLUMNS = (TOTAL_POPULATION_COLUMN, TOTAL_YLLS_COLUMN, TOTAL_YLDS_COLUMN,
+                  MALNOURISHED_MOTHERS_PROPORTION_COLUMN)
+
 
 TOTAL_POPULATION_COLUMN_TEMPLATE = 'total_population_{POP_STATE}'
 PERSON_TIME_COLUMN_TEMPLATE = 'person_time_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
@@ -408,7 +411,7 @@ def RESULT_COLUMNS(kind='all'):
     if kind == 'all':
         for k in COLUMN_TEMPLATES:
             columns += RESULT_COLUMNS(k)
-        columns = list(STANDARD_COLUMNS.values()) + columns
+        columns = list(SINGLE_COLUMNS) + columns
     else:
         template = COLUMN_TEMPLATES[kind]
         filtered_field_map = {field: values
