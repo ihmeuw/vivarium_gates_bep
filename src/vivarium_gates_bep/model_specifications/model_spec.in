@@ -41,6 +41,7 @@ components:
         - LBWSGObserver()
 
         - MaternalMalnutrition()
+        - MaternalMalnutritionRiskEffect()
 
 configuration:
     input_data:
