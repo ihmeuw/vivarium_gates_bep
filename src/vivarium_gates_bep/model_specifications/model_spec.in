@@ -3,11 +3,6 @@ components:
         population:
             - Mortality()
         disease:
-            - SIS('diarrheal_diseases')
-            - models.SIR_fixed_duration('measles', '10')
-            - SIS('lower_respiratory_infections')
-            - SIS('meningitis')
-            - NeonatalSWC_without_incidence('neonatal_disorders')
             - RiskAttributableDisease('cause.protein_energy_malnutrition', 'risk_factor.child_wasting')
         risks:
             - Risk('alternative_risk_factor.child_wasting')
@@ -22,6 +17,12 @@ components:
 
     vivarium_gates_bep.components:
         - NewbornPopulation()
+
+        - SIS('diarrheal_diseases')
+        - SIR_fixed_duration('measles', '10')
+        - SIS('lower_respiratory_infections')
+        - SIS('meningitis')
+        - NeonatalSWC_without_incidence('neonatal_disorders')
 
         - LBWSGRisk()
         - LBWSGRiskEffect('cause.diarrheal_diseases.excess_mortality_rate')
@@ -68,7 +69,7 @@ configuration:
     population:
         population_size: 10_000
         age_start: 0
-        age_end: 2
+        age_end: 0
     child_wasting:
         category_thresholds: [7, 8, 9]
     child_stunting:
