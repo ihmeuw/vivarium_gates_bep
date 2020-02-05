@@ -21,6 +21,122 @@ LOCATIONS = [
 ]
 
 
+###################
+# Model Constants #
+###################
+# This is a collection of constants used in data generation or as
+# invariant model parameters.
+
+def twenty_percent_of_mean_variance(mean):
+    ninety_five_percent_spread = .2 * mean
+    std_dev = ninety_five_percent_spread / (2 * 1.96)
+    return std_dev ** 2
+
+
+def confidence_interval_variance(upper, lower):
+    ninety_five_percent_spread = (upper - lower) / 2
+    std_dev = ninety_five_percent_spread / (2 * 1.96)
+    return std_dev ** 2
+
+
+MALNOURISHED_MOTHERS_PROPORTION_MEAN = {
+    'India': .168,
+    'Mali': .103,
+    'Pakistan': .107,
+    'Tanzania': .095
+}
+MALNOURISHED_MOTHERS_PROPORTION_VARIANCE = {location: twenty_percent_of_mean_variance(mean)
+                                            for location, mean in MALNOURISHED_MOTHERS_PROPORTION_MEAN.items()}
+MALNOURISHED_MOTHERS_EFFECT_RR_MODE = 2
+MALNOURISHED_MOTHERS_EFFECT_RR_LOWER_BOUND = 1.5
+MALNOURISHED_MOTHERS_EFFECT_RR_UPPER_BOUND = 5
+MALNOURISHED_MOTHERS_EFFECT_RR_PARAMETERS = {
+    'mode': MALNOURISHED_MOTHERS_EFFECT_RR_MODE,
+    'lower_bound': MALNOURISHED_MOTHERS_EFFECT_RR_LOWER_BOUND,
+    'upper_bound': MALNOURISHED_MOTHERS_EFFECT_RR_UPPER_BOUND,
+}
+
+
+IFA_COVERAGE_AMONG_ANC_MEAN = {
+    'India': .387,
+    'Mali': .280,
+    'Pakistan': .294,
+    'Tanzania': .214
+}
+IFA_COVERAGE_AMONG_ANC_VARIANCE = {location: twenty_percent_of_mean_variance(mean)
+                                   for location, mean in IFA_COVERAGE_AMONG_ANC_MEAN.items()}
+
+IFA_BIRTH_WEIGHT_SHIFT_SIZE_MEAN = 57.73
+IFA_BIRTH_WEIGHT_SHIFT_SIZE_LOWER = 7.66
+IFA_BIRTH_WEIGHT_SHIFT_SIZE_UPPER = 107.79
+IFA_BIRTH_WEIGHT_SHIFT_SIZE_LOWER_BOUND = 0
+IFA_BIRTH_WEIGHT_SHIFT_SIZE_UPPER_BOUND = 120
+IFA_BIRTH_WEIGHT_SHIFT_SIZE_VARIANCE = confidence_interval_variance(IFA_BIRTH_WEIGHT_SHIFT_SIZE_UPPER,
+                                                                    IFA_BIRTH_WEIGHT_SHIFT_SIZE_LOWER)
+IFA_BIRTH_WEIGHT_SHIFT_SIZE_PARAMETERS = {
+    'mean': IFA_BIRTH_WEIGHT_SHIFT_SIZE_MEAN,
+    'variance': IFA_BIRTH_WEIGHT_SHIFT_SIZE_VARIANCE,
+    'lower_bound': IFA_BIRTH_WEIGHT_SHIFT_SIZE_LOWER_BOUND,
+    'upper_bound': IFA_BIRTH_WEIGHT_SHIFT_SIZE_UPPER_BOUND
+}
+
+MMN_BIRTH_WEIGHT_SHIFT_SIZE_MEAN = 22.4
+MMN_BIRTH_WEIGHT_SHIFT_SIZE_LOWER = 8.3
+MMN_BIRTH_WEIGHT_SHIFT_SIZE_UPPER = 36.4
+MMN_BIRTH_WEIGHT_SHIFT_SIZE_LOWER_BOUND = 0
+MMN_BIRTH_WEIGHT_SHIFT_SIZE_UPPER_BOUND = 45
+MMN_BIRTH_WEIGHT_SHIFT_SIZE_VARIANCE = confidence_interval_variance(MMN_BIRTH_WEIGHT_SHIFT_SIZE_UPPER,
+                                                                    MMN_BIRTH_WEIGHT_SHIFT_SIZE_LOWER)
+MMN_BIRTH_WEIGHT_SHIFT_SIZE_PARAMETERS = {
+    'mean': MMN_BIRTH_WEIGHT_SHIFT_SIZE_MEAN,
+    'variance': MMN_BIRTH_WEIGHT_SHIFT_SIZE_VARIANCE,
+    'lower_bound': MMN_BIRTH_WEIGHT_SHIFT_SIZE_LOWER_BOUND,
+    'upper_bound': MMN_BIRTH_WEIGHT_SHIFT_SIZE_UPPER_BOUND
+}
+
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_MEAN = 75
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_LOWER = 65
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_UPPER = 85
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_LOWER_BOUND = 50
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_UPPER_BOUND = 100
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_VARIANCE = confidence_interval_variance(BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_UPPER,
+                                                                           BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_LOWER)
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_PARAMETERS = {
+    'mean': BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_MEAN,
+    'variance': BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_VARIANCE,
+    'lower_bound': BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_LOWER_BOUND,
+    'upper_bound': BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_UPPER_BOUND
+}
+
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_MEAN = 100
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_LOWER = 90
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_UPPER = 110
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_LOWER_BOUND = 75
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_UPPER_BOUND = 125
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_VARIANCE = confidence_interval_variance(BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_UPPER,
+                                                                                 BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_LOWER)
+BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_PARAMETERS = {
+    'mean': BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_MEAN,
+    'variance': BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_VARIANCE,
+    'lower_bound': BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_LOWER_BOUND,
+    'upper_bound': BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_UPPER_BOUND
+}
+
+BEP_CGF_SHIFT_SIZE_MEAN = 0.3
+BEP_CGF_SHIFT_SIZE_LOWER = 0.2
+BEP_CGF_SHIFT_SIZE_UPPER = 0.4
+BEP_CGF_SHIFT_SIZE_LOWER_BOUND = 0.
+BEP_CGF_SHIFT_SIZE_UPPER_BOUND = 1.
+BEP_CGF_SHIFT_SIZE_VARIANCE = confidence_interval_variance(BEP_CGF_SHIFT_SIZE_UPPER,
+                                                           BEP_CGF_SHIFT_SIZE_LOWER)
+BEP_CGF_SHIFT_SIZE_PARAMETERS = {
+    'mean': BEP_CGF_SHIFT_SIZE_MEAN,
+    'variance': BEP_CGF_SHIFT_SIZE_VARIANCE,
+    'lower_bound': BEP_CGF_SHIFT_SIZE_LOWER_BOUND,
+    'upper_bound': BEP_CGF_SHIFT_SIZE_UPPER_BOUND
+}
+
+
 #############
 # Data Keys #
 #############
@@ -33,6 +149,9 @@ POPULATION_DEMOGRAPHY = 'population.demographic_dimensions'
 POPULATION_TMRLE = 'population.theoretical_minimum_risk_life_expectancy'
 
 ALL_CAUSE_CSMR = 'cause.all_causes.cause_specific_mortality_rate'
+
+COVARIATE_ANC1_COVERAGE = 'covariate.antenatal_care_1_visit_coverage_proportion.estimate'
+COVARIATE_LIVE_BIRTHS_BY_SEX = 'covariate.live_births_by_sex.estimate'
 
 DIARRHEA_CAUSE_SPECIFIC_MORTALITY_RATE = 'cause.diarrheal_diseases.cause_specific_mortality_rate'
 DIARRHEA_PREVALENCE = 'cause.diarrheal_diseases.prevalence'
@@ -194,28 +313,31 @@ DISEASE_MODEL_MAP = {
 # Results columns and variables #
 #################################
 
+# Standard columns from core components.
 TOTAL_POPULATION_COLUMN = 'total_population'
 TOTAL_YLDS_COLUMN = 'years_lived_with_disability'
 TOTAL_YLLS_COLUMN = 'years_of_life_lost'
 
-STANDARD_COLUMNS = {
-    'total_population': TOTAL_POPULATION_COLUMN,
-    'total_ylls': TOTAL_YLLS_COLUMN,
-    'total_ylds': TOTAL_YLDS_COLUMN,
-}
+# Data columns for randomly sampled data
+MALNOURISHED_MOTHERS_PROPORTION_COLUMN = 'maternal_malnourishment_proportion'
+
+
+SINGLE_COLUMNS = (TOTAL_POPULATION_COLUMN, TOTAL_YLLS_COLUMN, TOTAL_YLDS_COLUMN,
+                  MALNOURISHED_MOTHERS_PROPORTION_COLUMN)
+
 
 TOTAL_POPULATION_COLUMN_TEMPLATE = 'total_population_{POP_STATE}'
-PERSON_TIME_COLUMN_TEMPLATE = 'person_time_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
-DEATH_COLUMN_TEMPLATE = 'death_due_to_{CAUSE_OF_DEATH}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
-YLLS_COLUMN_TEMPLATE = 'ylls_due_to_{CAUSE_OF_DEATH}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
-YLDS_COLUMN_TEMPLATE = 'ylds_due_to_{CAUSE_OF_DISABILITY}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
-STATE_PERSON_TIME_COLUMN_TEMPLATE = '{STATE}_person_time_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
-TRANSITION_COUNT_COLUMN_TEMPLATE = '{TRANSITION}_event_count_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}'
-BIRTH_PREVALENCE_COUNT_COLUMN_TEMPLATE = '{BIRTH_STATE}_prevalent_count_at_birth_among_{SEX}'
-Z_SCORE_COLUMNS = '{CGF_RISK}_z_score_{STATS_MEASURE}_at_six_months_among_{SEX}'
-CATEGORY_COUNT_COLUMNS = '{CGF_RISK}_{RISK_CATEGORY}_exposed_at_six_months_among_{SEX}'
-BIRTH_WEIGHT_COLUMNS = 'birth_weight_{BIRTH_WEIGHT_MEASURE}_among_{SEX}'
-GESTATIONAL_AGE_COLUMNS = 'gestational_age_{GESTATIONAL_AGE_MEASURE}_among_{SEX}'
+PERSON_TIME_COLUMN_TEMPLATE = 'person_time_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}'
+DEATH_COLUMN_TEMPLATE = 'death_due_to_{CAUSE_OF_DEATH}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}'
+YLLS_COLUMN_TEMPLATE = 'ylls_due_to_{CAUSE_OF_DEATH}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}'
+YLDS_COLUMN_TEMPLATE = 'ylds_due_to_{CAUSE_OF_DISABILITY}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}'
+STATE_PERSON_TIME_COLUMN_TEMPLATE = '{STATE}_person_time_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}'
+TRANSITION_COUNT_COLUMN_TEMPLATE = '{TRANSITION}_event_count_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}'
+BIRTH_PREVALENCE_COUNT_COLUMN_TEMPLATE = '{BIRTH_STATE}_prevalent_count_at_birth_among_{SEX}_mother_{MALNOURISHMENT_CATEGORY}'
+Z_SCORE_COLUMNS = '{CGF_RISK}_z_score_{STATS_MEASURE}_at_six_months_among_{SEX}_mother_{MALNOURISHMENT_CATEGORY}'
+CATEGORY_COUNT_COLUMNS = '{CGF_RISK}_{RISK_CATEGORY}_exposed_at_six_months_among_{SEX}_mother_{MALNOURISHMENT_CATEGORY}'
+BIRTH_WEIGHT_COLUMNS = 'birth_weight_{BIRTH_WEIGHT_MEASURE}_among_{SEX}_mother_{MALNOURISHMENT_CATEGORY}'
+GESTATIONAL_AGE_COLUMNS = 'gestational_age_{GESTATIONAL_AGE_MEASURE}_among_{SEX}_mother_{MALNOURISHMENT_CATEGORY}'
 
 
 COLUMN_TEMPLATES = {
@@ -229,14 +351,15 @@ COLUMN_TEMPLATES = {
     'birth_prevalence': BIRTH_PREVALENCE_COUNT_COLUMN_TEMPLATE,
     'z_scores': Z_SCORE_COLUMNS,
     'category_counts': CATEGORY_COUNT_COLUMNS,
-    'birth_weight': BIRTH_WEIGHT_COLUMNS
+    'birth_weight': BIRTH_WEIGHT_COLUMNS,
+    'gestational_age': GESTATIONAL_AGE_COLUMNS,
 }
 
 
 POP_STATES = ('living', 'dead', 'tracked', 'untracked')
 YEARS = ('2020', '2021', '2022')
 SEXES = ('male', 'female')
-AGE_GROUPS = ('early_neonatal', 'late_neonatal', 'post_neonatal', '1_to_4')
+AGE_GROUPS = ('early_neonatal', 'late_neonatal', '1mo_to_6mo', '6mo_to_1', '1_to_4')
 CAUSES_OF_DEATH = (
     'other_causes',
     DIARRHEA_WITH_CONDITION_STATE_NAME,
@@ -261,6 +384,7 @@ STATS_MEASURES = ('mean', 'sd')
 RISK_CATEGORIES = ('cat1', 'cat2', 'cat3', 'cat4')
 BIRTH_WEIGHT_MEASURES = STATS_MEASURES + ('proportion_below_2500g',)
 GESTATIONAL_AGE_MEASURES = STATS_MEASURES + ('proportion_below_37w',)
+MALNOURISHMENT_CATEGORIES = ('malnourished', 'not_malnourished')
 
 
 TEMPLATE_FIELD_MAP = {
@@ -278,6 +402,7 @@ TEMPLATE_FIELD_MAP = {
     'RISK_CATEGORY': RISK_CATEGORIES,
     'BIRTH_WEIGHT_MEASURE': BIRTH_WEIGHT_MEASURES,
     'GESTATIONAL_AGE_MEASURE': GESTATIONAL_AGE_MEASURES,
+    'MALNOURISHMENT_CATEGORY': MALNOURISHMENT_CATEGORIES,
 }
 
 
@@ -288,7 +413,7 @@ def RESULT_COLUMNS(kind='all'):
     if kind == 'all':
         for k in COLUMN_TEMPLATES:
             columns += RESULT_COLUMNS(k)
-        columns = list(STANDARD_COLUMNS.values()) + columns
+        columns = list(SINGLE_COLUMNS) + columns
     else:
         template = COLUMN_TEMPLATES[kind]
         filtered_field_map = {field: values

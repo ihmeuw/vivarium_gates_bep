@@ -1,3 +1,6 @@
 from .population import NewbornPopulation
-from .observers import DiseaseObserver, NeonatalDisordersObserver, ChildGrowthFailureObserver, LBWSGObserver
+from .observers import (MortalityObserver, DisabilityObserver,
+                        DiseaseObserver, NeonatalDisordersObserver,
+                        ChildGrowthFailureObserver, LBWSGObserver)
 from .lbwsg import LBWSGRisk, LBWSGRiskEffect
+from .maternal_malnutrition import MaternalMalnutrition, MaternalMalnutritionRiskEffect
