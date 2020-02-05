@@ -50,3 +50,27 @@ def sample_beta_distribution(seed: int, mean: float, variance: float, upper_boun
     return lower_bound + support_width*scipy.stats.beta.rvs(alpha, beta)
 
 
+def sample_trianglular_distribution(seed: int, mode: float, upper_bound: float, lower_bound: float) -> float:
+    """Gets a single random draw from a triangular distribution.
+
+    Parameters
+    ----------
+    seed
+        Seed for the random number generator.
+    mode
+        The mode of the triangular distribution.
+    upper_bound
+        The upper bound of the support of the triangular distribution.
+    lower_bound
+        The lower bound of the support of the triangular distribution.
+
+    Returns
+    -------
+        The random variate from the triangular distribution.
+
+    """
+    np.random.seed(seed)
+    support_width = (upper_bound - lower_bound)
+    c = (mode - lower_bound) / support_width
+    return scipy.stats.triang.rvs(c, loc=lower_bound, scale=support_width)
+
