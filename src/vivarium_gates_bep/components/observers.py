@@ -260,6 +260,8 @@ class NeonatalDisordersObserver:
             prevalent_at_birth_count = {f'{k}_mother_{category}': v
                                         for k, v in prevalent_at_birth_count.items()}
             self.counts.update(prevalent_at_birth_count)
+        self.counts['total_population_male'] = len(pop[pop.sex == 'Male'])
+        self.counts['total_population_female'] = len(pop[pop.sex == 'Female'])
 
     def on_time_step_prepare(self, event):
         pop = self.population_view.get(event.index)
