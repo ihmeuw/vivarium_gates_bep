@@ -38,7 +38,7 @@ class MortalityObserver(MortalityObserver_):
         categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
         for mother_cat, treatment in categories:
             pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
-                                   & pop[project_globals.SCENARIO_COLUMN] == treatment]
+                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
             base_args = (pop_in_group, self.config.to_dict(), self.start_time, self.clock(), self.age_bins)
 
             for measure_getter, extra_args in measure_getters:
@@ -85,7 +85,7 @@ class DisabilityObserver(DisabilityObserver_):
         categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
         for mother_cat, treatment in categories:
             pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
-                                   & pop[project_globals.SCENARIO_COLUMN] == treatment]
+                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
 
             ylds_this_step = get_years_lived_with_disability(pop_in_group, self.config.to_dict(),
                                                              self.clock().year, self.step_size(),
@@ -187,7 +187,7 @@ class DiseaseObserver:
         categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
         for mother_cat, treatment in categories:
             pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
-                                   & pop[project_globals.SCENARIO_COLUMN] == treatment]
+                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
 
             for state in self.states:
                 state_person_time_this_step = get_state_person_time(pop_in_group, self.config, self.disease, state,
@@ -206,7 +206,7 @@ class DiseaseObserver:
         categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
         for mother_cat, treatment in categories:
             pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
-                                   & pop[project_globals.SCENARIO_COLUMN] == treatment]
+                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
 
             for transition in self.transitions:
                 transition_counts_this_step = get_transition_count(pop_in_group, self.config, self.disease, transition,
@@ -275,7 +275,7 @@ class NeonatalDisordersObserver:
         categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
         for mother_cat, treatment in categories:
             pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
-                                   & pop[project_globals.SCENARIO_COLUMN] == treatment]
+                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
 
             prevalent_at_birth_count = get_prevalent_at_birth_count(pop_in_group, self.config, self.disease,
                                                                     self.disease, self.age_bins)
@@ -293,7 +293,7 @@ class NeonatalDisordersObserver:
         categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
         for mother_cat, treatment in categories:
             pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
-                                   & pop[project_globals.SCENARIO_COLUMN] == treatment]
+                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
 
             for state in self.states:
                 state_person_time_this_step = get_state_person_time(pop_in_group, self.config, self.disease, state,
@@ -338,7 +338,7 @@ class ChildGrowthFailureObserver():
         categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
         for mother_cat, treatment in categories:
             pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
-                                   & pop[project_globals.SCENARIO_COLUMN] == treatment]
+                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
 
             stats = self.get_cgf_stats(pop_in_group)
             stats = {f'{k}_mother_{mother_cat}_treatment_{treatment}': v
@@ -396,7 +396,7 @@ class LBWSGObserver:
         categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
         for mother_cat, treatment in categories:
             pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
-                                   & pop[project_globals.SCENARIO_COLUMN] == treatment]
+                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
             stats = self.get_lbwsg_stats(pop_in_group)
             stats = {f'{k}_mother_{mother_cat}_treatment_{treatment}': v
                      for k, v in stats.items()}
