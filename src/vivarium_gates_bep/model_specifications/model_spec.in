@@ -30,6 +30,12 @@ components:
         - LBWSGRiskEffect('cause.meningitis.excess_mortality_rate')
         - LBWSGRiskEffect('cause.neonatal_disorders.excess_mortality_rate')
 
+        - MaternalMalnutrition()
+        - MaternalMalnutritionRiskEffect()
+
+        - MaternalSupplementationCoverage()
+        - MaternalSupplementationEffect()
+
         - MortalityObserver()
         - DisabilityObserver()
         - DiseaseObserver('diarrheal_diseases')
@@ -40,11 +46,6 @@ components:
         - DiseaseObserver('protein_energy_malnutrition')
         - ChildGrowthFailureObserver()
         - LBWSGObserver()
-
-        - MaternalMalnutrition()
-        - MaternalMalnutritionRiskEffect()
-
-        - MaternalSupplementationCoverage()
 
 configuration:
     input_data:
