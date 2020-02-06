@@ -25,7 +25,9 @@ LOCATIONS = [
 # Model Constants #
 ###################
 # This is a collection of constants used in data generation or as
-# invariant model parameters.
+# invariant model parameters.  Sources for these parameters can be found
+# in the concept model document.
+# TODO: Include concept model document in repository.
 
 def twenty_percent_of_mean_variance(mean):
     ninety_five_percent_spread = .2 * mean
@@ -157,7 +159,6 @@ class __TREAMTENTS(NamedTuple):
 
 TREATMENTS = __TREAMTENTS()
 
-
 #############
 # Data Keys #
 #############
@@ -244,7 +245,7 @@ LBWSG_PAF = 'risk_factor.low_birth_weight_and_short_gestation.population_attribu
 
 
 ###########################
-# Disease Model variables #
+# Disease Model Constants #
 ###########################
 
 DIARRHEA_MODEL_NAME = 'diarrheal_diseases'
@@ -329,6 +330,40 @@ DISEASE_MODEL_MAP = {
         'transitions': PEM_MODEL_TRANSITIONS,
     },
 }
+
+########################
+# Risk Model Constants #
+########################
+
+LBWSG_MODEL_NAME = 'low_birth_weight_and_short_gestation'
+BIRTH_WEIGHT = 'birth_weight'
+GESTATION_TIME = 'gestation_time'
+LBWSG_COLUMNS = [BIRTH_WEIGHT, GESTATION_TIME]
+UNDERWEIGHT = 2500  # grams
+MAX_BIRTH_WEIGHT = 4500  # grams
+PRETERM = 37  # weeks
+MAX_GESTATIONAL_TIME = 42  # weeks
+
+
+class __LBWSG_MISSING_CATEGORY(NamedTuple):
+    CAT: str = 'cat212'
+    NAME: str = 'Birth prevalence - [37, 38) wks, [1000, 1500) g'
+    EXPOSURE: float = 0.
+
+
+LBWSG_MISSING_CATEGORY = __LBWSG_MISSING_CATEGORY()
+
+
+WASTING_MODEL_NAME = 'child_wasting'
+STUNTING_MODEL_NAME = 'child_stunting'
+
+
+MATERNAL_MALNUTRITION_MODEL_NAME = 'maternal_malnutrition'
+MOTHER_NUTRITION_STATUS_COLUMN = 'mother_malnourished'
+MOTHER_NUTRITION_NORMAL = 'normal'
+MOTHER_NUTRITION_MALNOURISHED = 'malnourished'
+MOTHER_NUTRITION_CATEGORIES = (MOTHER_NUTRITION_NORMAL, MOTHER_NUTRITION_MALNOURISHED)
+
 
 #################################
 # Results columns and variables #
