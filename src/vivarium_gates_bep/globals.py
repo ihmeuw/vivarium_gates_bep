@@ -138,27 +138,6 @@ BEP_CGF_SHIFT_SIZE_PARAMETERS = {
     'upper_bound': BEP_CGF_SHIFT_SIZE_UPPER_BOUND
 }
 
-
-class __SCENARIOS(NamedTuple):
-    BASELINE: str = 'baseline'
-    IFA: str = 'ifa_scale_up'
-    MMN: str = 'mmn_scale_up'
-    BEP: str = 'bep_scale_up'
-    BEP_TARGETED: str = 'bep_targeted_scale_up'
-
-
-SCENARIOS = __SCENARIOS()
-
-
-class __TREAMTENTS(NamedTuple):
-    NONE: str = 'none'
-    IFA: str = 'ifa'
-    MMN: str = 'mmn'
-    BEP: str = 'bep'
-
-
-TREATMENTS = __TREAMTENTS()
-
 #############
 # Data Keys #
 #############
@@ -365,6 +344,34 @@ MOTHER_NUTRITION_MALNOURISHED = 'malnourished'
 MOTHER_NUTRITION_CATEGORIES = (MOTHER_NUTRITION_NORMAL, MOTHER_NUTRITION_MALNOURISHED)
 
 
+#############################
+# Treatment Model Constants #
+#############################
+
+class __SCENARIOS(NamedTuple):
+    BASELINE: str = 'baseline'
+    IFA: str = 'ifa_scale_up'
+    MMN: str = 'mmn_scale_up'
+    BEP: str = 'bep_scale_up'
+    BEP_TARGETED: str = 'bep_targeted_scale_up'
+
+
+SCENARIOS = __SCENARIOS()
+
+
+class __TREAMTENTS(NamedTuple):
+    NONE: str = 'none'
+    IFA: str = 'ifa'
+    MMN: str = 'mmn'
+    BEP: str = 'bep'
+
+
+TREATMENTS = __TREAMTENTS()
+
+TREATMENT_MODEL_NAME = 'maternal_supplementation'
+BASELINE_COLUMN = 'baseline_maternal_supplementation_type'
+SCENARIO_COLUMN = 'scenario_maternal_supplementation_type'
+
 #################################
 # Results columns and variables #
 #################################
@@ -383,17 +390,17 @@ SINGLE_COLUMNS = (TOTAL_POPULATION_COLUMN, TOTAL_YLLS_COLUMN, TOTAL_YLDS_COLUMN,
 
 
 TOTAL_POPULATION_COLUMN_TEMPLATE = 'total_population_{POP_STATE}'
-PERSON_TIME_COLUMN_TEMPLATE = 'person_time_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}'
-DEATH_COLUMN_TEMPLATE = 'death_due_to_{CAUSE_OF_DEATH}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}'
-YLLS_COLUMN_TEMPLATE = 'ylls_due_to_{CAUSE_OF_DEATH}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}'
-YLDS_COLUMN_TEMPLATE = 'ylds_due_to_{CAUSE_OF_DISABILITY}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}'
-STATE_PERSON_TIME_COLUMN_TEMPLATE = '{STATE}_person_time_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}'
-TRANSITION_COUNT_COLUMN_TEMPLATE = '{TRANSITION}_event_count_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}'
-BIRTH_PREVALENCE_COUNT_COLUMN_TEMPLATE = '{BIRTH_STATE}_prevalent_count_at_birth_among_{SEX}_mother_{MALNOURISHMENT_CATEGORY}'
-Z_SCORE_COLUMNS = '{CGF_RISK}_z_score_{STATS_MEASURE}_at_six_months_among_{SEX}_mother_{MALNOURISHMENT_CATEGORY}'
-CATEGORY_COUNT_COLUMNS = '{CGF_RISK}_{RISK_CATEGORY}_exposed_at_six_months_among_{SEX}_mother_{MALNOURISHMENT_CATEGORY}'
-BIRTH_WEIGHT_COLUMNS = 'birth_weight_{BIRTH_WEIGHT_MEASURE}_among_{SEX}_mother_{MALNOURISHMENT_CATEGORY}'
-GESTATIONAL_AGE_COLUMNS = 'gestational_age_{GESTATIONAL_AGE_MEASURE}_among_{SEX}_mother_{MALNOURISHMENT_CATEGORY}'
+PERSON_TIME_COLUMN_TEMPLATE = 'person_time_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+DEATH_COLUMN_TEMPLATE = 'death_due_to_{CAUSE_OF_DEATH}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+YLLS_COLUMN_TEMPLATE = 'ylls_due_to_{CAUSE_OF_DEATH}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+YLDS_COLUMN_TEMPLATE = 'ylds_due_to_{CAUSE_OF_DISABILITY}_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+STATE_PERSON_TIME_COLUMN_TEMPLATE = '{STATE}_person_time_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+TRANSITION_COUNT_COLUMN_TEMPLATE = '{TRANSITION}_event_count_in_{YEAR}_among_{SEX}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+BIRTH_PREVALENCE_COUNT_COLUMN_TEMPLATE = '{BIRTH_STATE}_prevalent_count_at_birth_among_{SEX}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+Z_SCORE_COLUMNS = '{CGF_RISK}_z_score_{STATS_MEASURE}_at_six_months_among_{SEX}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+CATEGORY_COUNT_COLUMNS = '{CGF_RISK}_{RISK_CATEGORY}_exposed_at_six_months_among_{SEX}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+BIRTH_WEIGHT_COLUMNS = 'birth_weight_{BIRTH_WEIGHT_MEASURE}_among_{SEX}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+GESTATIONAL_AGE_COLUMNS = 'gestational_age_{GESTATIONAL_AGE_MEASURE}_among_{SEX}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
 
 
 COLUMN_TEMPLATES = {
@@ -441,6 +448,7 @@ RISK_CATEGORIES = ('cat1', 'cat2', 'cat3', 'cat4')
 BIRTH_WEIGHT_MEASURES = STATS_MEASURES + ('proportion_below_2500g',)
 GESTATIONAL_AGE_MEASURES = STATS_MEASURES + ('proportion_below_37w',)
 MALNOURISHMENT_CATEGORIES = ('malnourished', 'not_malnourished')
+TREATMENT_CATEGORIES = tuple(TREATMENTS)
 
 
 TEMPLATE_FIELD_MAP = {
@@ -459,6 +467,7 @@ TEMPLATE_FIELD_MAP = {
     'BIRTH_WEIGHT_MEASURE': BIRTH_WEIGHT_MEASURES,
     'GESTATIONAL_AGE_MEASURE': GESTATIONAL_AGE_MEASURES,
     'MALNOURISHMENT_CATEGORY': MALNOURISHMENT_CATEGORIES,
+    'TREATMENT_CATEGORY': TREATMENT_CATEGORIES,
 }
 
 
