@@ -356,7 +356,7 @@ COLUMN_TEMPLATES = {
 }
 
 
-POP_STATES = ('living', 'dead', 'tracked', 'untracked')
+POP_STATES = ('living', 'dead', 'tracked', 'untracked', 'male', 'female')
 YEARS = ('2020', '2021', '2022')
 SEXES = ('male', 'female')
 AGE_GROUPS = ('early_neonatal', 'late_neonatal', '1mo_to_6mo', '6mo_to_1', '1_to_4')
