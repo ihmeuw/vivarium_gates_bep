@@ -247,5 +247,7 @@ def load_and_write_lbwsg_data(artifact: Artifact, location: str):
         if key in artifact:
             logger.debug(f'Data for {key} already in artifact.  Skipping...')
         else:
+            logger.debug(f'Loading data for {key} for location {location}.')
             data = loader.get_data(key, location)
+            logger.debug(f'Writing data for {key} to artifact.')
             write_data_by_draw(artifact, key, data)
