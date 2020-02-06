@@ -95,7 +95,7 @@ def sample_gamma_distribution(seed: int, mean: float, lower_bound: float, shape:
 
     """
     np.random.seed(seed)
-    mean -= loc
+    mean -= lower_bound
     scale = mean / shape
     return scipy.stats.gamma.rvs(shape, lower_bound, scale)
 
