@@ -34,6 +34,9 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
 
         project_globals.ALL_CAUSE_CSMR: load_standard_data,
 
+        project_globals.COVARIATE_LIVE_BIRTHS_BY_SEX: load_standard_data,
+        project_globals.COVARIATE_ANC1_COVERAGE: load_standard_data,
+
         project_globals.DIARRHEA_PREVALENCE: load_standard_data,
         project_globals.DIARRHEA_INCIDENCE_RATE: load_standard_data,
         project_globals.DIARRHEA_REMISSION_RATE: load_standard_data,
