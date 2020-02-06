@@ -8,7 +8,7 @@ from vivarium_public_health.risks.data_transformations import pivot_categorical
 from vivarium_public_health.risks.distributions import clip
 
 from vivarium_gates_bep import globals as project_globals
-from vivarium_gates_bep.utilites import sample_beta_distribution, sample_trianglular_distribution
+from vivarium_gates_bep.utilites import sample_beta_distribution, sample_gamma_distribution
 
 
 MOTHER_MALNOURISHED_COLUMN = 'mother_malnourished'
@@ -116,8 +116,6 @@ class MaternalMalnutritionRiskEffect:
                 'child_stunting': stunting_shifts}
 
 
-
-
 # TODO: A bunch of code here should be shared with the lbwsg component,
 # but just trying to make things work for now.  Cleanup later.
 
@@ -133,7 +131,7 @@ def load_exposure(location, draw):
 def load_relative_risk(draw):
     key = f'maternal_malnutrition_relative_risk_draw_{draw}'
     seed = get_hash(key)
-    return sample_trianglular_distribution(seed, **project_globals.MALNOURISHED_MOTHERS_EFFECT_RR_PARAMETERS)
+    return sample_gamma_distribution(seed, **project_globals.MALNOURISHED_MOTHERS_EFFECT_RR_PARAMETERS)
 
 
 def compute_birth_weight_shift(artifact_path, draw, location, relative_risk):
