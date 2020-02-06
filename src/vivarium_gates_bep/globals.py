@@ -149,6 +149,7 @@ SCENARIOS = __SCENARIOS()
 
 
 class __TREAMTENTS(NamedTuple):
+    NONE: str = 'none'
     IFA: str = 'ifa'
     MMN: str = 'mmn'
     BEP: str = 'bep'
