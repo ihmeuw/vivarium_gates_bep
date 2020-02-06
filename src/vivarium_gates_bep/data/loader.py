@@ -1,5 +1,5 @@
 """Loads, standardizes and validates input data for the simulation."""
-from gbd_mapping import causes, risk_factors
+from gbd_mapping import causes, risk_factors, covariates
 import numpy as np
 import pandas as pd
 from vivarium.framework.artifact import EntityKey
@@ -258,6 +258,7 @@ def get_entity(key: str):
     # Map of entity types to their gbd mappings.
     type_map = {
         'cause': causes,
+        'covariate': covariates,
         'risk_factor': risk_factors,
         'alternative_risk_factor': alternative_risk_factors
     }
