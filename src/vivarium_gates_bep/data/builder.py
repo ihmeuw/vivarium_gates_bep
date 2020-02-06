@@ -92,6 +92,7 @@ def write_data(artifact: Artifact, key: str, data: pd.DataFrame):
 def write_data_by_draw(artifact: Artifact, key: str, data: pd.DataFrame):
     with pd.HDFStore(artifact.path, complevel=9, mode='a') as store:
         key = EntityKey(key)
+        artifact._keys.append(key)
         store.put(f'{key.path}/index', data.index.to_frame(index=False))
         data = data.reset_index(drop=True)
         for c in data.columns:
