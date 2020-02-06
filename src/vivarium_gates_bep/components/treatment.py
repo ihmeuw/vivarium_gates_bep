@@ -49,7 +49,7 @@ class MaternalSupplementationCoverage:
         elif self.scenario == project_globals.SCENARIOS.BEP:
             treatment.loc[scenario_treated] = project_globals.TREATMENTS.BEP
         else:  # self.scenario == project_globals.SCENARIOS.BEP_TARGETED
-            pop = pop_data.subview([project_globals.MOTHER_NUTRITION_STATUS_COLUMN]).get(pop_data.index)
+            pop = self.population_view.subview([project_globals.MOTHER_NUTRITION_STATUS_COLUMN]).get(pop_data.index)
             mother_malnourished = (pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN]
                                    == project_globals.MOTHER_NUTRITION_MALNOURISHED)
             treatment.loc[scenario_treated & mother_malnourished] = project_globals.TREATMENTS.BEP
