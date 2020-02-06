@@ -376,8 +376,8 @@ CAUSES_OF_DISABILITY = (
     MENINGITIS_WITH_CONDITION_STATE_NAME,
     PEM_WITH_CONDITION_STATE_NAME,
 )
-STATES = (state for model in DISEASE_MODELS for state in DISEASE_MODEL_MAP[model]['states'])
-TRANSITIONS = (transition for model in DISEASE_MODELS for transition in DISEASE_MODEL_MAP[model]['transitions'])
+STATES = tuple(state for model in DISEASE_MODELS for state in DISEASE_MODEL_MAP[model]['states'])
+TRANSITIONS = tuple(transition for model in DISEASE_MODELS for transition in DISEASE_MODEL_MAP[model]['transitions'])
 BIRTH_STATES = (NEONATAL_DISORDERS_WITH_CONDITION_STATE_NAME,)
 CGF_RISKS = ('wasting', 'stunting')
 STATS_MEASURES = ('mean', 'sd')
