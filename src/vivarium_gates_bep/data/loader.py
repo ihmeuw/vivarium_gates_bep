@@ -1,5 +1,5 @@
 """Loads, standardizes and validates input data for the simulation."""
-from gbd_mapping import causes, risk_factors
+from gbd_mapping import causes, risk_factors, covariates
 import numpy as np
 import pandas as pd
 from vivarium.framework.artifact import EntityKey
@@ -33,6 +33,9 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.POPULATION_TMRLE: load_theoretical_minimum_risk_life_expectancy,
 
         project_globals.ALL_CAUSE_CSMR: load_standard_data,
+
+        project_globals.COVARIATE_LIVE_BIRTHS_BY_SEX: load_standard_data,
+        project_globals.COVARIATE_ANC1_COVERAGE: load_standard_data,
 
         project_globals.DIARRHEA_PREVALENCE: load_standard_data,
         project_globals.DIARRHEA_INCIDENCE_RATE: load_standard_data,
@@ -255,6 +258,7 @@ def get_entity(key: str):
     # Map of entity types to their gbd mappings.
     type_map = {
         'cause': causes,
+        'covariate': covariates,
         'risk_factor': risk_factors,
         'alternative_risk_factor': alternative_risk_factors
     }

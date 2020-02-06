@@ -44,6 +44,8 @@ components:
         - MaternalMalnutrition()
         - MaternalMalnutritionRiskEffect()
 
+        - MaternalSupplementationCoverage()
+
 configuration:
     input_data:
         location: {{ location_proper }}
@@ -78,6 +80,8 @@ configuration:
         threshold: ['cat1', 'cat2']
         mortality: True
         recoverable: True
+    maternal_supplementation:
+        scenario: 'baseline'
     metrics:
         mortality:
             by_age: True

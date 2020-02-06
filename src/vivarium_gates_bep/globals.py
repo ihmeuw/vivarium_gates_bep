@@ -1,5 +1,5 @@
 import itertools
-from gbd_mapping import causes, risk_factors
+from typing import NamedTuple
 
 ####################
 # Project metadata #
@@ -135,6 +135,27 @@ BEP_CGF_SHIFT_SIZE_PARAMETERS = {
     'lower_bound': BEP_CGF_SHIFT_SIZE_LOWER_BOUND,
     'upper_bound': BEP_CGF_SHIFT_SIZE_UPPER_BOUND
 }
+
+
+class __SCENARIOS(NamedTuple):
+    BASELINE: str = 'baseline'
+    IFA: str = 'ifa_scale_up'
+    MMN: str = 'mmn_scale_up'
+    BEP: str = 'bep_scale_up'
+    BEP_TARGETED: str = 'bep_targeted_scale_up'
+
+
+SCENARIOS = __SCENARIOS()
+
+
+class __TREAMTENTS(NamedTuple):
+    NONE: str = 'none'
+    IFA: str = 'ifa'
+    MMN: str = 'mmn'
+    BEP: str = 'bep'
+
+
+TREATMENTS = __TREAMTENTS()
 
 
 #############
