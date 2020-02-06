@@ -74,3 +74,28 @@ def sample_trianglular_distribution(seed: int, mode: float, upper_bound: float, 
     c = (mode - lower_bound) / support_width
     return scipy.stats.triang.rvs(c, loc=lower_bound, scale=support_width)
 
+
+def sample_gamma_distribution(seed: int, mean: float, lower_bound: float, shape: float) -> float:
+    """Gets a single random draw from a gamma distribution.
+
+    Parameters
+    ----------
+    seed
+        Seed for the random number generator.
+    mean
+        The mean of the gamma distribution
+    lower_bound
+        The lower bound of the support of the gamma distribution.
+    shape
+        Parameter that controls the tail behavior of the distribution.
+
+    Returns
+    -------
+        The random variate from the triangular distribution.
+
+    """
+    np.random.seed(seed)
+    mean -= lower_bound
+    scale = mean / shape
+    return scipy.stats.gamma.rvs(shape, lower_bound, scale)
+
