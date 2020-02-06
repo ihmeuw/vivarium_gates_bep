@@ -89,3 +89,78 @@ class MaternalSupplementationCoverage:
         return sample_beta_distribution(seed, mean, variance, 0, 1)
 
 
+class MaternalSupplementationEffect:
+
+    @property
+    def name(self):
+        return 'treatment_effect.maternal_supplementation'
+
+    def setup(self, builder):
+        self.treatment_effects = self.load_treatment_effects(builder)
+
+        columns = ['baseline_maternal_supplementation_type',
+                   'scenario_maternal_supplementation_type',
+                   'mother_malnourished']
+        self.population_view = builder.population.get_view(columns)
+
+        builder.value.register_value_modifier('low_birth_weight_and_short_gestation.exposure',
+                                              self.adjust_lbwsg,
+                                              requires_columns=columns)
+        builder.value.register_value_modifier('child_stunting.exposure',
+                                              self.adjust_cgf,
+                                              requires_columns=columns)
+        builder.value.register_value_modifier('child_wasting.exposure',
+                                              self.adjust_cgf,
+                                              requires_columns=columns)
+
+    def adjust_lbwsg(self, index, exposure):
+        pop = self.population_view.get(index)
+        baseline_covered = pop.baseline_maternal_supplementation_type == project_globals.TREATMENTS.IFA
+        exposure.loc[baseline_covered, 'birth_weight'] -= self.treatment_effects[project_globals.TREATMENTS.IFA]
+
+        ifa_covered = pop.scenario_maternal_supplementation_type == project_globals.TREATMENTS.IFA
+        exposure.loc[ifa_covered, 'birth_weight'] += self.treatment_effects[project_globals.TREATMENTS.IFA]
+
+        mmn_covered = pop.scenario_maternal_supplementation_type == project_globals.TREATMENTS.MMN
+        exposure.loc[mmn_covered, 'birth_weight'] += self.treatment_effects[project_globals.TREATMENTS.MMN]
+
+        bep_covered = pop.scenario_maternal_supplementation_type == project_globals.TREATMENTS.BEP
+        normal_effect = self.treatment_effects[project_globals.TREATMENTS.BEP]['birth_weight']['normal']
+        malnourished_effect = self.treatment_effects[project_globals.TREATMENTS.BEP]['birth_weight']['malnourished']
+        exposure.loc[bep_covered & ~pop.mother_malnourished, 'birth_weight'] += normal_effect
+        exposure.loc[bep_covered & pop.mother_malnourished, 'birth_weight'] += malnourished_effect
+        return exposure
+
+    def adjust_cgf(self, index, exposure):
+        pop = self.population_view.get(index)
+        bep_covered = pop.scenario_maternal_supplementation_type == project_globals.TREATMENTS.BEP
+        bep_effect = self.treatment_effects[project_globals.TREATMENTS.BEP]['cgf']
+        exposure.loc[bep_covered] += bep_effect
+        return exposure
+
+    @staticmethod
+    def load_treatment_effects(builder):
+        draw = builder.configuration.input_data.input_draw_number
+        seed = get_hash(f'ifa_effect_size_draw_{draw}')
+        ifa_effect = sample_beta_distribution(seed, **project_globals.IFA_BIRTH_WEIGHT_SHIFT_SIZE_PARAMETERS)
+        seed = get_hash(f'mmn_effect_size_draw_{draw}')
+        mmn_effect = sample_beta_distribution(seed, **project_globals.MMN_BIRTH_WEIGHT_SHIFT_SIZE_PARAMETERS)
+        seed = get_hash(f'bep_effect_size_draw_{draw}')
+        bep_normal_effect = sample_beta_distribution(
+            seed, **project_globals.BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_PARAMETERS
+        )
+        bep_malnourished_effect = sample_beta_distribution(
+            seed, **project_globals.BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_PARAMETERS
+        )
+        bep_cgf_effect = sample_beta_distribution(seed, **project_globals.BEP_CGF_SHIFT_SIZE_PARAMETERS)
+        return {
+            project_globals.TREATMENTS.NONE: 0,
+            project_globals.TREATMENTS.IFA: ifa_effect,
+            project_globals.TREATMENTS.MMN: mmn_effect,
+            project_globals.TREATMENTS.BEP: {
+                'birth_weight': {
+                    'normal': bep_normal_effect,
+                    'malnourished': bep_malnourished_effect},
+                'cgf': bep_cgf_effect,
+            },
+        }
