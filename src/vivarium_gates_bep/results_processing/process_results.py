@@ -82,6 +82,8 @@ def read_data(path: Path) -> (pd.DataFrame, List[str]):
             .drop(columns=project_globals.THROWAWAY_COLUMNS)
             .reset_index(drop=True)
             .rename(columns={project_globals.OUTPUT_SCENARIO_COLUMN: SCENARIO_COLUMN}))
+    data[project_globals.INPUT_DRAW_COLUMN] = data[project_globals.INPUT_DRAW_COLUMN].astype(int)
+    data[project_globals.RANDOM_SEED_COLUMN] = data[project_globals.RANDOM_SEED_COLUMN].astype(int)
     with (path.parent / 'keyspace.yaml').open() as f:
         keyspace = yaml.full_load(f)
     return data, keyspace
