@@ -90,17 +90,19 @@ def read_data(path: Path) -> (pd.DataFrame, List[str]):
 
 
 def filter_out_incomplete(data, keyspace):
+    output = []
     for draw in keyspace[project_globals.INPUT_DRAW_COLUMN]:
         # For each draw, gather all random seeds completed for all scenarios.
         random_seeds = set(keyspace[project_globals.RANDOM_SEED_COLUMN])
+        draw_data = data.loc[data[project_globals.INPUT_DRAW_COLUMN] == draw]
         for scenario in keyspace[project_globals.OUTPUT_SCENARIO_COLUMN]:
-            seeds_in_data = data.loc[(data[project_globals.INPUT_DRAW_COLUMN] == draw)
-                                     & (data[SCENARIO_COLUMN] == scenario),
-                                     project_globals.RANDOM_SEED_COLUMN].unique()
+            seeds_in_data = draw_data.loc[data[SCENARIO_COLUMN] == scenario,
+                                          project_globals.RANDOM_SEED_COLUMN].unique()
             random_seeds = random_seeds.intersection(seeds_in_data)
-        import pdb; pdb.set_trace()
-
-    return data
+        draw_data = draw_data.loc[draw_data[project_globals.RANDOM_SEED_COLUMN].isin(random_seeds)]
+        output.append(draw_data)
+    import pdb; pdb.set_trace()
+    return pd.concat(output, ignore_index=True).reset_index(drop=True)
 
 
 def aggregate_over_seed(data):
