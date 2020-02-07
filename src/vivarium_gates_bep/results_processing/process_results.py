@@ -79,7 +79,7 @@ class FinalData(NamedTuple):
 def read_data(path: Path) -> (pd.DataFrame, List[str]):
     data = pd.read_hdf(path)
     data = (data
-            .drop(columns=project_globals.THROWAWAY_COLUMNS + [project_globals.RANDOM_SEED_COLUMN])
+            .drop(columns=project_globals.THROWAWAY_COLUMNS)
             .reset_index(drop=True)
             .rename(columns={project_globals.OUTPUT_SCENARIO_COLUMN: SCENARIO_COLUMN}))
     with (path.parent / 'keyspace.yaml').open() as f:
