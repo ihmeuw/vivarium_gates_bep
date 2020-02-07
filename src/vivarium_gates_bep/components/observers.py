@@ -274,19 +274,12 @@ class NeonatalDisordersObserver:
         for mother_cat, treatment in categories:
             pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
                                    & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
-
+            self.counts[f'total_population_mother_{mother_cat}_treatment_{treatment}'] = len(pop_in_group)
             prevalent_at_birth_count = get_prevalent_at_birth_count(pop_in_group, self.config, self.disease,
                                                                     self.disease, self.age_bins)
             prevalent_at_birth_count = {f'{k}_mother_{mother_cat}_treatment_{treatment}': v
                                         for k, v in prevalent_at_birth_count.items()}
             self.counts.update(prevalent_at_birth_count)
-
-        self.counts['total_population_male'] = len(pop[pop.sex == 'Male'])
-        self.counts['total_population_female'] = len(pop[pop.sex == 'Female'])
-        for mother_cat, treatment in categories:
-            pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
-                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
-            self.counts[f'total_population_mother_{mother_cat}_treatment_{treatment}'] = len(pop_in_group)
 
     def on_time_step_prepare(self, event):
         pop = self.population_view.get(event.index)
@@ -355,17 +348,15 @@ class ChildGrowthFailureObserver():
             pop['wasting_cat'] = self.wasting(pop.index)
             pop['stunting_z'] = self.stunting(pop.index, skip_post_processor=True)
             pop['stunting_cat'] = self.stunting(pop.index)
-            for sex in pop.sex.unique():
-                sex_pop = pop[pop.sex == sex]
-                sex = sex.lower()
-                stats[f'wasting_z_score_mean_at_six_months_among_{sex}'] = sex_pop.wasting_z.mean()
-                stats[f'wasting_z_score_sd_at_six_months_among_{sex}'] = sex_pop.wasting_z.std()
-                stats[f'stunting_z_score_mean_at_six_months_among_{sex}'] = sex_pop.wasting_z.mean()
-                stats[f'stunting_z_score_sd_at_six_months_among_{sex}'] = sex_pop.wasting_z.std()
-                for cat, value in dict(pop.wasting_cat.value_counts()).items():
-                    stats[f'wasting_{cat}_exposed_at_six_months_among_{sex}'] = value
-                for cat, value in dict(pop.stunting_cat.value_counts()).items():
-                    stats[f'stunting_{cat}_exposed_at_six_months_among_{sex}'] = value
+
+            stats[f'wasting_z_score_mean_at_six_months'] = pop.wasting_z.mean()
+            stats[f'wasting_z_score_sd_at_six_months'] = pop.wasting_z.std()
+            stats[f'stunting_z_score_mean_at_six_months'] = pop.wasting_z.mean()
+            stats[f'stunting_z_score_sd_at_six_months'] = pop.wasting_z.std()
+            for cat, value in dict(pop.wasting_cat.value_counts()).items():
+                stats[f'wasting_{cat}_exposed_at_six_months'] = value
+            for cat, value in dict(pop.stunting_cat.value_counts()).items():
+                stats[f'stunting_{cat}_exposed_at_six_months'] = value
         return stats
 
     def metrics(self, index, metrics):
@@ -406,18 +397,18 @@ class LBWSGObserver:
 
     def get_lbwsg_stats(self, pop):
         stats = {}
-        for sex in pop.sex.unique():
-            sex_pop = pop[pop.sex == sex]
-            sex = sex.lower()
-            stats[f'birth_weight_mean_among_{sex}'] = sex_pop.birth_weight.mean()
-            stats[f'birth_weight_sd_among_{sex}'] = sex_pop.birth_weight.std()
-            stats[f'birth_weight_proportion_below_2500g_among_{sex}'] = (
-                    len(sex_pop[sex_pop.birth_weight < project_globals.UNDERWEIGHT]) / len(sex_pop)
+        if not pop.empty:
+
+
+            stats[f'birth_weight_mean'] = pop.birth_weight.mean()
+            stats[f'birth_weight_sd'] = pop.birth_weight.std()
+            stats[f'birth_weight_proportion_below_2500g'] = (
+                    len(pop[pop.birth_weight < project_globals.UNDERWEIGHT]) / len(pop)
             )
-            stats[f'gestational_age_mean_among_{sex}'] = sex_pop.gestation_time.mean()
-            stats[f'gestational_age_sd_among_{sex}'] = sex_pop.gestation_time.std()
-            stats[f'gestational_age_proportion_below_37w_among_{sex}'] = (
-                    len(sex_pop[sex_pop.gestation_time < project_globals.PRETERM]) / len(sex_pop)
+            stats[f'gestational_age_mean'] = pop.gestation_time.mean()
+            stats[f'gestational_age_sd'] = pop.gestation_time.std()
+            stats[f'gestational_age_proportion_below_37w'] = (
+                    len(pop[pop.gestation_time < project_globals.PRETERM]) / len(pop)
             )
         return stats
 
