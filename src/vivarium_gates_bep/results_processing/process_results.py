@@ -101,7 +101,6 @@ def filter_out_incomplete(data, keyspace):
             random_seeds = random_seeds.intersection(seeds_in_data)
         draw_data = draw_data.loc[draw_data[project_globals.RANDOM_SEED_COLUMN].isin(random_seeds)]
         output.append(draw_data)
-    import pdb; pdb.set_trace()
     return pd.concat(output, ignore_index=True).reset_index(drop=True)
 
 
