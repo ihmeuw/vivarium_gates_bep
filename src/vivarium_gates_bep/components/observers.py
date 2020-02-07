@@ -283,6 +283,10 @@ class NeonatalDisordersObserver:
 
         self.counts['total_population_male'] = len(pop[pop.sex == 'Male'])
         self.counts['total_population_female'] = len(pop[pop.sex == 'Female'])
+        for mother_cat, treatment in categories:
+            pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
+                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
+            self.counts[f'total_population_mother_{mother_cat}_treatment_{treatment}'] = len(pop_in_group)
 
     def on_time_step_prepare(self, event):
         pop = self.population_view.get(event.index)
