@@ -1,4 +1,5 @@
 from collections import Counter
+from itertools import product
 
 import pandas as pd
 from vivarium_public_health.metrics import (MortalityObserver as MortalityObserver_,
@@ -16,7 +17,8 @@ class MortalityObserver(MortalityObserver_):
     def setup(self, builder):
         super().setup(builder)
         columns_required = ['tracked', 'alive', 'entrance_time', 'exit_time', 'cause_of_death',
-                            'years_of_life_lost', 'age', project_globals.MOTHER_NUTRITION_STATUS_COLUMN]
+                            'years_of_life_lost', 'age', project_globals.MOTHER_NUTRITION_STATUS_COLUMN,
+                            project_globals.SCENARIO_COLUMN]
         if self.config.by_sex:
             columns_required += ['sex']
         self.age_bins = get_age_bins()
@@ -33,13 +35,15 @@ class MortalityObserver(MortalityObserver_):
             (get_years_of_life_lost, (self.life_expectancy, project_globals.CAUSES_OF_DEATH)),
         )
 
-        for mother_cat in project_globals.MOTHER_NUTRITION_CATEGORIES:
-            pop_in_group = pop.loc[pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat]
+        categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
+        for mother_cat, treatment in categories:
+            pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
+                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
             base_args = (pop_in_group, self.config.to_dict(), self.start_time, self.clock(), self.age_bins)
 
             for measure_getter, extra_args in measure_getters:
                 measure_data = measure_getter(*base_args, *extra_args)
-                measure_data = {f'{k}_mother_{mother_cat}': v
+                measure_data = {f'{k}_mother_{mother_cat}_treatment_{treatment}': v
                                 for k, v in measure_data.items()}
                 metrics.update(measure_data)
 
@@ -58,7 +62,8 @@ class DisabilityObserver(DisabilityObserver_):
         self.age_bins = get_age_bins()
 
         columns_required = ['tracked', 'alive', 'years_lived_with_disability',
-                            project_globals.MOTHER_NUTRITION_STATUS_COLUMN]
+                            project_globals.MOTHER_NUTRITION_STATUS_COLUMN,
+                            project_globals.SCENARIO_COLUMN]
         if self.config.by_age:
             columns_required += ['age']
         if self.config.by_sex:
@@ -77,14 +82,16 @@ class DisabilityObserver(DisabilityObserver_):
         self.population_view.update(pop)
 
     def update_metrics(self, pop):
-        for mother_cat in project_globals.MOTHER_NUTRITION_CATEGORIES:
-            pop_in_group = pop.loc[pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat]
+        categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
+        for mother_cat, treatment in categories:
+            pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
+                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
 
             ylds_this_step = get_years_lived_with_disability(pop_in_group, self.config.to_dict(),
                                                              self.clock().year, self.step_size(),
                                                              self.age_bins, self.disability_weight_pipelines,
                                                              project_globals.CAUSES_OF_DISABILITY)
-            ylds_this_step = {f'{k}_mother_{mother_cat}': v
+            ylds_this_step = {f'{k}_mother_{mother_cat}_treatment_{treatment}': v
                               for k, v in ylds_this_step.items()}
             self.years_lived_with_disability.update(ylds_this_step)
 
@@ -153,7 +160,8 @@ class DiseaseObserver:
                                                  creates_columns=[self.previous_state_column])
 
         columns_required = ['alive', f'{self.disease}', self.previous_state_column,
-                            project_globals.MOTHER_NUTRITION_STATUS_COLUMN]
+                            project_globals.MOTHER_NUTRITION_STATUS_COLUMN,
+                            project_globals.SCENARIO_COLUMN]
         for state in self.states:
             columns_required.append(f'{state}_event_time')
         if self.config['by_age']:
@@ -176,13 +184,15 @@ class DiseaseObserver:
         pop = self.population_view.get(event.index)
         # Ignoring the edge case where the step spans a new year.
         # Accrue all counts and time to the current year.
-        for mother_cat in project_globals.MOTHER_NUTRITION_CATEGORIES:
-            pop_in_group = pop.loc[pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat]
+        categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
+        for mother_cat, treatment in categories:
+            pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
+                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
 
             for state in self.states:
                 state_person_time_this_step = get_state_person_time(pop_in_group, self.config, self.disease, state,
                                                                     self.clock().year, event.step_size, self.age_bins)
-                state_person_time_this_step = {f'{k}_mother_{mother_cat}': v
+                state_person_time_this_step = {f'{k}_mother_{mother_cat}_treatment_{treatment}': v
                                                for k, v in state_person_time_this_step.items()}
                 self.person_time.update(state_person_time_this_step)
 
@@ -193,13 +203,15 @@ class DiseaseObserver:
 
     def on_collect_metrics(self, event):
         pop = self.population_view.get(event.index)
-        for mother_cat in project_globals.MOTHER_NUTRITION_CATEGORIES:
-            pop_in_group = pop.loc[pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat]
+        categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
+        for mother_cat, treatment in categories:
+            pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
+                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
 
             for transition in self.transitions:
                 transition_counts_this_step = get_transition_count(pop_in_group, self.config, self.disease, transition,
                                                                    event.time, self.age_bins)
-                transition_counts_this_step = {f'{k}_mother_{mother_cat}': v
+                transition_counts_this_step = {f'{k}_mother_{mother_cat}_treatment_{treatment}': v
                                                for k, v in transition_counts_this_step.items()}
                 self.counts.update(transition_counts_this_step)
 
@@ -238,13 +250,13 @@ class NeonatalDisordersObserver:
         self.states = project_globals.DISEASE_MODEL_MAP[self.disease]['states']
         self.transitions = project_globals.DISEASE_MODEL_MAP[self.disease]['transitions']
 
-        columns_required = ['alive', f'{self.disease}', project_globals.MOTHER_NUTRITION_STATUS_COLUMN]
+        columns_required = ['alive', f'{self.disease}',
+                            project_globals.MOTHER_NUTRITION_STATUS_COLUMN,
+                            project_globals.SCENARIO_COLUMN, 'sex']
         for state in self.states:
             columns_required.append(f'{state}_event_time')
         if self.config['by_age']:
             columns_required += ['age']
-        if self.config['by_sex']:
-            columns_required += ['sex']
         self.population_view = builder.population.get_view(columns_required)
         builder.population.initializes_simulants(self.on_initialize_simulants,
                                                  requires_columns=columns_required)
@@ -258,29 +270,30 @@ class NeonatalDisordersObserver:
     def on_initialize_simulants(self, pop_data):
         pop = self.population_view.get(pop_data.index)
 
-        for mother_cat in project_globals.MOTHER_NUTRITION_CATEGORIES:
-            pop_in_group = pop.loc[pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat]
-
+        categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
+        for mother_cat, treatment in categories:
+            pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
+                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
+            self.counts[f'total_population_mother_{mother_cat}_treatment_{treatment}'] = len(pop_in_group)
             prevalent_at_birth_count = get_prevalent_at_birth_count(pop_in_group, self.config, self.disease,
                                                                     self.disease, self.age_bins)
-            prevalent_at_birth_count = {f'{k}_mother_{mother_cat}': v
+            prevalent_at_birth_count = {f'{k}_mother_{mother_cat}_treatment_{treatment}': v
                                         for k, v in prevalent_at_birth_count.items()}
             self.counts.update(prevalent_at_birth_count)
-
-        self.counts['total_population_male'] = len(pop[pop.sex == 'Male'])
-        self.counts['total_population_female'] = len(pop[pop.sex == 'Female'])
 
     def on_time_step_prepare(self, event):
         pop = self.population_view.get(event.index)
         # Ignoring the edge case where the step spans a new year.
         # Accrue all counts and time to the current year.
-        for mother_cat in project_globals.MOTHER_NUTRITION_CATEGORIES:
-            pop_in_group = pop.loc[pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat]
+        categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
+        for mother_cat, treatment in categories:
+            pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
+                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
 
             for state in self.states:
                 state_person_time_this_step = get_state_person_time(pop_in_group, self.config, self.disease, state,
                                                                     self.clock().year, event.step_size, self.age_bins)
-                state_person_time_this_step = {f'{k}_mother_{mother_cat}': v
+                state_person_time_this_step = {f'{k}_mother_{mother_cat}_treatment_{treatment}': v
                                                for k, v in state_person_time_this_step.items()}
                 self.person_time.update(state_person_time_this_step)
 
@@ -307,7 +320,8 @@ class ChildGrowthFailureObserver():
         self.results = {}
 
         self.population_view = builder.population.get_view(['age', 'sex',
-                                                            project_globals.MOTHER_NUTRITION_STATUS_COLUMN],
+                                                            project_globals.MOTHER_NUTRITION_STATUS_COLUMN,
+                                                            project_globals.SCENARIO_COLUMN],
                                                            query='alive == "alive"')
 
         builder.event.register_listener('collect_metrics', self.on_collect_metrics)
@@ -316,33 +330,41 @@ class ChildGrowthFailureObserver():
     def on_collect_metrics(self, event):
         pop = self.population_view.get(event.index)
         pop = pop[(self.record_age <= pop.age) & (pop.age < self.record_age + to_years(event.step_size))]
-        for mother_cat in project_globals.MOTHER_NUTRITION_CATEGORIES:
-            pop_in_group = pop.loc[pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat]
+        categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
+        for mother_cat, treatment in categories:
+            pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
+                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
 
             stats = self.get_cgf_stats(pop_in_group)
-            stats = {f'{k}_mother_{mother_cat}': v
+            stats = {f'{k}_mother_{mother_cat}_treatment_{treatment}': v
                      for k, v in stats.items()}
             self.results.update(stats)
 
     def get_cgf_stats(self, pop):
-        stats = {}
+        stats = {
+            'wasting_z_score_mean_at_six_months': 0,
+            'wasting_z_score_sd_at_six_months': 0,
+            'stunting_z_score_mean_at_six_months': 0,
+            'stunting_z_score_sd_at_six_months': 0,
+        }
+        for cat in ['cat1', 'cat2', 'cat3', 'cat4']:
+            stats[f'wasting_{cat}_exposed_at_six_months'] = 0
+            stats[f'stunting_{cat}_exposed_at_six_months'] = 0
         if not pop.empty:
             pop = pop.drop(columns='age')
             pop['wasting_z'] = self.wasting(pop.index, skip_post_processor=True)
             pop['wasting_cat'] = self.wasting(pop.index)
             pop['stunting_z'] = self.stunting(pop.index, skip_post_processor=True)
             pop['stunting_cat'] = self.stunting(pop.index)
-            for sex in pop.sex.unique():
-                sex_pop = pop[pop.sex == sex]
-                sex = sex.lower()
-                stats[f'wasting_z_score_mean_at_six_months_among_{sex}'] = sex_pop.wasting_z.mean()
-                stats[f'wasting_z_score_sd_at_six_months_among_{sex}'] = sex_pop.wasting_z.std()
-                stats[f'stunting_z_score_mean_at_six_months_among_{sex}'] = sex_pop.wasting_z.mean()
-                stats[f'stunting_z_score_sd_at_six_months_among_{sex}'] = sex_pop.wasting_z.std()
-                for cat, value in dict(pop.wasting_cat.value_counts()).items():
-                    stats[f'wasting_{cat}_exposed_at_six_months_among_{sex}'] = value
-                for cat, value in dict(pop.stunting_cat.value_counts()).items():
-                    stats[f'stunting_{cat}_exposed_at_six_months_among_{sex}'] = value
+
+            stats[f'wasting_z_score_mean_at_six_months'] = pop.wasting_z.mean()
+            stats[f'wasting_z_score_sd_at_six_months'] = pop.wasting_z.std()
+            stats[f'stunting_z_score_mean_at_six_months'] = pop.wasting_z.mean()
+            stats[f'stunting_z_score_sd_at_six_months'] = pop.wasting_z.std()
+            for cat, value in dict(pop.wasting_cat.value_counts()).items():
+                stats[f'wasting_{cat}_exposed_at_six_months'] = value
+            for cat, value in dict(pop.stunting_cat.value_counts()).items():
+                stats[f'stunting_{cat}_exposed_at_six_months'] = value
         return stats
 
     def metrics(self, index, metrics):
@@ -361,7 +383,7 @@ class LBWSGObserver:
         self.lbwsg = builder.value.get_value(value_key)
         builder.value.register_value_modifier('metrics', self.metrics)
         self.results = {}
-        columns = ['sex', project_globals.MOTHER_NUTRITION_STATUS_COLUMN]
+        columns = ['sex', project_globals.MOTHER_NUTRITION_STATUS_COLUMN, project_globals.SCENARIO_COLUMN]
         self.population_view = builder.population.get_view(columns)
         builder.population.initializes_simulants(self.on_initialize_simulants,
                                                  requires_columns=columns,
@@ -372,27 +394,32 @@ class LBWSGObserver:
         raw_exposure = self.lbwsg(pop_data.index, skip_post_processor=True)
         exposure = self.lbwsg(pop_data.index)
         pop = pd.concat([pop, raw_exposure, exposure], axis=1)
-        for mother_cat in project_globals.MOTHER_NUTRITION_CATEGORIES:
-            pop_in_group = pop.loc[pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat]
+        categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
+        for mother_cat, treatment in categories:
+            pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
+                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
             stats = self.get_lbwsg_stats(pop_in_group)
-            stats = {f'{k}_mother_{mother_cat}': v
+            stats = {f'{k}_mother_{mother_cat}_treatment_{treatment}': v
                      for k, v in stats.items()}
             self.results.update(stats)
 
     def get_lbwsg_stats(self, pop):
-        stats = {}
-        for sex in pop.sex.unique():
-            sex_pop = pop[pop.sex == sex]
-            sex = sex.lower()
-            stats[f'birth_weight_mean_among_{sex}'] = sex_pop.birth_weight.mean()
-            stats[f'birth_weight_sd_among_{sex}'] = sex_pop.birth_weight.std()
-            stats[f'birth_weight_proportion_below_2500g_among_{sex}'] = (
-                    len(sex_pop[sex_pop.birth_weight < project_globals.UNDERWEIGHT]) / len(sex_pop)
+        stats = {'birth_weight_mean': 0,
+                 'birth_weight_sd': 0,
+                 'birth_weight_proportion_below_2500g': 0,
+                 'gestational_age_mean': 0,
+                 'gestational_age_sd': 0,
+                 'gestational_age_proportion_below_37w': 0}
+        if not pop.empty:
+            stats[f'birth_weight_mean'] = pop.birth_weight.mean()
+            stats[f'birth_weight_sd'] = pop.birth_weight.std()
+            stats[f'birth_weight_proportion_below_2500g'] = (
+                    len(pop[pop.birth_weight < project_globals.UNDERWEIGHT]) / len(pop)
             )
-            stats[f'gestational_age_mean_among_{sex}'] = sex_pop.gestation_time.mean()
-            stats[f'gestational_age_sd_among_{sex}'] = sex_pop.gestation_time.std()
-            stats[f'gestational_age_proportion_below_37w_among_{sex}'] = (
-                    len(sex_pop[sex_pop.gestation_time < project_globals.PRETERM]) / len(sex_pop)
+            stats[f'gestational_age_mean'] = pop.gestation_time.mean()
+            stats[f'gestational_age_sd'] = pop.gestation_time.std()
+            stats[f'gestational_age_proportion_below_37w'] = (
+                    len(pop[pop.gestation_time < project_globals.PRETERM]) / len(pop)
             )
         return stats
 
