@@ -252,13 +252,11 @@ class NeonatalDisordersObserver:
 
         columns_required = ['alive', f'{self.disease}',
                             project_globals.MOTHER_NUTRITION_STATUS_COLUMN,
-                            project_globals.SCENARIO_COLUMN]
+                            project_globals.SCENARIO_COLUMN, 'sex']
         for state in self.states:
             columns_required.append(f'{state}_event_time')
         if self.config['by_age']:
             columns_required += ['age']
-        if self.config['by_sex']:
-            columns_required += ['sex']
         self.population_view = builder.population.get_view(columns_required)
         builder.population.initializes_simulants(self.on_initialize_simulants,
                                                  requires_columns=columns_required)
