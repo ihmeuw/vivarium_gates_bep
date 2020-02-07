@@ -8,6 +8,12 @@ from typing import Dict
 from vivarium_gates_bep import globals as project_globals
 
 OUTPUT_FOLDER_NAME = 'count_space'
+
+INPUT_DRAW_COLUMN = 'input_draw'
+SCENARIO_COLUMN = 'scenario'
+GROUPING_COLUMNS = [INPUT_DRAW_COLUMN, SCENARIO_COLUMN]
+STACK_COLUMN = 'level_2'
+
 FIELD_REGEX = '{([A-Z_]+)}'
 EXCLUDE_TEMPLATES = [
     # TODO: do something with the non-count space template
@@ -38,10 +44,14 @@ def create_template_regex(template_name: str) -> str:
 def create_count_space_data_for_single_columns(raw_output: pd.DataFrame) -> pd.DataFrame:
     column_names = [column for column in project_globals.SINGLE_COLUMNS
                     if column != project_globals.MALNOURISHED_MOTHERS_PROPORTION_COLUMN]
-    df = pd.DataFrame(raw_output[['input_draw'] + column_names].groupby('input_draw').sum().stack(), columns=['count'])
+
+    df = pd.DataFrame(
+        raw_output[GROUPING_COLUMNS + column_names].groupby(GROUPING_COLUMNS).sum().stack(), columns=['count']
+    )
     df.reset_index(inplace=True)
-    df.rename({'level_1': 'property'}, axis=1, inplace=True)
-    df.set_index(['input_draw', 'property'], inplace=True)
+
+    df.rename({STACK_COLUMN: 'property'}, axis=1, inplace=True)
+    df.set_index(['property'] + GROUPING_COLUMNS, inplace=True)
     return df
 
 
@@ -52,34 +62,26 @@ def create_count_space_data_for_template(raw_output: pd.DataFrame, template_name
     column_names = [column_name.lower() for column_name in project_globals.RESULT_COLUMNS(template_name)]
     template_regex = create_template_regex(template_name)
 
-    df = pd.DataFrame(raw_output[['input_draw'] + column_names].groupby('input_draw').sum().stack(),
-                      columns=[template_name])
+    df = pd.DataFrame(
+        raw_output[GROUPING_COLUMNS + column_names].groupby(GROUPING_COLUMNS).sum().stack(),
+        columns=[template_name]
+    )
     df.reset_index(inplace=True)
 
     for i, field_name in enumerate(field_names):
-        df[field_name] = pd.Series([re.findall(template_regex, df.at[row, 'level_1'])[0][i] for row in df.index],
+        df[field_name] = pd.Series([re.findall(template_regex, df.at[row, STACK_COLUMN])[0][i] for row in df.index],
                                    df.index)
 
-    del df['level_1']
-    df.set_index(['input_draw'] + field_names, inplace=True)
+    del df[STACK_COLUMN]
+    df.set_index(field_names + GROUPING_COLUMNS, inplace=True)
     return df
-
-
-def create_count_space_data_as_dict(raw_output_path: str) -> Dict[str, pd.DataFrame]:
-    raw_output = pd.read_hdf(raw_output_path)
-    raw_output.reset_index(drop=True, inplace=True)
-    count_space_data = {
-        template_name: create_count_space_data_for_template(raw_output, template_name)
-        for template_name in project_globals.COLUMN_TEMPLATES if template_name not in EXCLUDE_TEMPLATES
-    }
-    count_space_data['standard'] = create_count_space_data_for_single_columns(raw_output)
-
-    return count_space_data
 
 
 def create_count_space_data_from_hdf(hdf_path: str) -> None:
     raw_output = pd.read_hdf(hdf_path)
     raw_output.reset_index(drop=True, inplace=True)
+    raw_output.rename(columns={'maternal_supplementation.scenario': SCENARIO_COLUMN}, inplace=True)
+
     output_dir = Path(os.path.dirname(hdf_path)) / OUTPUT_FOLDER_NAME
     output_dir.mkdir(parents=True, exist_ok=True)
 
