@@ -21,7 +21,7 @@ def build_results(output_file: str):
     rows = len(data)
     data = process_results.filter_out_incomplete(data, keyspace)
     new_rows = len(data)
-    logger.info(f'Filtered {rows - new_rows} from data due to incomplete information.  {rows} remaining.')
+    logger.info(f'Filtered {rows - new_rows} from data due to incomplete information.  {new_rows} remaining.')
     data = process_results.aggregate_over_seed(data)
     logger.info(f'Computing raw count and proportion data.')
     measure_data = process_results.make_measure_data(data)
