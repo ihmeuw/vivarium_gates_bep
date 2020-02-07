@@ -341,7 +341,15 @@ class ChildGrowthFailureObserver():
             self.results.update(stats)
 
     def get_cgf_stats(self, pop):
-        stats = {}
+        stats = {
+            'wasting_z_score_mean_at_six_months': 0,
+            'wasting_z_score_sd_at_six_months': 0,
+            'stunting_z_score_mean_at_six_months': 0,
+            'stunting_z_score_sd_at_six_months': 0,
+        }
+        for cat in ['cat1', 'cat2', 'cat3', 'cat4']:
+            stats[f'wasting_{cat}_exposed_at_six_months'] = 0
+            stats[f'stunting_{cat}_exposed_at_six_months'] = 0
         if not pop.empty:
             pop = pop.drop(columns='age')
             pop['wasting_z'] = self.wasting(pop.index, skip_post_processor=True)
@@ -396,10 +404,13 @@ class LBWSGObserver:
             self.results.update(stats)
 
     def get_lbwsg_stats(self, pop):
-        stats = {}
+        stats = {'birth_weight_mean': 0,
+                 'birth_weight_sd': 0,
+                 'birth_weight_proportion_below_2500g': 0,
+                 'gestational_age_mean': 0,
+                 'gestational_age_sd': 0,
+                 'gestational_age_proportion_below_37w': 0}
         if not pop.empty:
-
-
             stats[f'birth_weight_mean'] = pop.birth_weight.mean()
             stats[f'birth_weight_sd'] = pop.birth_weight.std()
             stats[f'birth_weight_proportion_below_2500g'] = (
