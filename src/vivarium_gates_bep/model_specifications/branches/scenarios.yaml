@@ -1,2 +1,6 @@
 input_draw_count: 50
 random_seed_count: 10
+
+branches:
+  - maternal_supplementation:
+      scenario: ['baseline', 'mmn_scale_up', 'bep_scale_up', 'bep_targeted_scale_up']

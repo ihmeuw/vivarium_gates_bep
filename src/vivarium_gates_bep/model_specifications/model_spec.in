@@ -86,33 +86,17 @@ configuration:
     metrics:
         mortality:
             by_age: True
-            by_sex: True
-            by_year: True
         disability:
             by_age: True
-            by_sex: True
-            by_year: True
         diarrheal_diseases_observer:
             by_age: True
-            by_sex: True
-            by_year: True
         measles_observer:
             by_age: True
-            by_sex: True
-            by_year: True
         lower_respiratory_infections_observer:
             by_age: True
-            by_sex: True
-            by_year: True
         meningitis_observer:
             by_age: True
-            by_sex: True
-            by_year: True
         neonatal_disorders_observer:
             by_age: True
-            by_sex: True
-            by_year: True
         protein_energy_malnutrition_observer:
             by_age: True
-            by_sex: True
-            by_year: True

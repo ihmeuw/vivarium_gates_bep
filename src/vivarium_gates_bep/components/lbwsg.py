@@ -11,29 +11,33 @@ import pandas as pd
 from vivarium_public_health.utilities import EntityString, TargetString
 from vivarium_public_health.risks.data_transformations import pivot_categorical
 
-MISSING_CATEGORY = 'cat212'
+from vivarium_gates_bep import globals as project_globals
 
 
 class LBWSGRisk:
 
     @property
     def name(self):
-        return "risk.low_birth_weight_short_gestation"
+        return f"risk.{project_globals.LBWSG_MODEL_NAME}"
 
     def setup(self, builder):
-        self.risk = EntityString('risk_factor.low_birth_weight_and_short_gestation')
+        self.risk = EntityString(f'risk_factor.{project_globals.LBWSG_MODEL_NAME}')
         self.exposure_distribution = LBWSGDistribution(builder)
 
-        columns = ['birth_weight', 'gestation_time']
-        self.population_view = builder.population.get_view(columns)
+        # FIXME: These are not actual birth weights/gestational times, but the
+        # raw values that source pipelines.  They should use different column
+        # names but that's too much to try to fix now.  We didn't build the
+        # distribution class with clear enough boundaries to make the
+        # distinction.
+        self.population_view = builder.population.get_view(project_globals.LBWSG_COLUMNS)
         builder.population.initializes_simulants(self.on_initialize_simulants,
-                                                 creates_columns=columns,
+                                                 creates_columns=project_globals.LBWSG_COLUMNS,
                                                  requires_columns=['age', 'sex'])
 
         self._raw_exposure = builder.value.register_value_producer(
             f'{self.risk.name}.raw_exposure',
             source=lambda index: self.population_view.get(index),
-            requires_columns=columns
+            requires_columns=project_globals.LBWSG_COLUMNS
         )
         self.exposure = builder.value.register_value_producer(
             f'{self.risk.name}.exposure',
@@ -45,18 +49,24 @@ class LBWSGRisk:
     def on_initialize_simulants(self, pop_data):
         exposure = self.exposure_distribution.get_birth_weight_and_gestational_age(pop_data.index)
         self.population_view.update(pd.DataFrame({
-            'birth_weight': exposure['birth_weight'],
-            'gestation_time': exposure['gestation_time']
+            project_globals.BIRTH_WEIGHT: exposure[project_globals.BIRTH_WEIGHT],
+            project_globals.GESTATION_TIME: exposure[project_globals.GESTATION_TIME]
         }, index=pop_data.index))
 
 
+# FIXME: This class is not a clear representation of the lbwsg distribution.
+# It should act as a standalone (e.g. a library) class that could be used
+# to stand up and sample from the distribution outside the simulation, because
+# we have definite need of that.  A possibility is to port it to the
+# risk_distributions library and construct a simulation wrapper like we do
+# with the ensemble distributions in vph.
 class LBWSGDistribution:
 
     def __init__(self, builder):
-        self.risk = EntityString('risk_factor.low_birth_weight_and_short_gestation')
+        self.risk = EntityString(f'risk_factor.{project_globals.LBWSG_MODEL_NAME}')
         self.randomness = builder.randomness.get_stream(f'{self.risk.name}.exposure')
 
-        self.categories_by_interval = get_categories_by_interval(builder, self.risk)
+        self.categories_by_interval = get_lbwsg_categories_by_interval(builder)
         self.intervals_by_category = self.categories_by_interval.reset_index().set_index('cat')
         self.max_gt_by_bw, self.max_bw_by_gt = self._get_boundary_mappings()
 
@@ -77,49 +87,60 @@ class LBWSGDistribution:
         # FIXME: DIRTY HACK.  The problem with absolute shifts is that
         #  they can take you way out of a realistic domain for your
         #  values.  Like giving people negative birth weights
-        exposure.loc[exposure.birth_weight < 100, 'birth_weight'] = 100
+        birth_weight = exposure[project_globals.BIRTH_WEIGHT]
+        exposure.loc[birth_weight < 100, project_globals.BIRTH_WEIGHT] = 100
         exposure = self._convert_boundary_cases(exposure)
         categorical_exposure = self.categories_by_interval.iloc[self._get_categorical_index(exposure)]
         categorical_exposure.index = exposure.index
         return categorical_exposure
 
     def _convert_boundary_cases(self, exposure):
+        birth_weight = exposure[project_globals.BIRTH_WEIGHT]
+        gestation_time = exposure[project_globals.GESTATION_TIME]
         eps = 1e-4
         outside_bounds = self._get_categorical_index(exposure) == -1
         shift_down = outside_bounds & (
-                (exposure.birth_weight < 1000)
-                | ((1000 < exposure.birth_weight) & (exposure.birth_weight < 4500) & (40 < exposure.gestation_time))
+                (birth_weight < 1000)
+                | ((1000 < birth_weight) & (birth_weight < project_globals.MAX_BIRTH_WEIGHT)
+                   & (40 < gestation_time))
         )
         shift_left = outside_bounds & (
-                (1000 < exposure.birth_weight) & (exposure.gestation_time < 34)
-                | (4500 < exposure.birth_weight) & (exposure.gestation_time < 42)
+            ((1000 < birth_weight) & (gestation_time < 34))
+                | ((project_globals.MAX_BIRTH_WEIGHT < birth_weight)
+                   & (gestation_time < project_globals.MAX_GESTATIONAL_TIME))
         )
         tmrel = outside_bounds & (
-                (4500 < exposure.birth_weight) & (42 < exposure.gestation_time)
+                (project_globals.MAX_BIRTH_WEIGHT < birth_weight)
+                & (project_globals.MAX_GESTATIONAL_TIME < gestation_time)
         )
 
-        exposure.loc[shift_down, 'gestation_time'] = (self.max_gt_by_bw
-                                                      .loc[exposure.loc[shift_down, 'birth_weight']]
-                                                      .values) - eps
-        exposure.loc[shift_left, 'birth_weight'] = (self.max_bw_by_gt
-                                                    .loc[exposure.loc[shift_left, 'gestation_time']]
-                                                    .values) - eps
-        exposure.loc[tmrel, 'gestation_time'] = 42 - eps
-        exposure.loc[tmrel, 'birth_weight'] = 4500 - eps
+        max_gt_for_bw = self.max_gt_by_bw.loc[exposure.loc[shift_down, project_globals.BIRTH_WEIGHT]].values
+        exposure.loc[shift_down, project_globals.GESTATION_TIME] = max_gt_for_bw - eps
+
+        max_bw_for_gt = self.max_bw_by_gt.loc[exposure.loc[shift_left, project_globals.GESTATION_TIME]].values
+        exposure.loc[shift_left, project_globals.BIRTH_WEIGHT] = max_bw_for_gt - eps
+
+        exposure.loc[tmrel, project_globals.GESTATION_TIME] = project_globals.MAX_GESTATIONAL_TIME - eps
+        exposure.loc[tmrel, project_globals.BIRTH_WEIGHT] = project_globals.MAX_BIRTH_WEIGHT - eps
+
         return exposure
 
     def _get_categorical_index(self, exposure):
-        exposure_bw_gt_index = exposure.set_index(['gestation_time', 'birth_weight']).index
+        exposure_bw_gt_index = exposure.set_index(project_globals.LBWSG_COLUMNS).index
         return self.categories_by_interval.index.get_indexer(exposure_bw_gt_index, method=None)
 
     def _convert_to_continuous(self, categorical_exposure):
-        draws = {'birth_weight': self.randomness.get_draw(categorical_exposure.index, additional_key='birth_weight'),
-                 'gestation_time': self.randomness.get_draw(categorical_exposure.index, additional_key='gestation_time')}
+        birth_weight_draw = self.randomness.get_draw(categorical_exposure.index,
+                                                     additional_key=project_globals.BIRTH_WEIGHT)
+        gestational_time_draw = self.randomness.get_draw(categorical_exposure.index,
+                                                         additional_key=project_globals.GESTATION_TIME)
+        draws = {project_globals.BIRTH_WEIGHT: birth_weight_draw,
+                 project_globals.GESTATION_TIME: gestational_time_draw}
 
         def single_values_from_category(row):
             idx = row['index']
-            bw_draw = draws['birth_weight'][idx]
-            gt_draw = draws['gestation_time'][idx]
+            bw_draw = draws[project_globals.BIRTH_WEIGHT][idx]
+            gt_draw = draws[project_globals.GESTATION_TIME][idx]
 
             intervals = self.intervals_by_category.loc[row['cat']]
 
@@ -132,32 +153,32 @@ class LBWSGDistribution:
 
         values = categorical_exposure.reset_index().apply(single_values_from_category, axis=1)
         return pd.DataFrame(list(values), index=categorical_exposure.index,
-                            columns=['birth_weight', 'gestation_time'])
+                            columns=project_globals.LBWSG_COLUMNS)
 
     def _get_boundary_mappings(self):
         cats = self.categories_by_interval.reset_index()
         max_gt_by_bw = pd.Series({bw_interval: pd.Index(group.gestation_time).right.max()
-                                  for bw_interval, group in cats.groupby('birth_weight')})
+                                  for bw_interval, group in cats.groupby(project_globals.BIRTH_WEIGHT)})
         max_bw_by_gt = pd.Series({gt_interval: pd.Index(group.birth_weight).right.max()
-                                  for gt_interval, group in cats.groupby('gestation_time')})
+                                  for gt_interval, group in cats.groupby(project_globals.GESTATION_TIME)})
         return max_gt_by_bw, max_bw_by_gt
 
     @staticmethod
     def get_exposure_data(builder):
-        exposure = read_data_by_draw(builder, 'risk_factor.low_birth_weight_and_short_gestation.exposure')
+        exposure = read_data_by_draw(builder, project_globals.LBWSG_EXPOSURE)
         exposure = pivot_categorical(exposure)
-        exposure[MISSING_CATEGORY] = 0.0
+        exposure[project_globals.LBWSG_MISSING_CATEGORY.CAT] = project_globals.LBWSG_MISSING_CATEGORY.EXPOSURE
         return exposure
 
 
-def get_categories_by_interval(builder, risk):
-    category_dict = builder.data.load(f'{risk}.categories')
-    category_dict[MISSING_CATEGORY] = 'Birth prevalence - [37, 38) wks, [1000, 1500) g'
+def get_lbwsg_categories_by_interval(builder):
+    category_dict = builder.data.load(project_globals.LBWSG_CATEGORIES)
+    category_dict[project_globals.LBWSG_MISSING_CATEGORY.CAT] = project_globals.LBWSG_MISSING_CATEGORY.NAME
     cats = (pd.DataFrame.from_dict(category_dict, orient='index')
             .reset_index()
             .rename(columns={'index': 'cat', 0: 'name'}))
     idx = pd.MultiIndex.from_tuples(cats.name.apply(get_intervals_from_name),
-                                    names=['gestation_time', 'birth_weight'])
+                                    names=project_globals.LBWSG_COLUMNS)
     cats = cats['cat']
     cats.index = idx
     return cats
@@ -174,8 +195,9 @@ def get_intervals_from_name(name: str) -> Tuple[pd.Interval, pd.Interval]:
                     .replace(') wks [', ' ')
                     .replace(') g', ''))
     numbers_only = [int(n) for n in numbers_only.split()]
-    return (pd.Interval(numbers_only[0], numbers_only[1], closed='left'),
-            pd.Interval(numbers_only[2], numbers_only[3], closed='left'))
+    # FIXME: The raw ordering here is brittle
+    return (pd.Interval(numbers_only[2], numbers_only[3], closed='left'),
+            pd.Interval(numbers_only[0], numbers_only[1], closed='left'))
 
 
 class LBWSGRiskEffect:
@@ -192,7 +214,7 @@ class LBWSGRiskEffect:
             supplied in the form "entity_type.entity_name.measure"
             where entity_type should be singular (e.g., cause instead of causes).
         """
-        self.risk = EntityString('risk_factor.low_birth_weight_and_short_gestation')
+        self.risk = EntityString(f'risk_factor.low_birth_weight_and_short_gestation')
         self.target = TargetString(target)
 
     @property
@@ -227,7 +249,8 @@ class LBWSGRiskEffect:
         relative_risk_data = (relative_risk_data[correct_target]
                               .drop(['affected_entity', 'affected_measure'], 'columns'))
         relative_risk_data = pivot_categorical(relative_risk_data)
-        relative_risk_data[MISSING_CATEGORY] = (relative_risk_data['cat106'] + relative_risk_data['cat116']) / 2
+        relative_risk_data[project_globals.LBWSG_MISSING_CATEGORY.CAT] = (relative_risk_data['cat106']
+                                                                          + relative_risk_data['cat116']) / 2
         return relative_risk_data
 
     def get_population_attributable_fraction_data(self, builder):
