@@ -25,7 +25,9 @@ LOCATIONS = [
 # Model Constants #
 ###################
 # This is a collection of constants used in data generation or as
-# invariant model parameters.
+# invariant model parameters.  Sources for these parameters can be found
+# in the concept model document.
+# TODO: Include concept model document in repository.
 
 def twenty_percent_of_mean_variance(mean):
     ninety_five_percent_spread = .2 * mean
@@ -137,27 +139,6 @@ BEP_CGF_SHIFT_SIZE_PARAMETERS = {
 }
 
 
-class __SCENARIOS(NamedTuple):
-    BASELINE: str = 'baseline'
-    IFA: str = 'ifa_scale_up'
-    MMN: str = 'mmn_scale_up'
-    BEP: str = 'bep_scale_up'
-    BEP_TARGETED: str = 'bep_targeted_scale_up'
-
-
-SCENARIOS = __SCENARIOS()
-
-
-class __TREATMENTS(NamedTuple):
-    NONE: str = 'none'
-    IFA: str = 'ifa'
-    MMN: str = 'mmn'
-    BEP: str = 'bep'
-
-
-TREATMENTS = __TREATMENTS()
-
-
 #############
 # Data Keys #
 #############
@@ -244,7 +225,7 @@ LBWSG_PAF = 'risk_factor.low_birth_weight_and_short_gestation.population_attribu
 
 
 ###########################
-# Disease Model variables #
+# Disease Model Constants #
 ###########################
 
 DIARRHEA_MODEL_NAME = 'diarrheal_diseases'
@@ -330,6 +311,68 @@ DISEASE_MODEL_MAP = {
     },
 }
 
+########################
+# Risk Model Constants #
+########################
+
+LBWSG_MODEL_NAME = 'low_birth_weight_and_short_gestation'
+BIRTH_WEIGHT = 'birth_weight'
+GESTATION_TIME = 'gestation_time'
+LBWSG_COLUMNS = [BIRTH_WEIGHT, GESTATION_TIME]
+UNDERWEIGHT = 2500  # grams
+MAX_BIRTH_WEIGHT = 4500  # grams
+PRETERM = 37  # weeks
+MAX_GESTATIONAL_TIME = 42  # weeks
+
+
+class __LBWSG_MISSING_CATEGORY(NamedTuple):
+    CAT: str = 'cat212'
+    NAME: str = 'Birth prevalence - [37, 38) wks, [1000, 1500) g'
+    EXPOSURE: float = 0.
+
+
+LBWSG_MISSING_CATEGORY = __LBWSG_MISSING_CATEGORY()
+
+
+WASTING_MODEL_NAME = 'child_wasting'
+STUNTING_MODEL_NAME = 'child_stunting'
+
+
+MATERNAL_MALNUTRITION_MODEL_NAME = 'maternal_malnutrition'
+MOTHER_NUTRITION_STATUS_COLUMN = 'mother_malnourished'
+MOTHER_NUTRITION_NORMAL = 'normal'
+MOTHER_NUTRITION_MALNOURISHED = 'malnourished'
+MOTHER_NUTRITION_CATEGORIES = (MOTHER_NUTRITION_NORMAL, MOTHER_NUTRITION_MALNOURISHED)
+
+
+#############################
+# Treatment Model Constants #
+#############################
+
+class __SCENARIOS(NamedTuple):
+    BASELINE: str = 'baseline'
+    IFA: str = 'ifa_scale_up'
+    MMN: str = 'mmn_scale_up'
+    BEP: str = 'bep_scale_up'
+    BEP_TARGETED: str = 'bep_targeted_scale_up'
+
+
+SCENARIOS = __SCENARIOS()
+
+
+class __TREATMENTS(NamedTuple):
+    NONE: str = 'none'
+    IFA: str = 'ifa'
+    MMN: str = 'mmn'
+    BEP: str = 'bep'
+
+
+TREATMENTS = __TREATMENTS()
+
+TREATMENT_MODEL_NAME = 'maternal_supplementation'
+BASELINE_COLUMN = 'baseline_maternal_supplementation_type'
+SCENARIO_COLUMN = 'scenario_maternal_supplementation_type'
+
 #################################
 # Results columns and variables #
 #################################
@@ -338,16 +381,25 @@ DISEASE_MODEL_MAP = {
 TOTAL_POPULATION_COLUMN = 'total_population'
 TOTAL_YLDS_COLUMN = 'years_lived_with_disability'
 TOTAL_YLLS_COLUMN = 'years_of_life_lost'
+SINGLE_COLUMNS = (TOTAL_POPULATION_COLUMN, TOTAL_YLLS_COLUMN, TOTAL_YLDS_COLUMN)
+
+# Columns from parallel runs
+INPUT_DRAW_COLUMN = 'input_draw'
+RANDOM_SEED_COLUMN = 'random_seed'
+
+PSIMULATE_COLUMNS = (INPUT_DRAW_COLUMN, RANDOM_SEED_COLUMN)
 
 # Data columns for randomly sampled data
 MALNOURISHED_MOTHERS_PROPORTION_COLUMN = 'maternal_malnourishment_proportion'
 
-
-SINGLE_COLUMNS = (TOTAL_POPULATION_COLUMN, TOTAL_YLLS_COLUMN, TOTAL_YLDS_COLUMN,
-                  MALNOURISHED_MOTHERS_PROPORTION_COLUMN)
+STATES = tuple(state for model in DISEASE_MODELS for state in DISEASE_MODEL_MAP[model]['states'])
+THROWAWAY_COLUMNS = ([f'{state}_event_count' for state in STATES]
+                     + [f'{state}_prevalent_cases_at_sim_end' for state in STATES if 'susceptible' not in state]
+                     + [MALNOURISHED_MOTHERS_PROPORTION_COLUMN])
 
 
 TOTAL_POPULATION_COLUMN_TEMPLATE = 'total_population_{POP_STATE}'
+TOTAL_POPULATION_COLUMN_STRATIFIED_TEMPLATE = 'total_population_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT}'
 PERSON_TIME_COLUMN_TEMPLATE = 'person_time_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT}'
 DEATH_COLUMN_TEMPLATE = 'death_due_to_{CAUSE_OF_DEATH}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT}'
 YLLS_COLUMN_TEMPLATE = 'ylls_due_to_{CAUSE_OF_DEATH}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT}'
@@ -363,6 +415,7 @@ GESTATIONAL_AGE_COLUMNS = 'gestational_age_{GESTATIONAL_AGE_MEASURE}_mother_{MAL
 
 COLUMN_TEMPLATES = {
     'population': TOTAL_POPULATION_COLUMN_TEMPLATE,
+    'population_stratified': TOTAL_POPULATION_COLUMN_STRATIFIED_TEMPLATE,
     'person_time': PERSON_TIME_COLUMN_TEMPLATE,
     'deaths': DEATH_COLUMN_TEMPLATE,
     'ylls': YLLS_COLUMN_TEMPLATE,
@@ -377,7 +430,7 @@ COLUMN_TEMPLATES = {
 }
 
 
-POP_STATES = ('living', 'dead', 'tracked', 'untracked', 'male', 'female')
+POP_STATES = ('living', 'dead', 'tracked', 'untracked')
 YEARS = ('2020', '2021', '2022')
 SEXES = ('male', 'female')
 AGE_GROUPS = ('early_neonatal', 'late_neonatal', '1mo_to_6mo', '6mo_to_1', '1_to_4')
@@ -406,6 +459,7 @@ RISK_CATEGORIES = ('cat1', 'cat2', 'cat3', 'cat4')
 BIRTH_WEIGHT_MEASURES = STATS_MEASURES + ('proportion_below_2500g',)
 GESTATIONAL_AGE_MEASURES = STATS_MEASURES + ('proportion_below_37w',)
 MALNOURISHMENT_CATEGORIES = ('malnourished', 'normal')
+TREATMENT_CATEGORIES = tuple(TREATMENTS)
 
 
 TEMPLATE_FIELD_MAP = {
@@ -422,7 +476,7 @@ TEMPLATE_FIELD_MAP = {
     'BIRTH_WEIGHT_MEASURE': BIRTH_WEIGHT_MEASURES,
     'GESTATIONAL_AGE_MEASURE': GESTATIONAL_AGE_MEASURES,
     'MALNOURISHMENT_CATEGORY': MALNOURISHMENT_CATEGORIES,
-    'TREATMENT': tuple(TREATMENTS),
+    'TREATMENT_CATEGORY': TREATMENT_CATEGORIES,
 }
 
 

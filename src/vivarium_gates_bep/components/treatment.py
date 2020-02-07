@@ -8,14 +8,14 @@ from vivarium_gates_bep.utilites import sample_beta_distribution
 class MaternalSupplementationCoverage:
 
     configuration_defaults = {
-        'maternal_supplementation': {
+        project_globals.TREATMENT_MODEL_NAME: {
             'scenario': project_globals.SCENARIOS.BASELINE
         }
     }
 
     @property
     def name(self):
-        return 'treatment.maternal_supplementation'
+        return f'treatment.{project_globals.TREATMENT_MODEL_NAME}'
 
     def setup(self, builder):
         self.scenario = builder.configuration.maternal_supplementation.scenario
@@ -24,25 +24,23 @@ class MaternalSupplementationCoverage:
         self.baseline_coverage = self.load_coverage(builder, project_globals.SCENARIOS.BASELINE)
         self.scenario_coverage = self.load_coverage(builder, self.scenario)
 
-        self.randomness = builder.randomness.get_stream('maternal_supplementation.propensity')
-
-        self.baseline_column = 'baseline_maternal_supplementation_type'
-        self.scenario_column = 'scenario_maternal_supplementation_type'
-        self.population_view = builder.population.get_view([self.baseline_column, self.scenario_column])
+        self.randomness = builder.randomness.get_stream(f'{project_globals.TREATMENT_MODEL_NAME}.propensity')
+        columns = [project_globals.BASELINE_COLUMN, project_globals.SCENARIO_COLUMN]
+        self.population_view = builder.population.get_view(columns)
         builder.population.initializes_simulants(self.on_initialize_simulants,
-                                                 creates_columns=[self.baseline_column, self.scenario_column],
-                                                 requires_columns=['mother_malnourished'])
+                                                 creates_columns=columns,
+                                                 requires_columns=[project_globals.MOTHER_NUTRITION_STATUS_COLUMN])
 
     def on_initialize_simulants(self, pop_data):
         treatment = pd.DataFrame({
-            self.baseline_column: project_globals.TREATMENTS.NONE,
-            self.scenario_column: project_globals.TREATMENTS.NONE
+            project_globals.BASELINE_COLUMN: project_globals.TREATMENTS.NONE,
+            project_globals.SCENARIO_COLUMN: project_globals.TREATMENTS.NONE
         }, index=pop_data.index)
         draw = self.randomness.get_draw(pop_data.index)
         baseline_treated = draw < self.baseline_coverage
         scenario_treated = draw < self.scenario_coverage
 
-        treatment.loc[baseline_treated, self.baseline_column] = project_globals.TREATMENTS.IFA
+        treatment.loc[baseline_treated, project_globals.BASELINE_COLUMN] = project_globals.TREATMENTS.IFA
 
         if self.scenario in [project_globals.SCENARIOS.BASELINE, project_globals.SCENARIOS.IFA]:
             treatment.loc[scenario_treated] = project_globals.TREATMENTS.IFA
@@ -51,9 +49,11 @@ class MaternalSupplementationCoverage:
         elif self.scenario == project_globals.SCENARIOS.BEP:
             treatment.loc[scenario_treated] = project_globals.TREATMENTS.BEP
         else:  # self.scenario == project_globals.SCENARIOS.BEP_TARGETED
-            pop = pop_data.subview(['mother_malnourished']).get(pop_data.index)
-            treatment.loc[scenario_treated & pop.mother_malnourished] = project_globals.TREATMENTS.BEP
-            treatment.loc[scenario_treated & ~pop.mother_malnourished] = project_globals.TREATMENTS.MMN
+            pop = self.population_view.subview([project_globals.MOTHER_NUTRITION_STATUS_COLUMN]).get(pop_data.index)
+            mother_malnourished = (pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN]
+                                   == project_globals.MOTHER_NUTRITION_MALNOURISHED)
+            treatment.loc[scenario_treated & mother_malnourished] = project_globals.TREATMENTS.BEP
+            treatment.loc[scenario_treated & ~mother_malnourished] = project_globals.TREATMENTS.MMN
 
         self.population_view.update(treatment)
 
@@ -93,47 +93,48 @@ class MaternalSupplementationEffect:
 
     @property
     def name(self):
-        return 'treatment_effect.maternal_supplementation'
+        return f'treatment_effect.{project_globals.TREATMENT_MODEL_NAME}'
 
     def setup(self, builder):
         self.treatment_effects = self.load_treatment_effects(builder)
 
-        columns = ['baseline_maternal_supplementation_type',
-                   'scenario_maternal_supplementation_type',
-                   'mother_malnourished']
+        columns = [project_globals.BASELINE_COLUMN,
+                   project_globals.SCENARIO_COLUMN,
+                   project_globals.MOTHER_NUTRITION_STATUS_COLUMN]
         self.population_view = builder.population.get_view(columns)
 
-        builder.value.register_value_modifier('low_birth_weight_and_short_gestation.exposure',
+        builder.value.register_value_modifier(f'{project_globals.LBWSG_MODEL_NAME}.exposure',
                                               self.adjust_lbwsg,
                                               requires_columns=columns)
-        builder.value.register_value_modifier('child_stunting.exposure',
+        builder.value.register_value_modifier(f'{project_globals.STUNTING_MODEL_NAME}.exposure',
                                               self.adjust_cgf,
                                               requires_columns=columns)
-        builder.value.register_value_modifier('child_wasting.exposure',
+        builder.value.register_value_modifier(f'{project_globals.WASTING_MODEL_NAME}.exposure',
                                               self.adjust_cgf,
                                               requires_columns=columns)
 
     def adjust_lbwsg(self, index, exposure):
         pop = self.population_view.get(index)
-        baseline_covered = pop.baseline_maternal_supplementation_type == project_globals.TREATMENTS.IFA
-        exposure.loc[baseline_covered, 'birth_weight'] -= self.treatment_effects[project_globals.TREATMENTS.IFA]
+        baseline_covered = pop[project_globals.BASELINE_COLUMN] == project_globals.TREATMENTS.IFA
+        exposure.loc[baseline_covered, project_globals.BIRTH_WEIGHT] -= self.treatment_effects[project_globals.TREATMENTS.IFA]
 
-        ifa_covered = pop.scenario_maternal_supplementation_type == project_globals.TREATMENTS.IFA
-        exposure.loc[ifa_covered, 'birth_weight'] += self.treatment_effects[project_globals.TREATMENTS.IFA]
+        ifa_covered = pop[project_globals.SCENARIO_COLUMN] == project_globals.TREATMENTS.IFA
+        exposure.loc[ifa_covered, project_globals.BIRTH_WEIGHT] += self.treatment_effects[project_globals.TREATMENTS.IFA]
 
-        mmn_covered = pop.scenario_maternal_supplementation_type == project_globals.TREATMENTS.MMN
-        exposure.loc[mmn_covered, 'birth_weight'] += self.treatment_effects[project_globals.TREATMENTS.MMN]
+        mmn_covered = pop[project_globals.SCENARIO_COLUMN] == project_globals.TREATMENTS.MMN
+        exposure.loc[mmn_covered, project_globals.BIRTH_WEIGHT] += self.treatment_effects[project_globals.TREATMENTS.MMN]
 
-        bep_covered = pop.scenario_maternal_supplementation_type == project_globals.TREATMENTS.BEP
-        normal_effect = self.treatment_effects[project_globals.TREATMENTS.BEP]['birth_weight']['normal']
-        malnourished_effect = self.treatment_effects[project_globals.TREATMENTS.BEP]['birth_weight']['malnourished']
-        exposure.loc[bep_covered & ~pop.mother_malnourished, 'birth_weight'] += normal_effect
-        exposure.loc[bep_covered & pop.mother_malnourished, 'birth_weight'] += malnourished_effect
+        bep_covered = pop[project_globals.SCENARIO_COLUMN] == project_globals.TREATMENTS.BEP
+        normal_effect = self.treatment_effects[project_globals.TREATMENTS.BEP][project_globals.BIRTH_WEIGHT]['normal']
+        malnourished_effect = self.treatment_effects[project_globals.TREATMENTS.BEP][project_globals.BIRTH_WEIGHT]['malnourished']
+        mother_malnourished = pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == project_globals.MOTHER_NUTRITION_MALNOURISHED
+        exposure.loc[bep_covered & ~mother_malnourished, project_globals.BIRTH_WEIGHT] += normal_effect
+        exposure.loc[bep_covered & mother_malnourished, project_globals.BIRTH_WEIGHT] += malnourished_effect
         return exposure
 
     def adjust_cgf(self, index, exposure):
         pop = self.population_view.get(index)
-        bep_covered = pop.scenario_maternal_supplementation_type == project_globals.TREATMENTS.BEP
+        bep_covered = pop[project_globals.SCENARIO_COLUMN] == project_globals.TREATMENTS.BEP
         bep_effect = self.treatment_effects[project_globals.TREATMENTS.BEP]['cgf']
         exposure.loc[bep_covered] += bep_effect
         return exposure
@@ -158,7 +159,7 @@ class MaternalSupplementationEffect:
             project_globals.TREATMENTS.IFA: ifa_effect,
             project_globals.TREATMENTS.MMN: mmn_effect,
             project_globals.TREATMENTS.BEP: {
-                'birth_weight': {
+                project_globals.BIRTH_WEIGHT: {
                     'normal': bep_normal_effect,
                     'malnourished': bep_malnourished_effect},
                 'cgf': bep_cgf_effect,

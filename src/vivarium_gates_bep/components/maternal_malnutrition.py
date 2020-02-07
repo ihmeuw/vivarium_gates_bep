@@ -11,33 +11,32 @@ from vivarium_gates_bep import globals as project_globals
 from vivarium_gates_bep.utilites import sample_beta_distribution, sample_gamma_distribution
 
 
-MOTHER_MALNOURISHED_COLUMN = 'mother_malnourished'
-MISSING_CATEGORY = 'cat212'
-
-
 class MaternalMalnutrition:
 
     @property
     def name(self):
-        return "risk.maternal_malnutrition"
+        return f"risk.{project_globals.MATERNAL_MALNUTRITION_MODEL_NAME}"
 
     def setup(self, builder):
         self.exposure = self.load_exposure(builder)
 
-        self.randomness = builder.randomness.get_stream('maternal_malnutrition')
+        self.randomness = builder.randomness.get_stream(project_globals.MATERNAL_MALNUTRITION_MODEL_NAME)
 
-        self.population_view = builder.population.get_view([MOTHER_MALNOURISHED_COLUMN])
+        self.population_view = builder.population.get_view([project_globals.MOTHER_NUTRITION_STATUS_COLUMN])
         builder.population.initializes_simulants(self.on_initialize_simulants,
-                                                 creates_columns=[MOTHER_MALNOURISHED_COLUMN])
+                                                 creates_columns=[project_globals.MOTHER_NUTRITION_STATUS_COLUMN])
 
         builder.value.register_value_modifier('metrics', self.metrics)
 
     def on_initialize_simulants(self, pop_data):
-        mother_malnourished = self.randomness.choice(pop_data.index,
-                                                     [True, False],
-                                                     [self.exposure, 1 - self.exposure])
+        mother_nutrition_status = self.randomness.choice(
+            pop_data.index,
+            [project_globals.MOTHER_NUTRITION_MALNOURISHED, project_globals.MOTHER_NUTRITION_NORMAL],
+            [self.exposure, 1 - self.exposure]
+        )
+
         self.population_view.update(pd.DataFrame({
-            MOTHER_MALNOURISHED_COLUMN: mother_malnourished
+            project_globals.MOTHER_NUTRITION_STATUS_COLUMN: mother_nutrition_status
         }, index=pop_data.index))
 
     def metrics(self, index, metrics):
@@ -55,47 +54,67 @@ class MaternalMalnutritionRiskEffect:
 
     @property
     def name(self):
-        return "risk_effect.maternal_malnutrition"
+        return f"risk_effect.{project_globals.MATERNAL_MALNUTRITION_MODEL_NAME}"
 
     def setup(self, builder):
         self.relative_risk = self.load_relative_risk(builder)
         self.shifts = self.compute_shifts(builder, self.relative_risk)
-        self.population_view = builder.population.get_view([MOTHER_MALNOURISHED_COLUMN, 'sex', 'age'])
+        self.population_view = builder.population.get_view(
+            ['sex', 'age', project_globals.MOTHER_NUTRITION_STATUS_COLUMN]
+        )
 
-        builder.value.register_value_modifier('low_birth_weight_and_short_gestation.exposure',
-                                              self.adjust_birth_weight,
-                                              requires_columns=[MOTHER_MALNOURISHED_COLUMN, 'sex'])
-        builder.value.register_value_modifier('child_wasting.exposure',
-                                              self.adjust_wasting,
-                                              requires_columns=[MOTHER_MALNOURISHED_COLUMN, 'sex', 'age'])
-        builder.value.register_value_modifier('child_stunting.exposure',
-                                              self.adjust_stunting,
-                                              requires_columns=[MOTHER_MALNOURISHED_COLUMN, 'sex', 'age'])
+        builder.value.register_value_modifier(
+            f'{project_globals.LBWSG_MODEL_NAME}.exposure',
+            self.adjust_birth_weight,
+            requires_columns=[project_globals.MOTHER_NUTRITION_STATUS_COLUMN, 'sex']
+        )
+        builder.value.register_value_modifier(
+            f'{project_globals.WASTING_MODEL_NAME}.exposure',
+            self.adjust_wasting,
+            requires_columns=[project_globals.MOTHER_NUTRITION_STATUS_COLUMN, 'sex', 'age']
+        )
+        builder.value.register_value_modifier(
+            f'{project_globals.STUNTING_MODEL_NAME}.exposure',
+            self.adjust_stunting,
+            requires_columns=[project_globals.MOTHER_NUTRITION_STATUS_COLUMN, 'sex', 'age']
+        )
 
     def adjust_birth_weight(self, index, exposure):
-        pop = self.population_view.subview([MOTHER_MALNOURISHED_COLUMN, 'sex']).get(index)
-        bw_shifts = self.shifts['birth_weight']
+        pop = self.population_view.subview([project_globals.MOTHER_NUTRITION_STATUS_COLUMN, 'sex']).get(index)
+        bw_shifts = self.shifts[project_globals.BIRTH_WEIGHT]
         for sex in ['Male', 'Female']:
             shift_up, shift_down = bw_shifts[sex]
-            exposure.loc[pop.sex == sex, 'birth_weight'] += shift_up
-            exposure.loc[(pop.sex == sex) & pop[MOTHER_MALNOURISHED_COLUMN], 'birth_weight'] -= shift_down
+
+            right_sex = pop.sex == sex
+            mom_malnourished = (pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN]
+                                == project_globals.MOTHER_NUTRITION_MALNOURISHED)
+
+            exposure.loc[right_sex, project_globals.BIRTH_WEIGHT] += shift_up
+            exposure.loc[right_sex & mom_malnourished, project_globals.BIRTH_WEIGHT] -= shift_down
+
         return exposure
 
     def adjust_wasting(self, index, exposure):
-        return self.adjust_cgf(index, exposure, 'child_wasting')
+        return self.adjust_cgf(index, exposure, project_globals.WASTING_MODEL_NAME)
 
     def adjust_stunting(self, index, exposure):
-        return self.adjust_cgf(index, exposure, 'child_stunting')
+        return self.adjust_cgf(index, exposure, project_globals.STUNTING_MODEL_NAME)
 
     def adjust_cgf(self, index, exposure, cgf_risk):
         pop = self.population_view.get(index)
         ages = pop.age.unique()
         shifts = self.shifts[cgf_risk]
+
         for age in ages:
             for (age_start, age_end, sex), (shift_up, shift_down) in shifts.items():
                 if age_start <= age < age_end:
-                    exposure.loc[(pop.sex == sex) & (pop.age == age)] += shift_up
-                    exposure.loc[(pop.sex == sex) & (pop.age == age) & pop[MOTHER_MALNOURISHED_COLUMN]] -= shift_down
+                    right_sex_and_age = (pop.sex == sex) & (pop.age == age)
+                    mom_malnourished = (pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN]
+                                        == project_globals.MOTHER_NUTRITION_MALNOURISHED)
+
+                    exposure.loc[right_sex_and_age] += shift_up
+                    exposure.loc[right_sex_and_age & mom_malnourished] -= shift_down
+
         return exposure
 
     @staticmethod
@@ -108,19 +127,22 @@ class MaternalMalnutritionRiskEffect:
         artifact_path = builder.configuration.input_data.artifact_path
         draw = builder.configuration.input_data.input_draw_number
         location = builder.configuration.input_data.location
+
         birth_weight_shifts = compute_birth_weight_shift(artifact_path, draw, location, relative_risk)
-        wasting_shifts = compute_cgf_shifts(artifact_path, draw, location, 'child_wasting', relative_risk)
-        stunting_shifts = compute_cgf_shifts(artifact_path, draw, location, 'child_wasting', relative_risk)
-        return {'birth_weight': birth_weight_shifts,
-                'child_wasting': wasting_shifts,
-                'child_stunting': stunting_shifts}
+        wasting_shifts = compute_cgf_shifts(artifact_path, draw, location,
+                                            project_globals.WASTING_MODEL_NAME, relative_risk)
+        stunting_shifts = compute_cgf_shifts(artifact_path, draw, location,
+                                             project_globals.STUNTING_MODEL_NAME, relative_risk)
+
+        return {project_globals.BIRTH_WEIGHT: birth_weight_shifts,
+                project_globals.WASTING_MODEL_NAME: wasting_shifts,
+                project_globals.STUNTING_MODEL_NAME: stunting_shifts}
 
 
 # TODO: A bunch of code here should be shared with the lbwsg component,
 # but just trying to make things work for now.  Cleanup later.
-
 def load_exposure(location, draw):
-    key = f'maternal_malnutrition_exposure_draw_{draw}'
+    key = f'{project_globals.MATERNAL_MALNUTRITION_MODEL_NAME}_exposure_draw_{draw}'
     seed = get_hash(key)
     mean = project_globals.MALNOURISHED_MOTHERS_PROPORTION_MEAN[location]
     variance = project_globals.MALNOURISHED_MOTHERS_PROPORTION_VARIANCE[location]
@@ -129,7 +151,7 @@ def load_exposure(location, draw):
 
 
 def load_relative_risk(draw):
-    key = f'maternal_malnutrition_relative_risk_draw_{draw}'
+    key = f'{project_globals.MATERNAL_MALNUTRITION_MODEL_NAME}_relative_risk_draw_{draw}'
     seed = get_hash(key)
     return sample_gamma_distribution(seed, **project_globals.MALNOURISHED_MOTHERS_EFFECT_RR_PARAMETERS)
 
@@ -221,13 +243,13 @@ def read_lbwsg_data_by_draw(artifact_path, draw):
     data = (data[(data.age_start == 0) & (data.year_start == 2017)]
             .drop(columns=['age_start', 'age_end', 'year_start', 'year_end'])
             .set_index('sex'))
-    data[MISSING_CATEGORY] = 0.
+    data[project_globals.LBWSG_MISSING_CATEGORY.CAT] = project_globals.LBWSG_MISSING_CATEGORY.EXPOSURE
     return data
 
 
 def get_birth_weight_categories(path):
     raw_category_dict = Artifact(path).load(f'risk_factor.low_birth_weight_and_short_gestation.categories')
-    raw_category_dict[MISSING_CATEGORY] = 'Birth prevalence - [37, 38) wks, [1000, 1500) g'
+    raw_category_dict[project_globals.LBWSG_MISSING_CATEGORY.CAT] = project_globals.LBWSG_MISSING_CATEGORY.NAME
     category_dict = {'category': [],
                      'birth_weight_start': [],
                      'birth_weight_end': []}
