@@ -95,7 +95,7 @@ def filter_out_incomplete(data, keyspace):
         random_seeds = set(keyspace[project_globals.RANDOM_SEED_COLUMN])
         for scenario in keyspace[project_globals.OUTPUT_SCENARIO_COLUMN]:
             seeds_in_data = data.loc[(data[project_globals.INPUT_DRAW_COLUMN] == draw)
-                                     & (data[SCENARIO_COLUMN]) == scenario,
+                                     & (data[SCENARIO_COLUMN] == scenario),
                                      project_globals.RANDOM_SEED_COLUMN].unique()
             random_seeds = random_seeds.intersection(seeds_in_data)
         import pdb; pdb.set_trace()
