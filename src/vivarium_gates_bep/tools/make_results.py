@@ -14,7 +14,8 @@ def build_results(output_file: str):
     measure_dir.mkdir(exist_ok=True, mode=0o775)
 
     logger.info(f'Reading in output data from {str(output_file)}.')
-    data = process_results.read_data(output_file)
+    data, keyspace = process_results.read_data(output_file)
+    data = process_results.filter_out_incomplete(data, keyspace)
     data = process_results.aggregate_over_seed(data)
     logger.info(f'Computing raw count and proportion data.')
     measure_data = process_results.make_measure_data(data)

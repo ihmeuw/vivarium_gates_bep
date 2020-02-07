@@ -1,17 +1,21 @@
 from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, List
 
 import pandas as pd
+import yaml
 
 from vivarium_gates_bep import globals as project_globals
 
 
 SCENARIO_COLUMN = 'scenario'
 GROUPBY_COLUMNS = [project_globals.INPUT_DRAW_COLUMN, SCENARIO_COLUMN]
+PERSON_YEAR_SCALE = 100_000
+DROP_COLUMNS = ['measure']
+SHARED_COLUMNS = ['age_group', 'treatment_group', 'mother_status', 'input_draw', 'scenario']
 
 
 def make_measure_data(data):
-    count_data = MeasureData(
+    measure_data = MeasureData(
         population=get_population_data(data),
         person_time=get_measure_data(data, 'person_time', with_cause=False),
         ylls=get_measure_data(data, 'ylls'),
@@ -25,7 +29,18 @@ def make_measure_data(data):
         birth_weight=get_lbwsg_data(data, 'birth_weight'),
         gestational_age=get_lbwsg_data(data, 'gestational_age')
     )
-    return count_data
+    return measure_data
+
+
+def make_final_data(measure_data):
+    final_data = FinalData(
+        mortality_rate=get_rate_data(measure_data, 'deaths', 'mortality_rate'),
+        ylls=get_rate_data(measure_data, 'ylls', 'ylls'),
+        ylds=get_rate_data(measure_data, 'ylds', 'ylds'),
+        dalys=get_dalys(measure_data),
+        proportion_underweight=measure_data.birth_weight[measure_data.birth_weight.measure == 'proportion_below_2500g']
+    )
+    return final_data
 
 
 class MeasureData(NamedTuple):
@@ -48,12 +63,41 @@ class MeasureData(NamedTuple):
             df.to_csv(output_dir / f'{key}.csv')
 
 
-def read_data(path: str) -> pd.DataFrame:
+class FinalData(NamedTuple):
+    mortality_rate: pd.DataFrame
+    ylls: pd.DataFrame
+    ylds: pd.DataFrame
+    dalys: pd.DataFrame
+    proportion_underweight: pd.DataFrame
+
+    def dump(self, output_dir: Path):
+        for key, df in self._asdict().items():
+            df.to_hdf(output_dir / f'{key}.hdf', key=key)
+            df.to_csv(output_dir / f'{key}.csv')
+
+
+def read_data(path: Path) -> (pd.DataFrame, List[str]):
     data = pd.read_hdf(path)
     data = (data
             .drop(columns=project_globals.THROWAWAY_COLUMNS + [project_globals.RANDOM_SEED_COLUMN])
             .reset_index(drop=True)
             .rename(columns={project_globals.OUTPUT_SCENARIO_COLUMN: SCENARIO_COLUMN}))
+    with (path.parent / 'keyspace.yaml').open() as f:
+        keyspace = yaml.full_load(f)
+    return data, keyspace
+
+
+def filter_out_incomplete(data, keyspace):
+    for draw in keyspace[project_globals.INPUT_DRAW_COLUMN]:
+        # For each draw, gather all random seeds completed for all scenarios.
+        random_seeds = set(keyspace[project_globals.RANDOM_SEED_COLUMN])
+        for scenario in keyspace[project_globals.OUTPUT_SCENARIO_COLUMN]:
+            import pdb;
+            pdb.set_trace()
+            random_seeds &= data.loc[(data[project_globals.INPUT_DRAW_COLUMN] == draw)
+                                     & (data[SCENARIO_COLUMN]) == scenario,
+                                     project_globals.RANDOM_SEED_COLUMN].unique()
+
     return data
 
 
@@ -152,3 +196,30 @@ def get_lbwsg_data(data, risk):
     data = data.drop(columns='process')
     return sort_data(data)
 
+
+def get_rate_numerator(measure_data: MeasureData, numerator_label: str):
+    numerator = getattr(measure_data, numerator_label).drop(columns=DROP_COLUMNS)
+    all_cause_numerator = numerator.groupby(SHARED_COLUMNS).value.sum().reset_index()
+    all_cause_numerator['cause'] = 'all_causes'
+    return pd.concat([numerator, all_cause_numerator], ignore_index=True).set_index(SHARED_COLUMNS + ['cause'])
+
+
+def compute_rate(measure_data: MeasureData, numerator: pd.DataFrame, measure: str):
+    person_time = measure_data.person_time.drop(columns=DROP_COLUMNS).set_index(SHARED_COLUMNS)
+    rate_data = (numerator / person_time * PERSON_YEAR_SCALE).fillna(0).reset_index()
+    rate_data['measure'] = f'{measure}_per_100k_py'
+    return rate_data
+
+
+def get_rate_data(measure_data: MeasureData, numerator_label: str, measure: str) -> pd.DataFrame:
+    numerator = get_rate_numerator(measure_data, numerator_label)
+    rate_data = compute_rate(measure_data, numerator, measure)
+    return sort_data(rate_data)
+
+
+def get_dalys(measure_data: MeasureData):
+    ylls = get_rate_numerator(measure_data, 'ylls')
+    ylds = get_rate_numerator(measure_data, 'ylds')
+    ylls.loc[ylds.index] += ylds
+    dalys = compute_rate(measure_data, ylls, 'dalys')
+    return sort_data(dalys)

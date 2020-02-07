@@ -26,6 +26,7 @@ if __name__ == "__main__":
         'jinja2',
         'loguru',
         'scipy',
+        'pyyaml'
     ]
 
     extras_require = [
