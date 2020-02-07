@@ -15,12 +15,14 @@ GROUPING_COLUMNS = [INPUT_DRAW_COLUMN, SCENARIO_COLUMN]
 STACK_COLUMN = 'level_2'
 
 FIELD_REGEX = '{([A-Z_]+)}'
-EXCLUDE_TEMPLATES = [
-    # TODO: do something with the non-count space template
+NON_COUNT_TEMPLATES = [
     'z_scores',
     'birth_weight',
     'gestational_age',
 ]
+
+# TODO include these if we can test them
+EXCLUDE_TEMPLATES = NON_COUNT_TEMPLATES
 
 
 def create_field_regex(field_name: str) -> str:
@@ -62,10 +64,10 @@ def create_count_space_data_for_template(raw_output: pd.DataFrame, template_name
     column_names = [column_name.lower() for column_name in project_globals.RESULT_COLUMNS(template_name)]
     template_regex = create_template_regex(template_name)
 
-    df = pd.DataFrame(
-        raw_output[GROUPING_COLUMNS + column_names].groupby(GROUPING_COLUMNS).sum().stack(),
-        columns=[template_name]
-    )
+    grouping = raw_output[GROUPING_COLUMNS + column_names].groupby(GROUPING_COLUMNS)
+    aggregated_df = grouping.sum() if template_name not in NON_COUNT_TEMPLATES else grouping.mean()
+
+    df = pd.DataFrame( aggregated_df.stack(), columns=[template_name])
     df.reset_index(inplace=True)
 
     for i, field_name in enumerate(field_names):
