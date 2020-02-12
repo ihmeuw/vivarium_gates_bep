@@ -386,31 +386,32 @@ SINGLE_COLUMNS = (TOTAL_POPULATION_COLUMN, TOTAL_YLLS_COLUMN, TOTAL_YLDS_COLUMN)
 # Columns from parallel runs
 INPUT_DRAW_COLUMN = 'input_draw'
 RANDOM_SEED_COLUMN = 'random_seed'
+OUTPUT_SCENARIO_COLUMN = 'maternal_supplementation.scenario'
 
-PSIMULATE_COLUMNS = (INPUT_DRAW_COLUMN, RANDOM_SEED_COLUMN)
+PSIMULATE_COLUMNS = (INPUT_DRAW_COLUMN, RANDOM_SEED_COLUMN, OUTPUT_SCENARIO_COLUMN)
 
 # Data columns for randomly sampled data
 MALNOURISHED_MOTHERS_PROPORTION_COLUMN = 'maternal_malnourishment_proportion'
 
 STATES = tuple(state for model in DISEASE_MODELS for state in DISEASE_MODEL_MAP[model]['states'])
 THROWAWAY_COLUMNS = ([f'{state}_event_count' for state in STATES]
-                     + [f'{state}_prevalent_cases_at_sim_end' for state in STATES if 'susceptible' not in state]
+                     + [f'{state}_prevalent_cases_at_sim_end' for state in STATES if 'susceptible' not in state and 'recovered' not in state]
                      + [MALNOURISHED_MOTHERS_PROPORTION_COLUMN])
 
 
 TOTAL_POPULATION_COLUMN_TEMPLATE = 'total_population_{POP_STATE}'
-TOTAL_POPULATION_COLUMN_STRATIFIED_TEMPLATE = 'total_population_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT}'
-PERSON_TIME_COLUMN_TEMPLATE = 'person_time_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT}'
-DEATH_COLUMN_TEMPLATE = 'death_due_to_{CAUSE_OF_DEATH}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT}'
-YLLS_COLUMN_TEMPLATE = 'ylls_due_to_{CAUSE_OF_DEATH}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT}'
-YLDS_COLUMN_TEMPLATE = 'ylds_due_to_{CAUSE_OF_DISABILITY}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT}'
-STATE_PERSON_TIME_COLUMN_TEMPLATE = '{STATE}_person_time_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT}'
-TRANSITION_COUNT_COLUMN_TEMPLATE = '{TRANSITION}_event_count_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT}'
-BIRTH_PREVALENCE_COUNT_COLUMN_TEMPLATE = '{BIRTH_STATE}_prevalent_count_at_birth_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT}'
-Z_SCORE_COLUMNS = '{CGF_RISK}_z_score_{STATS_MEASURE}_at_six_months_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT}'
-CATEGORY_COUNT_COLUMNS = '{CGF_RISK}_{RISK_CATEGORY}_exposed_at_six_months_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT}'
-BIRTH_WEIGHT_COLUMNS = 'birth_weight_{BIRTH_WEIGHT_MEASURE}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT}'
-GESTATIONAL_AGE_COLUMNS = 'gestational_age_{GESTATIONAL_AGE_MEASURE}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT}'
+TOTAL_POPULATION_COLUMN_STRATIFIED_TEMPLATE = 'total_population_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+PERSON_TIME_COLUMN_TEMPLATE = 'person_time_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+DEATH_COLUMN_TEMPLATE = 'death_due_to_{CAUSE_OF_DEATH}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+YLLS_COLUMN_TEMPLATE = 'ylls_due_to_{CAUSE_OF_DEATH}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+YLDS_COLUMN_TEMPLATE = 'ylds_due_to_{CAUSE_OF_DISABILITY}_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+STATE_PERSON_TIME_COLUMN_TEMPLATE = '{STATE}_person_time_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+TRANSITION_COUNT_COLUMN_TEMPLATE = '{TRANSITION}_event_count_in_age_group_{AGE_GROUP}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+BIRTH_PREVALENCE_COUNT_COLUMN_TEMPLATE = '{BIRTH_STATE}_prevalent_count_at_birth_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+Z_SCORE_COLUMNS = '{CGF_RISK}_z_score_{STATS_MEASURE}_at_six_months_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+CATEGORY_COUNT_COLUMNS = '{CGF_RISK}_{RISK_CATEGORY}_exposed_at_six_months_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+BIRTH_WEIGHT_COLUMNS = 'birth_weight_{BIRTH_WEIGHT_MEASURE}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
+GESTATIONAL_AGE_COLUMNS = 'gestational_age_{GESTATIONAL_AGE_MEASURE}_mother_{MALNOURISHMENT_CATEGORY}_treatment_{TREATMENT_CATEGORY}'
 
 
 COLUMN_TEMPLATES = {
@@ -428,6 +429,12 @@ COLUMN_TEMPLATES = {
     'birth_weight': BIRTH_WEIGHT_COLUMNS,
     'gestational_age': GESTATIONAL_AGE_COLUMNS,
 }
+
+NON_COUNT_TEMPLATES = [
+    'z_scores',
+    'birth_weight',
+    'gestational_age',
+]
 
 
 POP_STATES = ('living', 'dead', 'tracked', 'untracked')
@@ -451,7 +458,7 @@ CAUSES_OF_DISABILITY = (
     PEM_WITH_CONDITION_STATE_NAME,
 )
 STATES = tuple(state for model in DISEASE_MODELS for state in DISEASE_MODEL_MAP[model]['states'])
-TRANSITIONS = tuple(transition for model in DISEASE_MODELS for transition in DISEASE_MODEL_MAP[model]['transitions'])
+TRANSITIONS = tuple(transition.lower() for model in DISEASE_MODELS for transition in DISEASE_MODEL_MAP[model]['transitions'])
 BIRTH_STATES = (NEONATAL_DISORDERS_WITH_CONDITION_STATE_NAME,)
 CGF_RISKS = ('wasting', 'stunting')
 STATS_MEASURES = ('mean', 'sd')

@@ -26,6 +26,7 @@ if __name__ == "__main__":
         'jinja2',
         'loguru',
         'scipy',
+        'pyyaml'
     ]
 
     extras_require = [
@@ -60,5 +61,6 @@ if __name__ == "__main__":
             [console_scripts]
             make_specs=vivarium_gates_bep.tools.cli:make_specs
             make_artifacts=vivarium_gates_bep.tools.cli:make_artifacts
+            make_results=vivarium_gates_bep.tools.cli:make_results
         '''
     )
