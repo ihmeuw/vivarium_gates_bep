@@ -79,7 +79,7 @@ class FinalData(NamedTuple):
 def read_data(path: Path) -> (pd.DataFrame, List[str]):
     data = pd.read_hdf(path)
     data = (data
-            .drop(columns=project_globals.THROWAWAY_COLUMNS)
+            .drop(columns=data.columns.intersection(project_globals.THROWAWAY_COLUMNS))
             .reset_index(drop=True)
             .rename(columns={project_globals.OUTPUT_SCENARIO_COLUMN: SCENARIO_COLUMN}))
     data[project_globals.INPUT_DRAW_COLUMN] = data[project_globals.INPUT_DRAW_COLUMN].astype(int)
