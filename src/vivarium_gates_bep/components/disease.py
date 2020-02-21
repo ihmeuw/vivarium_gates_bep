@@ -48,16 +48,3 @@ def SIR_fixed_duration(cause: str, duration: str) -> DiseaseModel:
     recovered.allow_self_transitions()
 
     return DiseaseModel(cause, states=[healthy, infected, recovered])
-
-
-def NeonatalSWC_without_incidence(cause):
-    with_condition_data_functions = {'birth_prevalence':
-                                     lambda cause, builder: builder.data.load(f"cause.{cause}.birth_prevalence")}
-
-    healthy = SusceptibleState(cause)
-    with_condition = DiseaseState(cause, get_data_functions=with_condition_data_functions)
-
-    healthy.allow_self_transitions()
-    with_condition.allow_self_transitions()
-
-    return DiseaseModel(cause, states=[healthy, with_condition])
