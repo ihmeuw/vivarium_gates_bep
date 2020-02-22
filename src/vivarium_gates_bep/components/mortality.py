@@ -9,7 +9,7 @@ disease models to contribute cause-specific and excess mortality.
 """
 import pandas as pd
 
-from vivarium.framework.utilities import rate_to_probability
+from vivarium.framework.values import union_post_processor, list_combiner
 
 
 class Mortality:
@@ -30,11 +30,13 @@ class Mortality:
         self.mortality_rate = builder.value.register_rate_producer('mortality_rate',
                                                                    source=self.calculate_mortality_rate,
                                                                    requires_columns=['age', 'sex'])
-        self.mortality_hazard = builder.value.register_value_producer('mortality_hazard',
+        self.mortality_hazard = builder.value.register_value_producer('all_causes.mortality_hazard',
                                                                       source=self._mortality_hazard)
         self._mortality_hazard_paf = builder.value.register_value_producer(
-            'mortality_hazard.population_attributable_fraction',
-            source=lambda index: pd.Series(0, index=index)
+            'all_causes.mortality_hazard.population_attributable_fraction',
+            source=lambda index: pd.Series(0, index=index),
+            preferred_combiner=list_combiner,
+            preferred_post_processor=union_post_processor,
         )
 
         life_expectancy_data = builder.data.load("population.theoretical_minimum_risk_life_expectancy")
