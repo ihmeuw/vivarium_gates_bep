@@ -256,7 +256,7 @@ class LBWSGRiskEffect:
     def get_population_attributable_fraction_data(self, builder):
         paf_data = read_data_by_draw(builder, f'{self.risk}.population_attributable_fraction')
         correct_target = ((paf_data['affected_entity'] == self.target.name)
-                          & (paf_data['affected_measure'] == self.target.measure))
+                          & (paf_data['affected_measure'] == 'excess_mortality_rate'))
         paf_data = (paf_data[correct_target]
                     .drop(['affected_entity', 'affected_measure'], 'columns'))
         return paf_data

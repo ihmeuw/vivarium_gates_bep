@@ -21,14 +21,8 @@ components:
         - SIS('diarrheal_diseases')
         - SIR_fixed_duration('measles', '10')
         - SIS('lower_respiratory_infections')
-        - SIS('meningitis')
-        - NeonatalSWC_without_incidence('neonatal_disorders')
 
         - LBWSGRisk()
-        - LBWSGRiskEffect('cause.diarrheal_diseases.excess_mortality_rate')
-        - LBWSGRiskEffect('cause.lower_respiratory_infections.excess_mortality_rate')
-        - LBWSGRiskEffect('cause.meningitis.excess_mortality_rate')
-        - LBWSGRiskEffect('cause.neonatal_disorders.excess_mortality_rate')
 
         - MaternalMalnutrition()
         - MaternalMalnutritionRiskEffect()
@@ -41,8 +35,6 @@ components:
         - DiseaseObserver('diarrheal_diseases')
         - DiseaseObserver('measles')
         - DiseaseObserver('lower_respiratory_infections')
-        - DiseaseObserver('meningitis')
-        - NeonatalDisordersObserver()
         - DiseaseObserver('protein_energy_malnutrition')
         - ChildGrowthFailureObserver()
         - LBWSGObserver()

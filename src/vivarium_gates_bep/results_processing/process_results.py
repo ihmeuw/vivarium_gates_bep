@@ -23,7 +23,6 @@ def make_measure_data(data):
         deaths=get_measure_data(data, 'deaths'),
         state_person_time=get_measure_data(data, 'state_person_time', with_cause=False),
         transition_count=get_measure_data(data, 'transition_count', with_cause=False),
-        birth_prevalence=get_nn_birth_prevalence(data),
         cgf_z_scores=get_z_scores(data),
         cgf_categories=get_risk_categories(data),
         birth_weight=get_lbwsg_data(data, 'birth_weight'),
@@ -51,7 +50,6 @@ class MeasureData(NamedTuple):
     deaths: pd.DataFrame
     state_person_time: pd.DataFrame
     transition_count: pd.DataFrame
-    birth_prevalence: pd.DataFrame
     cgf_z_scores: pd.DataFrame
     cgf_categories: pd.DataFrame
     birth_weight: pd.DataFrame
@@ -160,15 +158,6 @@ def get_population_data(data):
 def get_measure_data(data, measure, with_cause=True):
     data = pivot_data(data[project_globals.RESULT_COLUMNS(measure) + GROUPBY_COLUMNS])
     data = split_processing_column(data, with_cause)
-    return sort_data(data)
-
-
-def get_nn_birth_prevalence(data):
-    data = pivot_data(data[project_globals.RESULT_COLUMNS('birth_prevalence') + GROUPBY_COLUMNS])
-    data['measure'] = 'neonatal_birth_prevalence'
-    data['process'] = data.process.str.split('_mother_').str[1]
-    data['mother_status'], data['treatment_group'] = data.process.str.split('_treatment_').str
-    data = data.drop(columns='process')
     return sort_data(data)
 
 

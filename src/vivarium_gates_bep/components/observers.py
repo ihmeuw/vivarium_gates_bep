@@ -224,88 +224,6 @@ class DiseaseObserver:
         return f"DiseaseObserver({self.disease})"
 
 
-class NeonatalDisordersObserver:
-    configuration_defaults = {
-        'metrics': {
-            'neonatal_disorders_observer': {
-                'by_age': False,
-                'by_year': False,
-                'by_sex': False,
-            }
-        }
-    }
-
-    @property
-    def name(self):
-        return f'disease_observer.neonatal_disorders'
-
-    def setup(self, builder):
-        self.disease = 'neonatal_disorders'
-        self.config = builder.configuration['metrics'][f'{self.disease}_observer'].to_dict()
-        self.clock = builder.time.clock()
-        self.age_bins = get_age_bins()
-        self.counts = Counter()
-        self.person_time = Counter()
-
-        self.states = project_globals.DISEASE_MODEL_MAP[self.disease]['states']
-        self.transitions = project_globals.DISEASE_MODEL_MAP[self.disease]['transitions']
-
-        columns_required = ['alive', f'{self.disease}',
-                            project_globals.MOTHER_NUTRITION_STATUS_COLUMN,
-                            project_globals.SCENARIO_COLUMN, 'sex']
-        for state in self.states:
-            columns_required.append(f'{state}_event_time')
-        if self.config['by_age']:
-            columns_required += ['age']
-        self.population_view = builder.population.get_view(columns_required)
-        builder.population.initializes_simulants(self.on_initialize_simulants,
-                                                 requires_columns=columns_required)
-
-        builder.value.register_value_modifier('metrics', self.metrics)
-        # FIXME: The state table is modified before the clock advances.
-        # In order to get an accurate representation of person time we need to look at
-        # the state table before anything happens.
-        builder.event.register_listener('time_step__prepare', self.on_time_step_prepare)
-
-    def on_initialize_simulants(self, pop_data):
-        pop = self.population_view.get(pop_data.index)
-
-        categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
-        for mother_cat, treatment in categories:
-            pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
-                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
-            self.counts[f'total_population_mother_{mother_cat}_treatment_{treatment}'] = len(pop_in_group)
-            prevalent_at_birth_count = get_prevalent_at_birth_count(pop_in_group, self.config, self.disease,
-                                                                    self.disease, self.age_bins)
-            prevalent_at_birth_count = {f'{k}_mother_{mother_cat}_treatment_{treatment}': v
-                                        for k, v in prevalent_at_birth_count.items()}
-            self.counts.update(prevalent_at_birth_count)
-
-    def on_time_step_prepare(self, event):
-        pop = self.population_view.get(event.index)
-        # Ignoring the edge case where the step spans a new year.
-        # Accrue all counts and time to the current year.
-        categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
-        for mother_cat, treatment in categories:
-            pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
-                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
-
-            for state in self.states:
-                state_person_time_this_step = get_state_person_time(pop_in_group, self.config, self.disease, state,
-                                                                    self.clock().year, event.step_size, self.age_bins)
-                state_person_time_this_step = {f'{k}_mother_{mother_cat}_treatment_{treatment}': v
-                                               for k, v in state_person_time_this_step.items()}
-                self.person_time.update(state_person_time_this_step)
-
-    def metrics(self, index, metrics):
-        metrics.update(self.counts)
-        metrics.update(self.person_time)
-        return metrics
-
-    def __repr__(self):
-        return f"DiseaseObserver({self.disease})"
-
-
 class ChildGrowthFailureObserver():
 
     @property
@@ -317,8 +235,15 @@ class ChildGrowthFailureObserver():
         self.stunting = builder.value.get_value(f'{project_globals.STUNTING_MODEL_NAME}.exposure')
 
         self.record_age = 0.5  # years
-        self.results = {}
-
+        self.results ={
+            'wasting_z_score_mean_at_six_months': 0,
+            'wasting_z_score_sd_at_six_months': 0,
+            'stunting_z_score_mean_at_six_months': 0,
+            'stunting_z_score_sd_at_six_months': 0,
+        }
+        for cat in ['cat1', 'cat2', 'cat3', 'cat4']:
+            self.results[f'wasting_{cat}_exposed_at_six_months'] = 0
+            self.results[f'stunting_{cat}_exposed_at_six_months'] = 0
         self.population_view = builder.population.get_view(['age', 'sex',
                                                             project_globals.MOTHER_NUTRITION_STATUS_COLUMN,
                                                             project_globals.SCENARIO_COLUMN],
@@ -341,15 +266,7 @@ class ChildGrowthFailureObserver():
             self.results.update(stats)
 
     def get_cgf_stats(self, pop):
-        stats = {
-            'wasting_z_score_mean_at_six_months': 0,
-            'wasting_z_score_sd_at_six_months': 0,
-            'stunting_z_score_mean_at_six_months': 0,
-            'stunting_z_score_sd_at_six_months': 0,
-        }
-        for cat in ['cat1', 'cat2', 'cat3', 'cat4']:
-            stats[f'wasting_{cat}_exposed_at_six_months'] = 0
-            stats[f'stunting_{cat}_exposed_at_six_months'] = 0
+        stats = {}
         if not pop.empty:
             pop = pop.drop(columns='age')
             pop['wasting_z'] = self.wasting(pop.index, skip_post_processor=True)
@@ -361,6 +278,7 @@ class ChildGrowthFailureObserver():
             stats[f'wasting_z_score_sd_at_six_months'] = pop.wasting_z.std()
             stats[f'stunting_z_score_mean_at_six_months'] = pop.wasting_z.mean()
             stats[f'stunting_z_score_sd_at_six_months'] = pop.wasting_z.std()
+            import pdb; pdb.set_trace()
             for cat, value in dict(pop.wasting_cat.value_counts()).items():
                 stats[f'wasting_{cat}_exposed_at_six_months'] = value
             for cat, value in dict(pop.stunting_cat.value_counts()).items():
