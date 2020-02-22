@@ -235,15 +235,7 @@ class ChildGrowthFailureObserver():
         self.stunting = builder.value.get_value(f'{project_globals.STUNTING_MODEL_NAME}.exposure')
 
         self.record_age = 0.5  # years
-        self.results ={
-            'wasting_z_score_mean_at_six_months': 0,
-            'wasting_z_score_sd_at_six_months': 0,
-            'stunting_z_score_mean_at_six_months': 0,
-            'stunting_z_score_sd_at_six_months': 0,
-        }
-        for cat in ['cat1', 'cat2', 'cat3', 'cat4']:
-            self.results[f'wasting_{cat}_exposed_at_six_months'] = 0
-            self.results[f'stunting_{cat}_exposed_at_six_months'] = 0
+        self.results = self.get_results_template()
         self.population_view = builder.population.get_view(['age', 'sex',
                                                             project_globals.MOTHER_NUTRITION_STATUS_COLUMN,
                                                             project_globals.SCENARIO_COLUMN],
@@ -264,6 +256,24 @@ class ChildGrowthFailureObserver():
             stats = {f'{k}_mother_{mother_cat}_treatment_{treatment}': v
                      for k, v in stats.items()}
             self.results.update(stats)
+
+    def get_results_template(self):
+        stats = {
+            'wasting_z_score_mean_at_six_months': 0,
+            'wasting_z_score_sd_at_six_months': 0,
+            'stunting_z_score_mean_at_six_months': 0,
+            'stunting_z_score_sd_at_six_months': 0,
+        }
+        for cat in ['cat1', 'cat2', 'cat3', 'cat4']:
+            stats[f'wasting_{cat}_exposed_at_six_months'] = 0
+            stats[f'stunting_{cat}_exposed_at_six_months'] = 0
+
+        categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
+        for mother_cat, treatment in categories:
+            stats = {f'{k}_mother_{mother_cat}_treatment_{treatment}': v
+                     for k, v in stats.items()}
+        return stats
+
 
     def get_cgf_stats(self, pop):
         stats = {}
