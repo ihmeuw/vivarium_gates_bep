@@ -235,8 +235,15 @@ class ChildGrowthFailureObserver():
         self.stunting = builder.value.get_value(f'{project_globals.STUNTING_MODEL_NAME}.exposure')
 
         self.record_age = 0.5  # years
-        self.results = {}
-
+        self.results ={
+            'wasting_z_score_mean_at_six_months': 0,
+            'wasting_z_score_sd_at_six_months': 0,
+            'stunting_z_score_mean_at_six_months': 0,
+            'stunting_z_score_sd_at_six_months': 0,
+        }
+        for cat in ['cat1', 'cat2', 'cat3', 'cat4']:
+            self.results[f'wasting_{cat}_exposed_at_six_months'] = 0
+            self.results[f'stunting_{cat}_exposed_at_six_months'] = 0
         self.population_view = builder.population.get_view(['age', 'sex',
                                                             project_globals.MOTHER_NUTRITION_STATUS_COLUMN,
                                                             project_globals.SCENARIO_COLUMN],
@@ -259,15 +266,7 @@ class ChildGrowthFailureObserver():
             self.results.update(stats)
 
     def get_cgf_stats(self, pop):
-        stats = {
-            'wasting_z_score_mean_at_six_months': 0,
-            'wasting_z_score_sd_at_six_months': 0,
-            'stunting_z_score_mean_at_six_months': 0,
-            'stunting_z_score_sd_at_six_months': 0,
-        }
-        for cat in ['cat1', 'cat2', 'cat3', 'cat4']:
-            stats[f'wasting_{cat}_exposed_at_six_months'] = 0
-            stats[f'stunting_{cat}_exposed_at_six_months'] = 0
+        stats = {}
         if not pop.empty:
             pop = pop.drop(columns='age')
             pop['wasting_z'] = self.wasting(pop.index, skip_post_processor=True)
@@ -279,6 +278,7 @@ class ChildGrowthFailureObserver():
             stats[f'wasting_z_score_sd_at_six_months'] = pop.wasting_z.std()
             stats[f'stunting_z_score_mean_at_six_months'] = pop.wasting_z.mean()
             stats[f'stunting_z_score_sd_at_six_months'] = pop.wasting_z.std()
+            import pdb; pdb.set_trace()
             for cat, value in dict(pop.wasting_cat.value_counts()).items():
                 stats[f'wasting_{cat}_exposed_at_six_months'] = value
             for cat, value in dict(pop.stunting_cat.value_counts()).items():
