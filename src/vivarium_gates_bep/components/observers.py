@@ -268,7 +268,7 @@ class ChildGrowthFailureObserver():
             stats[f'stunting_z_score_sd_at_six_months_{suffix}'] = 0
             for cat in ['cat1', 'cat2', 'cat3', 'cat4']:
                 stats[f'wasting_{cat}_exposed_at_six_months_{suffix}'] = 0
-                stats[f'stunting_{cat}_exposed_at_six_months+{suffix}'] = 0
+                stats[f'stunting_{cat}_exposed_at_six_months_{suffix}'] = 0
 
         return stats
 
