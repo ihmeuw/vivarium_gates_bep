@@ -258,22 +258,19 @@ class ChildGrowthFailureObserver():
             self.results.update(stats)
 
     def get_results_template(self):
-        stats = {
-            'wasting_z_score_mean_at_six_months': 0,
-            'wasting_z_score_sd_at_six_months': 0,
-            'stunting_z_score_mean_at_six_months': 0,
-            'stunting_z_score_sd_at_six_months': 0,
-        }
-        for cat in ['cat1', 'cat2', 'cat3', 'cat4']:
-            stats[f'wasting_{cat}_exposed_at_six_months'] = 0
-            stats[f'stunting_{cat}_exposed_at_six_months'] = 0
-
+        stats = {}
         categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
         for mother_cat, treatment in categories:
-            stats = {f'{k}_mother_{mother_cat}_treatment_{treatment}': v
-                     for k, v in stats.items()}
-        return stats
+            suffix = f'mother_{mother_cat}_treatment_{treatment}'
+            stats[f'wasting_z_score_mean_at_six_months_{suffix}'] = 0
+            stats[f'wasting_z_score_sd_at_six_months_{suffix}'] = 0
+            stats[f'stunting_z_score_mean_at_six_months_{suffix}'] = 0
+            stats[f'stunting_z_score_sd_at_six_months_{suffix}'] = 0
+            for cat in ['cat1', 'cat2', 'cat3', 'cat4']:
+                stats[f'wasting_{cat}_exposed_at_six_months_{suffix}'] = 0
+                stats[f'stunting_{cat}_exposed_at_six_months+{suffix}'] = 0
 
+        return stats
 
     def get_cgf_stats(self, pop):
         stats = {}
