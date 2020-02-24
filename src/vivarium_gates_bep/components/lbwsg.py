@@ -254,11 +254,11 @@ class LBWSGRiskEffect:
         return relative_risk_data
 
     def get_population_attributable_fraction_data(self, builder):
-        paf_data = read_data_by_draw(builder, f'{self.risk}.population_attributable_fraction')
-        correct_target = ((paf_data['affected_entity'] == self.target.name)
-                          & (paf_data['affected_measure'] == 'excess_mortality_rate'))
-        paf_data = (paf_data[correct_target]
-                    .drop(['affected_entity', 'affected_measure'], 'columns'))
+        index_columns = ['sex', 'age_start', 'age_end', 'year_start', 'year_end']
+        rr_data = self.get_relative_risk_data(builder).set_index(index_columns)
+        exposure_data = self.get_exposure_data(builder).set_index(index_columns)
+        mean_rr = (rr_data * exposure_data).sum(axis=1)
+        paf_data = ((mean_rr - 1)/mean_rr).reset_index().rename(columns={0: 'value'})
         return paf_data
 
     def get_exposure_effect(self, builder):
@@ -269,6 +269,13 @@ class LBWSGRiskEffect:
             return rates * (rr.lookup(exposure.index, exposure))
 
         return exposure_effect
+
+    @staticmethod
+    def get_exposure_data(builder):
+        exposure = read_data_by_draw(builder, project_globals.LBWSG_EXPOSURE)
+        exposure = pivot_categorical(exposure)
+        exposure[project_globals.LBWSG_MISSING_CATEGORY.CAT] = project_globals.LBWSG_MISSING_CATEGORY.EXPOSURE
+        return exposure
 
 
 def read_data_by_draw(builder, key):

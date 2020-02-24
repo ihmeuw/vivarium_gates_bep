@@ -34,7 +34,7 @@ class Mortality:
                                                                       source=self._mortality_hazard)
         self._mortality_hazard_paf = builder.value.register_value_producer(
             'all_causes.mortality_hazard.population_attributable_fraction',
-            source=lambda index: pd.Series(0, index=index),
+            source=lambda index: [pd.Series(0, index=index)],
             preferred_combiner=list_combiner,
             preferred_post_processor=union_post_processor,
         )

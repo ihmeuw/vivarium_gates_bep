@@ -322,6 +322,7 @@ class LBWSGObserver:
         for mother_cat, treatment in categories:
             pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
                                    & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
+            self.results[f'total_population_mother_{mother_cat}_treatment_{treatment}'] = len(pop_in_group)
             stats = self.get_lbwsg_stats(pop_in_group)
             stats = {f'{k}_mother_{mother_cat}_treatment_{treatment}': v
                      for k, v in stats.items()}
