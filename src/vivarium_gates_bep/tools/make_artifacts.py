@@ -189,7 +189,6 @@ def build_single_location_artifact(path: Union[str, Path], location: str, log_to
     builder.load_and_write_lri_data(artifact, location)
     logger.info(f'Loading and writing pem data.')
     builder.load_and_write_pem_data(artifact, location)
-
     logger.info(f'Loading and writing child wasting data.')
     builder.load_and_write_wasting_data(artifact, location)
     logger.info(f'Loading and writing child stunting data.')
