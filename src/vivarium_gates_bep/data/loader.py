@@ -1,4 +1,5 @@
 """Loads, standardizes and validates input data for the simulation."""
+from vivarium_gbd_access import gbd
 from gbd_mapping import causes, risk_factors, covariates
 import numpy as np
 import pandas as pd
@@ -53,6 +54,7 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.MEASLES_RESTRICTIONS: load_metadata,
 
         project_globals.LRI_PREVALENCE: load_standard_data,
+        project_globals.LRI_BIRTH_PREVALENCE: load_lri_birth_prevalence_from_meid,
         project_globals.LRI_INCIDENCE_RATE: load_standard_data,
         project_globals.LRI_REMISSION_RATE: load_standard_data,
         project_globals.LRI_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
@@ -60,25 +62,10 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.LRI_DISABILITY_WEIGHT: load_standard_data,
         project_globals.LRI_RESTRICTIONS: load_metadata,
 
-        project_globals.MENINGITIS_PREVALENCE: load_standard_data,
-        project_globals.MENINGITIS_INCIDENCE_RATE: load_standard_data,
-        project_globals.MENINGITIS_REMISSION_RATE: load_standard_data,
-        project_globals.MENINGITIS_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
-        project_globals.MENINGITIS_EXCESS_MORTALITY_RATE: load_standard_data,
-        project_globals.MENINGITIS_DISABILITY_WEIGHT: load_meningitis_disability_weight,
-        project_globals.MENINGITIS_RESTRICTIONS: load_metadata,
-
         project_globals.PEM_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.PEM_EXCESS_MORTALITY_RATE: load_standard_data,
         project_globals.PEM_DISABILITY_WEIGHT: load_standard_data,
         project_globals.PEM_RESTRICTIONS: load_metadata,
-
-        project_globals.NEONATAL_DISORDERS_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
-        project_globals.NEONATAL_DISORDERS_PREVALENCE: load_standard_data,
-        project_globals.NEONATAL_DISORDERS_BIRTH_PREVALENCE: load_standard_data,
-        project_globals.NEONATAL_DISORDERS_EXCESS_MORTALITY_RATE: load_standard_data,
-        project_globals.NEONATAL_DISORDERS_DISABILITY_WEIGHT: load_standard_data,
-        project_globals.NEONATAL_DISORDERS_RESTRICTIONS: load_metadata,
 
         project_globals.WASTING_DISTRIBUTION: load_metadata,
         project_globals.WASTING_ALT_DISTRIBUTION: load_metadata,
@@ -253,6 +240,19 @@ def load_lbwsg_paf(key: str, location: str):
     data = utilities.split_interval(data, interval_column='year', split_column_prefix='year')
     return utilities.sort_hierarchical_data(data)
 
+
+def load_lri_birth_prevalence_from_meid(_, location):
+    """Ignore the first argument to fit in to the get_data model. """
+    location_id = utility_data.get_location_id(location)
+    data = gbd.get_modelable_entity_draws(project_globals.LRI_BIRTH_PREVALENCE_MEID, location_id)
+    data = data[data.measure_id == vi_globals.MEASURES['Prevalence']]
+    data = utilities.normalize(data, fill_value=0)
+    data = data.filter(vi_globals.DEMOGRAPHIC_COLUMNS + vi_globals.DRAW_COLUMNS)
+    data = utilities.reshape(data)
+    data = utilities.scrub_gbd_conventions(data, location)
+    data = utilities.split_interval(data, interval_column='age', split_column_prefix='age')
+    data = utilities.split_interval(data, interval_column='year', split_column_prefix='year')
+    return utilities.sort_hierarchical_data(data)
 
 def get_entity(key: str):
     # Map of entity types to their gbd mappings.
