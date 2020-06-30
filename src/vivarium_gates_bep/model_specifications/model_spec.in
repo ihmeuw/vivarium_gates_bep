@@ -19,7 +19,7 @@ components:
 
         - SIS('diarrheal_diseases')
         - SIR_fixed_duration('measles', '10')
-        - SIS('lower_respiratory_infections')
+        - NeonatalSIS('lower_respiratory_infections')
 
         - LBWSGRisk()
         - LBWSGRiskEffect('cause.all_causes.mortality_hazard')

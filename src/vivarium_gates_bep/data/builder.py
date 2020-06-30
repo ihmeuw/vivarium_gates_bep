@@ -146,6 +146,7 @@ def load_and_write_measles_data(artifact: Artifact, location: str):
 def load_and_write_lri_data(artifact: Artifact, location: str):
     keys = [
         project_globals.LRI_PREVALENCE,
+        project_globals.LRI_BIRTH_PREVALENCE,
         project_globals.LRI_INCIDENCE_RATE,
         project_globals.LRI_REMISSION_RATE,
         project_globals.LRI_CAUSE_SPECIFIC_MORTALITY_RATE,
@@ -158,41 +159,12 @@ def load_and_write_lri_data(artifact: Artifact, location: str):
         load_and_write_data(artifact, key, location)
 
 
-def load_and_write_meningitis_data(artifact: Artifact, location: str):
-    keys = [
-        project_globals.MENINGITIS_PREVALENCE,
-        project_globals.MENINGITIS_INCIDENCE_RATE,
-        project_globals.MENINGITIS_REMISSION_RATE,
-        project_globals.MENINGITIS_CAUSE_SPECIFIC_MORTALITY_RATE,
-        project_globals.MENINGITIS_EXCESS_MORTALITY_RATE,
-        project_globals.MENINGITIS_DISABILITY_WEIGHT,
-        project_globals.MENINGITIS_RESTRICTIONS
-    ]
-
-    for key in keys:
-        load_and_write_data(artifact, key, location)
-
-
 def load_and_write_pem_data(artifact: Artifact, location: str):
     keys = [
         project_globals.PEM_CAUSE_SPECIFIC_MORTALITY_RATE,
         project_globals.PEM_EXCESS_MORTALITY_RATE,
         project_globals.PEM_DISABILITY_WEIGHT,
         project_globals.PEM_RESTRICTIONS,
-    ]
-
-    for key in keys:
-        load_and_write_data(artifact, key, location)
-
-
-def load_and_write_neonatal_data(artifact: Artifact, location: str):
-    keys = [
-        project_globals.NEONATAL_DISORDERS_CAUSE_SPECIFIC_MORTALITY_RATE,
-        project_globals.NEONATAL_DISORDERS_PREVALENCE,
-        project_globals.NEONATAL_DISORDERS_BIRTH_PREVALENCE,
-        project_globals.NEONATAL_DISORDERS_EXCESS_MORTALITY_RATE,
-        project_globals.NEONATAL_DISORDERS_DISABILITY_WEIGHT,  # This will load 0 by default.
-        project_globals.NEONATAL_DISORDERS_RESTRICTIONS
     ]
 
     for key in keys:
