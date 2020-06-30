@@ -126,17 +126,6 @@ def load_metadata(key: str, location: str):
     return metadata
 
 
-def load_meningitis_disability_weight(key: str, location: str) -> pd.DataFrame:
-    meningitis = get_entity(key)
-    sub_cause_dws = []
-    for subcause in meningitis.sub_causes:
-        prevalence = interface.get_measure(subcause, 'prevalence', location)
-        disability = interface.get_measure(subcause, 'disability_weight', location)
-        sub_cause_dws.append(prevalence * disability)
-    meningitis_prevalence = interface.get_measure(meningitis, 'prevalence', location)
-    return sum(sub_cause_dws) / meningitis_prevalence
-
-
 def load_lbwsg_exposure(key: str, location: str):
     path = paths.lbwsg_data_path('exposure', location)
     data = pd.read_hdf(path)  # type: pd.DataFrame
