@@ -91,6 +91,18 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.LBWSG_RELATIVE_RISK: load_lbwsg_relative_risk,
         project_globals.LBWSG_PAF: load_lbwsg_paf,
 
+        project_globals.URI_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
+        project_globals.OTITIS_MEDIA_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
+        project_globals.PNEUMOCOCCAL_MENINGITIS_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
+        project_globals.H_INFLUENZAE_TYPE_B_MENINGITIS_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
+        project_globals.MENINGOCOCCAL_MENINGITIS_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
+        project_globals.OTHER_MENINGITIS_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
+        project_globals.ENCEPHALITIS_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
+        project_globals.NEONATAL_PRETERM_BIRTH_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
+        project_globals.NEONATAL_ENCEPHALOPATHY_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
+        project_globals.NEONATAL_SEPSIS_AND_OTHER_NEONATAL_INFECTIONS_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
+        project_globals.HEMOLYTIC_DISEASE_AND_OTHER_NEONATAL_JAUNDICE_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
+        project_globals.OTHER_NEONATAL_DISORDERS_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
     }
     return mapping[lookup_key](lookup_key, location)
 
@@ -242,7 +254,7 @@ def load_lri_birth_prevalence_from_meid(_, location):
     data = data[data.measure_id == vi_globals.MEASURES['Prevalence']]
     data = utilities.normalize(data, fill_value=0)
 
-    idx_columns = vi_globals.DEMOGRAPHIC_COLUMNS
+    idx_columns = list(vi_globals.DEMOGRAPHIC_COLUMNS)
     idx_columns.remove('age_group_id')
     data = data.filter(idx_columns + vi_globals.DRAW_COLUMNS)
 
