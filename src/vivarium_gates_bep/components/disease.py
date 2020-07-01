@@ -63,4 +63,6 @@ def NeonatalSIS(cause):
     with_condition.add_transition(healthy, source_data_type='rate')
 
     # TODO: LSFF uses default VPH disease model, should this be different?
-    return DiseaseModel_(cause, states=[healthy, with_condition])
+    # Looks like we want to skip this chunk of the default implementation:
+    #   NotImplementedError('We do not currently support an age 0 cohort. '
+    return DiseaseModel(cause, states=[healthy, with_condition])
