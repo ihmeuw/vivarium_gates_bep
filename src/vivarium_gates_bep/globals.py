@@ -36,7 +36,7 @@ def twenty_percent_of_mean_variance(mean):
 
 
 def confidence_interval_variance(upper, lower):
-    ninety_five_percent_spread = (upper - lower) / 2
+    ninety_five_percent_spread = (upper - lower)
     std_dev = ninety_five_percent_spread / (2 * 1.96)
     return std_dev ** 2
 
