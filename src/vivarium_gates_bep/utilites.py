@@ -99,3 +99,24 @@ def sample_gamma_distribution(seed: int, mean: float, lower_bound: float, shape:
     scale = mean / shape
     return scipy.stats.gamma.rvs(shape, lower_bound, scale)
 
+
+
+def sample_normal_distribution(seed: int, mean: float, sd: float) -> float:
+    """Gets a single random draw from a triangular distribution.
+
+    Parameters
+    ----------
+    seed
+        Seed for the random number generator.
+    mean
+        The mean of the distribution.
+    sd
+        The standard deviation of the distribution.
+
+    Returns
+    -------
+        The random variate from the normal distribution.
+
+    """
+    np.random.seed(seed)
+    return scipy.stats.norm.rvs(loc=mean, scale=sd)
