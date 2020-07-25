@@ -8,7 +8,7 @@ from vivarium_public_health.risks.data_transformations import pivot_categorical
 from vivarium_public_health.risks.distributions import clip
 
 from vivarium_gates_bep import globals as project_globals
-from vivarium_gates_bep.utilites import sample_beta_distribution, sample_gamma_distribution
+from vivarium_gates_bep.utilites import sample_beta_distribution, sample_gamma_distribution, sample_normal_distribution
 
 
 class MaternalMalnutrition:
@@ -81,16 +81,15 @@ class MaternalMalnutritionRiskEffect:
 
     def adjust_birth_weight(self, index, exposure):
         pop = self.population_view.subview([project_globals.MOTHER_NUTRITION_STATUS_COLUMN, 'sex']).get(index)
-        bw_shifts = self.shifts[project_globals.BIRTH_WEIGHT]
-        for sex in ['Male', 'Female']:
-            shift_up, shift_down = bw_shifts[sex]
+        shift_up, shift_down = self.shifts[project_globals.BIRTH_WEIGHT]
 
-            right_sex = pop.sex == sex
-            mom_malnourished = (pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN]
-                                == project_globals.MOTHER_NUTRITION_MALNOURISHED)
+        mom_malnourished = (pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN]
+                            == project_globals.MOTHER_NUTRITION_MALNOURISHED)
 
-            exposure.loc[right_sex, project_globals.BIRTH_WEIGHT] += shift_up
-            exposure.loc[right_sex & mom_malnourished, project_globals.BIRTH_WEIGHT] -= shift_down
+        exposure.loc[:, project_globals.BIRTH_WEIGHT] += shift_up
+        exposure.loc[mom_malnourished, project_globals.BIRTH_WEIGHT] -= shift_down
+        # Fix birth_weights that go below 100
+        exposure.loc[exposure.birth_weight < 100, project_globals.BIRTH_WEIGHT] = 100
 
         return exposure
 
@@ -128,7 +127,7 @@ class MaternalMalnutritionRiskEffect:
         draw = builder.configuration.input_data.input_draw_number
         location = builder.configuration.input_data.location
 
-        birth_weight_shifts = compute_birth_weight_shift(artifact_path, draw, location, relative_risk)
+        birth_weight_shifts = compute_birth_weight_shift_crude(draw, location)
         wasting_shifts = compute_cgf_shifts(artifact_path, draw, location,
                                             project_globals.WASTING_MODEL_NAME, relative_risk)
         stunting_shifts = compute_cgf_shifts(artifact_path, draw, location,
@@ -191,6 +190,16 @@ def compute_birth_weight_shift(artifact_path, draw, location, relative_risk):
         shifts[sex] = [shift_up, shift_down]
 
     return shifts
+
+
+def compute_birth_weight_shift_crude(draw, location):
+    prop_malnourished = project_globals.MALNOURISHED_MOTHERS_PROPORTION_MEAN[location]
+    prop_typical = 1 - prop_malnourished
+    key = f'{project_globals.MATERNAL_MALNUTRITION_MODEL_NAME}_bw_shift_draw_{draw}_location_{location}'
+    seed = get_hash(key)
+    shift_down = sample_normal_distribution(seed, project_globals.CRUDE_BW_SHIFT, project_globals.CRUDE_BW_SHIFT_SD)
+    shift_up = (prop_malnourished * shift_down) / prop_typical
+    return (shift_up, shift_down)
 
 
 def compute_cgf_shifts(artifact_path, draw, location, cgf_risk, relative_risk):
