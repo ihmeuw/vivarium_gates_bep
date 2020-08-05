@@ -46,7 +46,7 @@ class MaternalSupplementationCoverage:
             treatment.loc[scenario_treated] = project_globals.TREATMENTS.IFA
         elif self.scenario == project_globals.SCENARIOS.MMN:
             treatment.loc[scenario_treated] = project_globals.TREATMENTS.MMN
-        elif self.scenario == project_globals.SCENARIOS.BEP:
+        elif self.scenario in [project_globals.SCENARIOS.BEP_CE, project_globals.SCENARIOS.BEP_HD]:
             treatment.loc[scenario_treated] = project_globals.TREATMENTS.BEP
         else:  # self.scenario == project_globals.SCENARIOS.BEP_TARGETED
             pop = self.population_view.subview([project_globals.MOTHER_NUTRITION_STATUS_COLUMN]).get(pop_data.index)
@@ -96,6 +96,7 @@ class MaternalSupplementationEffect:
         return f'treatment_effect.{project_globals.TREATMENT_MODEL_NAME}'
 
     def setup(self, builder):
+        self.scenario = builder.configuration.maternal_supplementation.scenario
         self.treatment_effects = self.load_treatment_effects(builder)
 
         columns = [project_globals.BASELINE_COLUMN,
@@ -124,7 +125,7 @@ class MaternalSupplementationEffect:
         mmn_covered = pop[project_globals.SCENARIO_COLUMN] == project_globals.TREATMENTS.MMN
         exposure.loc[mmn_covered, project_globals.BIRTH_WEIGHT] += self.treatment_effects[project_globals.TREATMENTS.MMN]
 
-        bep_covered = pop[project_globals.SCENARIO_COLUMN] == project_globals.TREATMENTS.BEP
+        bep_covered = pop[project_globals.SCENARIO_COLUMN] == self.scenario
         normal_effect = self.treatment_effects[project_globals.TREATMENTS.BEP][project_globals.BIRTH_WEIGHT]['normal']
         malnourished_effect = self.treatment_effects[project_globals.TREATMENTS.BEP][project_globals.BIRTH_WEIGHT]['malnourished']
         mother_malnourished = pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == project_globals.MOTHER_NUTRITION_MALNOURISHED
@@ -134,13 +135,16 @@ class MaternalSupplementationEffect:
 
     def adjust_cgf(self, index, exposure):
         pop = self.population_view.get(index)
-        bep_covered = pop[project_globals.SCENARIO_COLUMN] == project_globals.TREATMENTS.BEP
+        bep_covered = pop[project_globals.SCENARIO_COLUMN] == self.scenario
         bep_effect = self.treatment_effects[project_globals.TREATMENTS.BEP]['cgf']
         exposure.loc[bep_covered] += bep_effect
         return exposure
 
     @staticmethod
     def load_treatment_effects(builder):
+        scenario = builder.configuration.maternal_supplementation.scenario
+        bep_effect_chooser = (project_globals.EFFECT_CURRENT_EVIDENCE
+                           if '_ce_' in scenario else  project_globals.EFFECT_HOPES_AND_DREAMS)
         draw = builder.configuration.input_data.input_draw_number
         seed = get_hash(f'ifa_effect_size_draw_{draw}')
         ifa_effect = sample_beta_distribution(seed, **project_globals.IFA_BIRTH_WEIGHT_SHIFT_SIZE_PARAMETERS)
@@ -148,12 +152,16 @@ class MaternalSupplementationEffect:
         mmn_effect = sample_beta_distribution(seed, **project_globals.MMN_BIRTH_WEIGHT_SHIFT_SIZE_PARAMETERS)
         seed = get_hash(f'bep_effect_size_draw_{draw}')
         bep_normal_effect = sample_beta_distribution(
-            seed, **project_globals.BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_PARAMETERS
+            seed, **project_globals.BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_PARAMETERS[bep_effect_chooser]
         )
         bep_malnourished_effect = sample_beta_distribution(
-            seed, **project_globals.BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_PARAMETERS
+            seed, **project_globals.BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_PARAMETERS[bep_effect_chooser]
         )
-        bep_cgf_effect = sample_beta_distribution(seed, **project_globals.BEP_CGF_SHIFT_SIZE_PARAMETERS)
+        bep_cgf_effect = (sample_beta_distribution(
+            seed, **project_globals.BEP_CGF_SHIFT_SIZE_PARAMETERS)
+            if bep_effect_chooser == project_globals.EFFECT_HOPES_AND_DREAMS
+            else project_globals.BEP_CE_CGF_SHIFT_SIZE)
+
         return {
             project_globals.TREATMENTS.NONE: 0,
             project_globals.TREATMENTS.IFA: ifa_effect,
