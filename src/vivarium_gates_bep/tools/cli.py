@@ -27,6 +27,7 @@ from .app_logging import configure_logging_to_terminal
 from .make_specs import build_model_specifications
 from .make_artifacts import build_artifacts
 from .make_results import build_results
+from .make_bw_risk_correlation import build_bw_rc_data
 
 
 @click.command()
@@ -69,6 +70,42 @@ def make_specs(template: str, location: str, output_dir: str, verbose: int, with
     configure_logging_to_terminal(verbose)
     main = handle_exceptions(build_model_specifications, logger, with_debugger=with_debugger)
     main(template, location, output_dir)
+
+
+@click.command()
+@click.option('-t', '--template',
+              default=str(paths.MODEL_SPEC_DIR / 'bw_risk_corr_spec.in'),
+              show_default=True,
+              type=click.Path(exists=True, dir_okay=False),
+              help='The birth weight risk correlation model specification template file.')
+@click.option('-l', '--location',
+              default='all',
+              show_default=True,
+              type=click.Choice(project_globals.LOCATIONS + ['all']),
+              help='Location to make specification for.')
+@click.option('-o', '--output-dir',
+              default=str(paths.MODEL_SPEC_DIR),
+              show_default=True,
+              type=click.Path(exists=True),
+              help='Specify an output directory. Directory must exist.')
+@click.option('-v', 'verbose',
+              count=True,
+              help='Configure logging verbosity.')
+@click.option('--pdb', 'with_debugger',
+              is_flag=True,
+              help='Drop into python debugger if an error occurs.')
+def make_bw_risk_correlation(template: str, location: str, output_dir: str, verbose: int, with_debugger: bool) -> None:
+    """Generate model specifications based on a template.
+
+    The default template lives here:
+
+    ``vivarium_gates_bep/src/vivarium_gates_bep/model_specification/bw_risk_model_spec.in``
+
+    """
+    configure_logging_to_terminal(verbose)
+    main = handle_exceptions(build_bw_rc_data, logger, with_debugger=with_debugger)
+    main(template, location, output_dir)
+
 
 
 @click.command()
