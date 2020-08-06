@@ -26,7 +26,7 @@ configuration:
             day: 3
         step_size: 1 # Days
     population:
-        population_size: 100_000
+        population_size: 1_000_000
         age_start: 0
         age_end: 0
     child_wasting:

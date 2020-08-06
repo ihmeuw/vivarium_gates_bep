@@ -11,18 +11,13 @@ from vivarium_gates_bep.tools.make_specs import build_model_specifications
 LARGER_THAN_LARGEST_BABY_ON_RECORD = 25 * 454
 
 
-def empirical_percentile(x, samples):
-    return np.mean(x >= samples)
-
-
 def create_bw_rc_data(spec_file: str):
     sim = InteractiveContext(spec_file)
     df = pd.DataFrame()
     df['birth_weights'] = sim.get_population().birth_weight
 
     # rank birth weights
-    df['birth_weight_percentile'] = df.birth_weights.apply(empirical_percentile, samples=df.birth_weights)
-    df = df.sort_values(by=['birth_weight_percentile'])
+    df = df.sort_values(by=['birth_weights'])
 
     # create upper and lower bounds, fill starting and ending bins appropriately
     df['bw_lower_bound'] = df.birth_weights.shift(periods=1, fill_value=0.0)
@@ -63,3 +58,4 @@ def build_bw_rc_data(template: str, location: str, output_dir: str):
     bw_risk_corr_specs = Path(output_dir).glob('*_bw_risk_corr.yaml')
     for loc in bw_risk_corr_specs:
         create_bw_rc_data(str(loc))
+        loc.unlink()
