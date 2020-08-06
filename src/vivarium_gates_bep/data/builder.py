@@ -244,3 +244,8 @@ def load_and_write_affected_unmodelled_lbwsg_csmr(artifact: Artifact, location: 
 
     for key in keys:
         load_and_write_data(artifact, key, location)
+
+
+def load_and_write_birth_weight_bin_data(artifact: Artifact, location: str):
+    load_and_write_data(artifact, project_globals.BIRTH_WEIGHT_BINS, location)
+

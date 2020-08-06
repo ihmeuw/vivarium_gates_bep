@@ -262,6 +262,8 @@ LBWSG_EXPOSURE = 'risk_factor.low_birth_weight_and_short_gestation.exposure'
 LBWSG_RELATIVE_RISK = 'risk_factor.low_birth_weight_and_short_gestation.relative_risk'
 LBWSG_PAF = 'risk_factor.low_birth_weight_and_short_gestation.population_attributable_fraction'
 
+BIRTH_WEIGHT_BINS = 'birth_weight.bins'
+
 
 # Cause specific mortality rates for causes affected by LBWSG but not included as a Disease Model
 URI_CAUSE_SPECIFIC_MORTALITY_RATE = 'cause.upper_respiratory_infections.cause_specific_mortality_rate'
