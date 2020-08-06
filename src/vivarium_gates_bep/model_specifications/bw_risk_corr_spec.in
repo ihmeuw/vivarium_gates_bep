@@ -1,0 +1,35 @@
+components:
+    vivarium_gates_bep.components:
+        - NewbornPopulation()
+        - LBWSGRisk()
+
+configuration:
+    input_data:
+        location: {{ location_proper }}
+        input_draw_number: 0
+        artifact_path: /share/costeffectiveness/artifacts/vivarium_gates_bep/{{ location_sanitized }}.hdf
+    interpolation:
+        order: 0
+        extrapolate: True
+    randomness:
+        map_size: 1_000_000
+        key_columns: ['index']
+        random_seed: 0
+    time:
+        start:
+            year: 2020
+            month: 7
+            day: 2
+        end:
+            year: 2020
+            month: 7
+            day: 3
+        step_size: 1 # Days
+    population:
+        population_size: 1_000_000
+        age_start: 0
+        age_end: 0
+    child_wasting:
+        category_thresholds: [7, 8, 9]
+    child_stunting:
+        category_thresholds: [7, 8, 9]

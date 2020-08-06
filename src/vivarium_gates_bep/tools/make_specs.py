@@ -8,7 +8,7 @@ from vivarium_gates_bep import globals as project_globals
 from vivarium_gates_bep.utilites import sanitize_location
 
 
-def build_model_specifications(template: str, location: str, output_dir: str):
+def build_model_specifications(template: str, location: str, output_dir: str, suffix : str =''):
     """Builds and writes model specifications from a template and location.
 
     Parameters
@@ -49,7 +49,7 @@ def build_model_specifications(template: str, location: str, output_dir: str):
 
     for location in locations:
         sanitized_location = sanitize_location(location)
-        file_path = output_dir / f'{sanitized_location}.yaml'
+        file_path = output_dir / f'{sanitized_location}{suffix}.yaml'
         with file_path.open('w+') as outfile:
             logger.debug(f'Writing {file_path.name}.')
             rendered_template = jinja_template.render(location_proper=location, location_sanitized=sanitized_location)

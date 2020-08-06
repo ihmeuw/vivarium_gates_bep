@@ -62,5 +62,6 @@ if __name__ == "__main__":
             make_specs=vivarium_gates_bep.tools.cli:make_specs
             make_artifacts=vivarium_gates_bep.tools.cli:make_artifacts
             make_results=vivarium_gates_bep.tools.cli:make_results
+            make_bw_risk_correlation=vivarium_gates_bep.tools.cli:make_bw_risk_correlation
         '''
     )
