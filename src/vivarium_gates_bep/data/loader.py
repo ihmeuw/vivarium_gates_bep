@@ -9,6 +9,7 @@ from vivarium_inputs.mapping_extension import alternative_risk_factors
 import vivarium_inputs.validation.sim as validation
 
 from vivarium_gates_bep import paths, globals as project_globals
+from vivarium_gates_bep.tools import make_bw_risk_correlation as bw_risk
 
 
 def get_data(lookup_key: str, location: str) -> pd.DataFrame:
@@ -103,6 +104,8 @@ def get_data(lookup_key: str, location: str) -> pd.DataFrame:
         project_globals.NEONATAL_SEPSIS_AND_OTHER_NEONATAL_INFECTIONS_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.HEMOLYTIC_DISEASE_AND_OTHER_NEONATAL_JAUNDICE_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
         project_globals.OTHER_NEONATAL_DISORDERS_CAUSE_SPECIFIC_MORTALITY_RATE: load_standard_data,
+
+        project_globals.BIRTH_WEIGHT_BINS: load_bw_bin_data
     }
     return mapping[lookup_key](lookup_key, location)
 
@@ -262,6 +265,9 @@ def load_lri_birth_prevalence_from_meid(_, location):
     data = utilities.scrub_gbd_conventions(data, location)
     data = utilities.split_interval(data, interval_column='year', split_column_prefix='year')
     return utilities.sort_hierarchical_data(data)
+
+def load_bw_bin_data(_, location: str):
+    return bw_risk.build_bw_rc_data(paths.birth_weight_bins_template_path(), location, paths.MODEL_SPEC_DIR)
 
 
 def get_entity(key: str):
