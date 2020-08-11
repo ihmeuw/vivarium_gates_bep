@@ -6,3 +6,4 @@ from .maternal_malnutrition import MaternalMalnutrition, MaternalMalnutritionRis
 from .disease import SIR_fixed_duration, SIS, NeonatalSIS
 from .treatment import MaternalSupplementationCoverage, MaternalSupplementationEffect
 from .mortality import Mortality
+from .correlated_risk import CorrelatedRisk
