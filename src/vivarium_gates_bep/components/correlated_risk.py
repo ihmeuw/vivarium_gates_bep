@@ -3,25 +3,33 @@
 Risk Exposure Model
 ===================
 
-This module contains tools for modeling categorical and continuous risk
-exposure.
+BirthweightCorrelatedRisk inherits from the base risk model and
+adds a correlation to child growth failure (wasting and stunting)
+based on birthweight. It works in concert with an extension to the
+LBWSG code in this project
 
 """
 import scipy
 import numpy as np
 import pandas as pd
 
+from vivarium.framework.randomness import get_hash
 from vivarium_public_health.risks import Risk
 from vivarium_public_health.risks.data_transformations import get_exposure_post_processor
 
 from vivarium_gates_bep import globals as project_globals
+from vivarium_gates_bep.utilites import sample_truncnorm
 
 
-CORR_WLZ = 0.308    # (0.263-0.351) we truncate at 0.2 and 0.4?
-CORR_LAZ = 0.394    # (0.353 - 0.433) we can truncate at 0.3 to 0.5.
+CORRELATION_VALUES = {
+    # sample from truncated normal distribution created with the following parameters
+    # mean, lower_bound, upper_bound, clip_lower, clip_upper
+    'child_wasting': (0.308, 0.263, 0.351, 0.2, 0.4),
+    'child_stunting': (0.394, 0.353, 0.433, 0.3, 0.5)
+}
 
 
-class CorrelatedRisk(Risk):
+class BirthweightCorrelatedRisk(Risk):
 
     def __init__(self, risk: str):
         super().__init__(risk)
@@ -51,18 +59,41 @@ class CorrelatedRisk(Risk):
                                                  requires_streams=[f'initial_{self.risk.name}_propensity'])
 
     def on_initialize_simulants(self, pop_data):
+        """
+        Abie supplied the method.
+
+        Use BW percentile and specified correlation to find HAZ and WHZ percentiles
+
+        1.) probit transform birth weight percentile to get birth weight normal
+
+        2.) sample conditional bivariate normal for HAZ normal (conditional on BW normal, with specified correlation)
+
+        3.) inverse probit transform HAZ normal to get HAZ percentile (aka "propensity")
+
+        Repeat (2) and (3) for WHZ.
+        """
+        key = get_hash(f'{self.risk.name}_draw')
+        corr_val = get_cgf_correlation_value(key, CORRELATION_VALUES[self.risk.name])
+
         bw_propensity = self.population_view.subview([project_globals.BIRTH_WEIGHT_PROPENSITY]).get(pop_data.index)
         bw_probit = scipy.stats.norm.ppf(bw_propensity)
-        target_probit = conditional_bivariate_normal(bw_probit, CORR_WLZ)
+
+        draw = self.randomness.get_draw(pop_data.index)
+        target_probit = conditional_bivariate_normal(draw, bw_probit, corr_val)
         correlated_propensity = scipy.stats.norm.cdf(target_probit)[:, 0]
-        #self.population_view.update(self.randomness.get_draw(pop_data.index))
         self.population_view.update(pd.DataFrame({
-            self.propensity_col: correlated_propensity,
-        }, index=pop_data.index))
+                self.propensity_col: correlated_propensity,
+            }, index=pop_data.index))
 
 
-def conditional_bivariate_normal(a, rho):
+def conditional_bivariate_normal(draw, a, rho):
     # https://en.wikipedia.org/wiki/Multivariate_normal_distribution#Bivariate_case_2
     # with mu1 = mu2 = 0 and sigma1 = sigma2 = 1
-    return np.random.normal(rho*a, np.sqrt((1-rho**2)))
-    # scipy.stats.norm use draw tied to our randomness system
+    norm = scipy.stats.norm(rho*a, np.sqrt((1-rho**2)))
+    return norm.ppf(draw)
+
+
+def get_cgf_correlation_value(seed, args):
+    mean, lower_bound, upper_bound, clip_lower, clip_upper = args
+    std = project_globals.confidence_interval_std(upper_bound, lower_bound)
+    return sample_truncnorm(seed, mean, std, clip_lower, clip_upper)

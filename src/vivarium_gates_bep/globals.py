@@ -35,10 +35,13 @@ def twenty_percent_of_mean_variance(mean):
     return std_dev ** 2
 
 
-def confidence_interval_variance(upper, lower):
+def confidence_interval_std(upper, lower):
     ninety_five_percent_spread = (upper - lower)
-    std_dev = ninety_five_percent_spread / (2 * 1.96)
-    return std_dev ** 2
+    return ninety_five_percent_spread / (2 * 1.96)
+
+
+def confidence_interval_variance(upper, lower):
+    return confidence_interval_std(upper, lower) ** 2
 
 
 MALNOURISHED_MOTHERS_PROPORTION_MEAN = {
