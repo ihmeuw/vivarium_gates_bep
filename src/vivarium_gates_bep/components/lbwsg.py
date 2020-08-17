@@ -23,15 +23,17 @@ class LBWSGRisk:
     def setup(self, builder):
         self.risk = EntityString(f'risk_factor.{project_globals.LBWSG_MODEL_NAME}')
         self.exposure_distribution = LBWSGDistribution(builder)
+        bw_data = read_bw_bin_data(builder, project_globals.BIRTH_WEIGHT_BINS)
+        self.birth_weight_propensity = builder.lookup.build_table(bw_data, parameter_columns=['birth_weight'])
 
         # FIXME: These are not actual birth weights/gestational times, but the
         # raw values that source pipelines.  They should use different column
         # names but that's too much to try to fix now.  We didn't build the
         # distribution class with clear enough boundaries to make the
         # distinction.
-        self.population_view = builder.population.get_view(project_globals.LBWSG_COLUMNS)
+        self.population_view = builder.population.get_view(project_globals.LBWSG_COLUMNS_CORR)
         builder.population.initializes_simulants(self.on_initialize_simulants,
-                                                 creates_columns=project_globals.LBWSG_COLUMNS,
+                                                 creates_columns=project_globals.LBWSG_COLUMNS_CORR,
                                                  requires_columns=['age', 'sex'])
 
         self._raw_exposure = builder.value.register_value_producer(
@@ -52,6 +54,19 @@ class LBWSGRisk:
             project_globals.BIRTH_WEIGHT: exposure[project_globals.BIRTH_WEIGHT],
             project_globals.GESTATION_TIME: exposure[project_globals.GESTATION_TIME]
         }, index=pop_data.index))
+        self.population_view.update(pd.DataFrame({
+            project_globals.BIRTH_WEIGHT_PROPENSITY: self.birth_weight_propensity(pop_data.index),
+        }, index=pop_data.index))
+
+
+def read_bw_bin_data(builder, key):
+    path = builder.configuration.input_data.artifact_path
+    key = key.replace(".", "/")
+    with pd.HDFStore(path, mode='r') as store:
+        data = store.get(f'/{key}')
+        data = data.rename(columns={'bw_lower_bound': 'birth_weight_start', 'bw_upper_bound': 'birth_weight_end'})
+        data['Value'] = data.index / len(data)
+    return data
 
 
 # FIXME: This class is not a clear representation of the lbwsg distribution.

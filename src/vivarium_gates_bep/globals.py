@@ -35,10 +35,13 @@ def twenty_percent_of_mean_variance(mean):
     return std_dev ** 2
 
 
-def confidence_interval_variance(upper, lower):
+def confidence_interval_std(upper, lower):
     ninety_five_percent_spread = (upper - lower)
-    std_dev = ninety_five_percent_spread / (2 * 1.96)
-    return std_dev ** 2
+    return ninety_five_percent_spread / (2 * 1.96)
+
+
+def confidence_interval_variance(upper, lower):
+    return confidence_interval_std(upper, lower) ** 2
 
 
 MALNOURISHED_MOTHERS_PROPORTION_MEAN = {
@@ -363,8 +366,10 @@ DISEASE_MODEL_MAP = {
 
 LBWSG_MODEL_NAME = 'low_birth_weight_and_short_gestation'
 BIRTH_WEIGHT = 'birth_weight'
+BIRTH_WEIGHT_PROPENSITY = 'birth_weight_propensity'
 GESTATION_TIME = 'gestation_time'
 LBWSG_COLUMNS = [BIRTH_WEIGHT, GESTATION_TIME]
+LBWSG_COLUMNS_CORR = [BIRTH_WEIGHT, GESTATION_TIME, BIRTH_WEIGHT_PROPENSITY]
 UNDERWEIGHT = 2500  # grams
 MAX_BIRTH_WEIGHT = 4500  # grams
 PRETERM = 37  # weeks

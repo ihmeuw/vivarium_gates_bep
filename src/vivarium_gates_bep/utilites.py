@@ -120,3 +120,9 @@ def sample_normal_distribution(seed: int, mean: float, sd: float) -> float:
     """
     np.random.seed(seed)
     return scipy.stats.norm.rvs(loc=mean, scale=sd)
+
+
+def sample_truncnorm(seed: int, mean: float, std: float,
+                     clip_lower: float, clip_upper: float):
+    np.random.seed(seed)
+    return scipy.stats.truncnorm.rvs(clip_lower, clip_upper, mean, std)
