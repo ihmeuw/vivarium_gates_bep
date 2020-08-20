@@ -52,6 +52,9 @@ class MaternalMalnutrition:
 
 class MaternalMalnutritionRiskEffect:
 
+    def __init__(self, enable_adjust_cgf:str='True'):
+        self._enable_adjust_cgf = enable_adjust_cgf=='True'
+
     @property
     def name(self):
         return f"risk_effect.{project_globals.MATERNAL_MALNUTRITION_MODEL_NAME}"
@@ -68,16 +71,18 @@ class MaternalMalnutritionRiskEffect:
             self.adjust_birth_weight,
             requires_columns=[project_globals.MOTHER_NUTRITION_STATUS_COLUMN, 'sex']
         )
-        builder.value.register_value_modifier(
-            f'{project_globals.WASTING_MODEL_NAME}.exposure',
-            self.adjust_wasting,
-            requires_columns=[project_globals.MOTHER_NUTRITION_STATUS_COLUMN, 'sex', 'age']
-        )
-        builder.value.register_value_modifier(
-            f'{project_globals.STUNTING_MODEL_NAME}.exposure',
-            self.adjust_stunting,
-            requires_columns=[project_globals.MOTHER_NUTRITION_STATUS_COLUMN, 'sex', 'age']
-        )
+
+        if self._enable_adjust_cgf:
+            builder.value.register_value_modifier(
+                f'{project_globals.WASTING_MODEL_NAME}.exposure',
+                self.adjust_wasting,
+                requires_columns=[project_globals.MOTHER_NUTRITION_STATUS_COLUMN, 'sex', 'age']
+            )
+            builder.value.register_value_modifier(
+                f'{project_globals.STUNTING_MODEL_NAME}.exposure',
+                self.adjust_stunting,
+                requires_columns=[project_globals.MOTHER_NUTRITION_STATUS_COLUMN, 'sex', 'age']
+            )
 
     def adjust_birth_weight(self, index, exposure):
         pop = self.population_view.subview([project_globals.MOTHER_NUTRITION_STATUS_COLUMN, 'sex']).get(index)

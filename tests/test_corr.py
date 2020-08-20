@@ -1,6 +1,10 @@
 import numpy as np, pandas as pd, scipy.stats
 from vivarium import InteractiveContext
 
+STUNTING_MEAN = 0.394
+WASTING_MEAN = 0.308
+
+
 def test_corr_bw_haz():
 
     # how to check this?
@@ -14,14 +18,17 @@ def test_corr_bw_haz():
     bw = pop.birth_weight
 
     pipe_stunting = sim.get_value('child_stunting.exposure')
-    haz = pipe_stunting(pop.index, skip_post_processor=True)
+    stunting_z = pipe_stunting(pop.index, skip_post_processor=True)
 
-    corr = scipy.stats.spearmanr(bw, haz).correlation
+    pipe_wasting = sim.get_value('child_wasting.exposure')
+    wasting_z = pipe_wasting(pop.index, skip_post_processor=True)
+
+    corr_stunting = scipy.stats.spearmanr(bw, stunting_z).correlation
+    corr_wasting = scipy.stats.spearmanr(bw, wasting_z).correlation
 
     # check if it is sufficiently close to the expected value
-
-    assert np.abs(corr - .3) <= .05, 'expect correlation to be close to 0.3'
-
-
+    assert np.abs(corr_stunting - STUNTING_MEAN) <= .10, f'{corr_stunting} not close enough to {STUNTING_MEAN}'
+    assert np.abs(corr_wasting - WASTING_MEAN) <= .10, f'{corr_wasting} not close enough to {WASTING_MEAN}'
 
 
+test_corr_bw_haz()
