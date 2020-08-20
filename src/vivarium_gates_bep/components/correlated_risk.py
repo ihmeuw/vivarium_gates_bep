@@ -76,11 +76,11 @@ class BirthweightCorrelatedRisk(Risk):
         corr_val = get_cgf_correlation_value(key, CORRELATION_VALUES[self.risk.name])
 
         bw_propensity = self.population_view.subview([project_globals.BIRTH_WEIGHT_PROPENSITY]).get(pop_data.index)
-        bw_probit = scipy.stats.norm.ppf(bw_propensity)
+        bw_probit = scipy.stats.norm.ppf(bw_propensity)[:,0]
 
         draw = self.randomness.get_draw(pop_data.index)
         target_probit = conditional_bivariate_normal(draw, bw_probit, corr_val)
-        correlated_propensity = scipy.stats.norm.cdf(target_probit)[:, 0]
+        correlated_propensity = scipy.stats.norm.cdf(target_probit)
         self.population_view.update(pd.DataFrame({
                 self.propensity_col: correlated_propensity,
             }, index=pop_data.index))
