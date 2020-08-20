@@ -91,6 +91,9 @@ class MaternalSupplementationCoverage:
 
 class MaternalSupplementationEffect:
 
+    def __init__(self, enable_adjust_cgf:str='True'):
+        self._enable_adjust_cgf = enable_adjust_cgf=='True'
+
     @property
     def name(self):
         return f'treatment_effect.{project_globals.TREATMENT_MODEL_NAME}'
@@ -107,12 +110,14 @@ class MaternalSupplementationEffect:
         builder.value.register_value_modifier(f'{project_globals.LBWSG_MODEL_NAME}.exposure',
                                               self.adjust_lbwsg,
                                               requires_columns=columns)
-        builder.value.register_value_modifier(f'{project_globals.STUNTING_MODEL_NAME}.exposure',
-                                              self.adjust_cgf,
-                                              requires_columns=columns)
-        builder.value.register_value_modifier(f'{project_globals.WASTING_MODEL_NAME}.exposure',
-                                              self.adjust_cgf,
-                                              requires_columns=columns)
+
+        if self._enable_adjust_cgf:
+            builder.value.register_value_modifier(f'{project_globals.STUNTING_MODEL_NAME}.exposure',
+                                                  self.adjust_cgf,
+                                                  requires_columns=columns)
+            builder.value.register_value_modifier(f'{project_globals.WASTING_MODEL_NAME}.exposure',
+                                                  self.adjust_cgf,
+                                                  requires_columns=columns)
 
     def adjust_lbwsg(self, index, exposure):
         pop = self.population_view.get(index)
