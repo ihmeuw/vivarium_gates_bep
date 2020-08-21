@@ -48,12 +48,14 @@ class MaternalSupplementationCoverage:
             treatment.loc[scenario_treated] = project_globals.TREATMENTS.MMN
         elif self.scenario in [project_globals.SCENARIOS.BEP_CE, project_globals.SCENARIOS.BEP_HD]:
             treatment.loc[scenario_treated] = project_globals.TREATMENTS.BEP
-        else:  # self.scenario == project_globals.SCENARIOS.BEP_TARGETED
+        elif self.scenario in [project_globals.SCENARIOS.BEP_CE_TARGETED, project_globals.SCENARIOS.BEP_HD_TARGETED]:
             pop = self.population_view.subview([project_globals.MOTHER_NUTRITION_STATUS_COLUMN]).get(pop_data.index)
             mother_malnourished = (pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN]
                                    == project_globals.MOTHER_NUTRITION_MALNOURISHED)
             treatment.loc[scenario_treated & mother_malnourished] = project_globals.TREATMENTS.BEP
             treatment.loc[scenario_treated & ~mother_malnourished] = project_globals.TREATMENTS.MMN
+        else:
+            raise NotImplementedError(f'Unhandled scenario "{self.scenario}"')
 
         self.population_view.update(treatment)
 
@@ -130,7 +132,7 @@ class MaternalSupplementationEffect:
         mmn_covered = pop[project_globals.SCENARIO_COLUMN] == project_globals.TREATMENTS.MMN
         exposure.loc[mmn_covered, project_globals.BIRTH_WEIGHT] += self.treatment_effects[project_globals.TREATMENTS.MMN]
 
-        bep_covered = pop[project_globals.SCENARIO_COLUMN] == self.scenario
+        bep_covered = pop[project_globals.SCENARIO_COLUMN] == self.scenario[:3]
         normal_effect = self.treatment_effects[project_globals.TREATMENTS.BEP][project_globals.BIRTH_WEIGHT]['normal']
         malnourished_effect = self.treatment_effects[project_globals.TREATMENTS.BEP][project_globals.BIRTH_WEIGHT]['malnourished']
         mother_malnourished = pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == project_globals.MOTHER_NUTRITION_MALNOURISHED
@@ -140,7 +142,7 @@ class MaternalSupplementationEffect:
 
     def adjust_cgf(self, index, exposure):
         pop = self.population_view.get(index)
-        bep_covered = pop[project_globals.SCENARIO_COLUMN] == self.scenario
+        bep_covered = pop[project_globals.SCENARIO_COLUMN] == self.scenario[:3]
         bep_effect = self.treatment_effects[project_globals.TREATMENTS.BEP]['cgf']
         exposure.loc[bep_covered] += bep_effect
         return exposure
