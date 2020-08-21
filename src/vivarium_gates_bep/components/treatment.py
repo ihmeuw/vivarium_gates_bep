@@ -55,7 +55,7 @@ class MaternalSupplementationCoverage:
             treatment.loc[scenario_treated & mother_malnourished] = project_globals.TREATMENTS.BEP
             treatment.loc[scenario_treated & ~mother_malnourished] = project_globals.TREATMENTS.MMN
         else:
-            assert False, f'Unhandled scenario "{self.scenario}"'
+            raise NotImplementedError(f'Unhandled scenario "{self.scenario}"')
 
         self.population_view.update(treatment)
 
