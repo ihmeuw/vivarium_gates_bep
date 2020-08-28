@@ -75,7 +75,8 @@ class BirthweightCorrelatedRisk(Risk):
         key = get_hash(f'{self.risk.name}_draw')
         corr_val = get_cgf_correlation_value(key, CORRELATION_VALUES[self.risk.name])
 
-        bw_propensity = self.population_view.subview([project_globals.BIRTH_WEIGHT_PROPENSITY]).get(pop_data.index)
+        tmp = self.population_view.subview([project_globals.BIRTH_WEIGHT_PROPENSITY]).get(pop_data.index)
+        bw_propensity = correct_support_values(tmp)
         bw_probit = scipy.stats.norm.ppf(bw_propensity)[:,0]
 
         draw = self.randomness.get_draw(pop_data.index)
@@ -97,3 +98,18 @@ def get_cgf_correlation_value(seed, args):
     mean, lower_bound, upper_bound, clip_lower, clip_upper = args
     std = project_globals.confidence_interval_std(upper_bound, lower_bound)
     return sample_truncnorm(seed, mean, std, clip_lower, clip_upper)
+
+
+def correct_support_values(bw_propensity):
+    srt = bw_propensity.birth_weight_propensity.sort_values()
+    lowest_value_idx = srt.index[0]
+    next_lowest_value_idx = srt.index[1]
+    highest_value_idx = srt.index[-1]
+    next_highest_value_idx = srt.index[-2]
+    if 0.0 == srt[lowest_value_idx]:
+        bw_propensity.birth_weight_propensity[lowest_value_idx] = \
+            bw_propensity.birth_weight_propensity[next_lowest_value_idx] / 2.0
+    if 1.0 == srt[highest_value_idx]:
+        bw_propensity.birth_weight_propensity[highest_value_idx] = \
+            (1.0 - bw_propensity.birth_weight_propensity[next_highest_value_idx]) / 2.0
+    return bw_propensity
