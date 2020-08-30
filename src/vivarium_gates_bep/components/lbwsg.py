@@ -8,6 +8,7 @@ risk data loader that expects data saved in keys by draw.
 from typing import Tuple
 
 import pandas as pd
+from vivarium import Artifact
 from vivarium_public_health.utilities import EntityString, TargetString
 from vivarium_public_health.risks.data_transformations import pivot_categorical
 
@@ -60,13 +61,8 @@ class LBWSGRisk:
 
 
 def read_bw_bin_data(builder, key):
-    path = builder.configuration.input_data.artifact_path
-    key = key.replace(".", "/")
-    with pd.HDFStore(path, mode='r') as store:
-        data = store.get(f'/{key}')
-        data = data.rename(columns={'bw_lower_bound': 'birth_weight_start', 'bw_upper_bound': 'birth_weight_end'})
-        data['Value'] = data.index / len(data)
-    return data
+    art = Artifact(builder.configuration.input_data.artifact_path)
+    return art.load(key)
 
 
 # FIXME: This class is not a clear representation of the lbwsg distribution.

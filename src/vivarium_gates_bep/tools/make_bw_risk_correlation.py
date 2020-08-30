@@ -21,13 +21,24 @@ def create_bw_rc_data(spec_file: str):
     df = df.sort_values(by=['birth_weights']).reset_index(drop=True)
 
     # create upper and lower bounds, fill starting and ending bins appropriately
-    df['bw_lower_bound'] = df.birth_weights.shift(periods=1, fill_value=0.0)
-    df['bw_upper_bound'] = df.birth_weights
-    df.bw_upper_bound.iloc[-1] = LARGER_THAN_LARGEST_BABY_ON_RECORD
+    df['birth_weight_start'] = df.birth_weights.shift(periods=1, fill_value=0.0)
+    df['birth_weight_end'] = df.birth_weights
+    df['birth_weight_end'].iloc[-1] = LARGER_THAN_LARGEST_BABY_ON_RECORD
+    df['value'] = df.index / len(df)
 
     # clean up the sim, drop the redundant column
     del sim
+    df = correct_support_values(df)
     return df.drop('birth_weights', axis=1)
+
+
+def correct_support_values(df):
+    if 0.0 == df.value.iloc[0]:
+        df.value.iloc[0] = df.value.iloc[1] / 2.0
+    if 1.0 == df.value.iloc[-1]:
+        df.value.iloc[-1] = df.value.iloc[-2] + (1.0 - df.value.iloc[-2]) / 2.0
+    return df
+
 
 
 def build_bw_rc_data(template: str, location: str, output_dir: str):
