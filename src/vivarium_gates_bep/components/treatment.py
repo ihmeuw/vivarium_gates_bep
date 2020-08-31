@@ -62,7 +62,10 @@ class MaternalSupplementationCoverage:
     def load_coverage(self, builder, scenario):
         anc_proportion = self.load_anc_proportion(builder)
         if scenario == 'baseline':
-            baseline_proportion_among_anc = self.load_ifa_proportion_among_anc(builder)
+            baseline_proportion_among_anc = load_ifa_proportion_among_anc(
+                builder.configuration.input_data.input_draw_number,
+                builder.configuration.input_data.location
+            )
             return baseline_proportion_among_anc * anc_proportion
         else:
             scale_up_proportion_among_anc = 0.9
@@ -80,15 +83,13 @@ class MaternalSupplementationCoverage:
         seed = get_hash(key)
         return sample_beta_distribution(seed, anc.loc['mean_value'], variance, 0, 1)
 
-    @staticmethod
-    def load_ifa_proportion_among_anc(builder):
-        draw = builder.configuration.input_data.input_draw_number
-        key = f'maternal_ifa_proportion_among_anc_draw_{draw}'
-        seed = get_hash(key)
-        location = builder.configuration.input_data.location
-        mean = project_globals.IFA_COVERAGE_AMONG_ANC_MEAN[location]
-        variance = project_globals.IFA_COVERAGE_AMONG_ANC_VARIANCE[location]
-        return sample_beta_distribution(seed, mean, variance, 0, 1)
+
+def load_ifa_proportion_among_anc(draw, location):
+    key = f'maternal_ifa_proportion_among_anc_draw_{draw}'
+    seed = get_hash(key)
+    mean = project_globals.IFA_COVERAGE_AMONG_ANC_MEAN[location]
+    variance = project_globals.IFA_COVERAGE_AMONG_ANC_VARIANCE[location]
+    return sample_beta_distribution(seed, mean, variance, 0, 1)
 
 
 class MaternalSupplementationEffect:
@@ -102,6 +103,8 @@ class MaternalSupplementationEffect:
 
     def setup(self, builder):
         self.scenario = builder.configuration.maternal_supplementation.scenario
+        self.draw = builder.configuration.input_data.input_draw_number
+        self.location = builder.configuration.input_data.location
         self.treatment_effects = self.load_treatment_effects(builder)
 
         columns = [project_globals.BASELINE_COLUMN,
@@ -123,9 +126,9 @@ class MaternalSupplementationEffect:
 
     def adjust_lbwsg(self, index, exposure):
         pop = self.population_view.get(index)
-        baseline_covered = pop[project_globals.BASELINE_COLUMN] == project_globals.TREATMENTS.IFA
-        exposure.loc[baseline_covered, project_globals.BIRTH_WEIGHT] -= self.treatment_effects[project_globals.TREATMENTS.IFA]
 
+        p_ifa = load_ifa_proportion_among_anc(self.draw, self.location)
+        exposure.loc[:, project_globals.BIRTH_WEIGHT] -= (p_ifa * self.treatment_effects[project_globals.TREATMENTS.IFA])
         ifa_covered = pop[project_globals.SCENARIO_COLUMN] == project_globals.TREATMENTS.IFA
         exposure.loc[ifa_covered, project_globals.BIRTH_WEIGHT] += self.treatment_effects[project_globals.TREATMENTS.IFA]
 
