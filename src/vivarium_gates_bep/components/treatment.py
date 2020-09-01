@@ -103,8 +103,10 @@ class MaternalSupplementationEffect:
 
     def setup(self, builder):
         self.scenario = builder.configuration.maternal_supplementation.scenario
-        self.draw = builder.configuration.input_data.input_draw_number
-        self.location = builder.configuration.input_data.location
+        self.p_ifa = load_ifa_proportion_among_anc(
+            builder.configuration.input_data.input_draw_number,
+            builder.configuration.input_data.location
+        )
         self.treatment_effects = self.load_treatment_effects(builder)
 
         columns = [project_globals.BASELINE_COLUMN,
@@ -127,8 +129,7 @@ class MaternalSupplementationEffect:
     def adjust_lbwsg(self, index, exposure):
         pop = self.population_view.get(index)
 
-        p_ifa = load_ifa_proportion_among_anc(self.draw, self.location)
-        exposure.loc[:, project_globals.BIRTH_WEIGHT] -= (p_ifa * self.treatment_effects[project_globals.TREATMENTS.IFA])
+        exposure.loc[:, project_globals.BIRTH_WEIGHT] -= (self.p_ifa * self.treatment_effects[project_globals.TREATMENTS.IFA])
         ifa_covered = pop[project_globals.SCENARIO_COLUMN] == project_globals.TREATMENTS.IFA
         exposure.loc[ifa_covered, project_globals.BIRTH_WEIGHT] += self.treatment_effects[project_globals.TREATMENTS.IFA]
 
