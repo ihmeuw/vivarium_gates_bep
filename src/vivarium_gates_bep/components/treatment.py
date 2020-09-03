@@ -102,7 +102,8 @@ class MaternalSupplementationEffect:
         return f'treatment_effect.{project_globals.TREATMENT_MODEL_NAME}'
 
     def setup(self, builder):
-        self.scenario = builder.configuration.maternal_supplementation.scenario
+        tmp = builder.configuration.maternal_supplementation.scenario
+        self.bep_treatment = tmp[:3] if tmp.startswith('bep') else tmp
         self.p_ifa = load_ifa_proportion_among_anc(
             builder.configuration.input_data.input_draw_number,
             builder.configuration.input_data.location
@@ -139,7 +140,7 @@ class MaternalSupplementationEffect:
             + self.treatment_effects[project_globals.TREATMENTS.MMN]
         )
 
-        bep_covered = pop[project_globals.SCENARIO_COLUMN] == self.scenario[:3]
+        bep_covered = pop[project_globals.SCENARIO_COLUMN] == self.bep_treatment
         normal_effect = self.treatment_effects[project_globals.TREATMENTS.BEP][project_globals.BIRTH_WEIGHT]['normal']
         malnourished_effect = self.treatment_effects[project_globals.TREATMENTS.BEP][project_globals.BIRTH_WEIGHT]['malnourished']
         mother_malnourished = pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == project_globals.MOTHER_NUTRITION_MALNOURISHED
@@ -157,7 +158,7 @@ class MaternalSupplementationEffect:
 
     def adjust_cgf(self, index, exposure):
         pop = self.population_view.get(index)
-        bep_covered = pop[project_globals.SCENARIO_COLUMN] == self.scenario[:3]
+        bep_covered = pop[project_globals.SCENARIO_COLUMN] == self.bep_treatment
         bep_effect = self.treatment_effects[project_globals.TREATMENTS.BEP]['cgf']
         exposure.loc[bep_covered] += bep_effect
         return exposure
