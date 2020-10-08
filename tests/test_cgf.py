@@ -25,23 +25,23 @@ def get_artifact_data(artifact):
 
 
 def comp_data(art_stunting, art_wasting, model_stunting, model_wasting, age_start, age_end):
-    art_s_mean = art_stunting.query('age_start >= {} and age_end <= {}'.format(age_start, age_end)).get(DRAW).mean()
+    art_s_mean = art_stunting.query('age_start >= {} and age_end <= {} and year_start == 2017'.format(age_start, age_end)).get(DRAW).mean()
     ms_mean = model_stunting.mean()
     art_s_mean = trans(art_s_mean, ROUND_TO)
     ms_mean = trans(ms_mean, ROUND_TO)
     print(f'Artifact stunting mean = {art_s_mean} versus Model mean {ms_mean}')
-    art_s_median = art_stunting.query('age_start >= {} and age_end <= {}'.format(age_start, age_end)).get(DRAW).median()
+    art_s_median = art_stunting.query('age_start >= {} and age_end <= {} and year_start == 2017'.format(age_start, age_end)).get(DRAW).median()
     ms_median = model_stunting.median()
     art_s_median = trans(art_s_median, ROUND_TO)
     ms_median = trans(ms_median, ROUND_TO)
     print(f'Artifact stunting median = {art_s_median} versus Model median {ms_median}')
 
-    aw_mean = art_wasting.query('age_start >= {} and age_end <= {}'.format(age_start, age_end)).get(DRAW).mean()
+    aw_mean = art_wasting.query('age_start >= {} and age_end <= {} and year_start == 2017'.format(age_start, age_end)).get(DRAW).mean()
     mw_mean = model_wasting.mean()
     aw_mean = trans(aw_mean, ROUND_TO)
     mw_mean = trans(mw_mean, ROUND_TO)
     print(f'Artifact wasting mean = {aw_mean} versus Model mean {mw_mean}')
-    aw_median = art_wasting.query('age_start >= {} and age_end <= {}'.format(age_start, age_end)).get(DRAW).median()
+    aw_median = art_wasting.query('age_start >= {} and age_end <= {} and year_start == 2017'.format(age_start, age_end)).get(DRAW).median()
     mw_median = model_wasting.median()
     aw_median = trans(aw_median, ROUND_TO)
     mw_median = trans(mw_median, ROUND_TO)
