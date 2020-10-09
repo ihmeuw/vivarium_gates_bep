@@ -283,8 +283,8 @@ class ChildGrowthFailureObserver():
 
             stats[f'wasting_z_score_mean_at_six_months'] = pop.wasting_z.mean()
             stats[f'wasting_z_score_sd_at_six_months'] = pop.wasting_z.std()
-            stats[f'stunting_z_score_mean_at_six_months'] = pop.wasting_z.mean()
-            stats[f'stunting_z_score_sd_at_six_months'] = pop.wasting_z.std()
+            stats[f'stunting_z_score_mean_at_six_months'] = pop.stunting_z.mean()
+            stats[f'stunting_z_score_sd_at_six_months'] = pop.stunting_z.std()
             for cat, value in dict(pop.wasting_cat.value_counts()).items():
                 stats[f'wasting_{cat}_exposed_at_six_months'] = value
             for cat, value in dict(pop.stunting_cat.value_counts()).items():
