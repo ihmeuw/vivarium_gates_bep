@@ -234,7 +234,8 @@ class ChildGrowthFailureObserver():
         self.wasting = builder.value.get_value(f'{project_globals.WASTING_MODEL_NAME}.exposure')
         self.stunting = builder.value.get_value(f'{project_globals.STUNTING_MODEL_NAME}.exposure')
 
-        self.record_age = 0.5  # years
+        self.record_points = [(project_globals.Z_SCORE_TIMEPOINTS[0], project_globals.TWENTY_NINE_DAYS),
+                              (project_globals.Z_SCORE_TIMEPOINTS[1], project_globals.THREE_SIX_SIX_DAYS)]
         self.results = self.get_results_template()
         self.population_view = builder.population.get_view(['age', 'sex',
                                                             project_globals.MOTHER_NUTRITION_STATUS_COLUMN,
@@ -246,33 +247,36 @@ class ChildGrowthFailureObserver():
 
     def on_collect_metrics(self, event):
         pop = self.population_view.get(event.index)
-        pop = pop[(self.record_age <= pop.age) & (pop.age < self.record_age + to_years(event.step_size))]
-        categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
-        for mother_cat, treatment in categories:
-            pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
-                                   & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
+        yes_record, tp_name, tp_value = is_record_point(pop.age, self.record_points, event.step_size)
+        if yes_record:
+            pop = pop[(tp_value <= pop.age) & (pop.age < tp_value + to_years(event.step_size))]
+            categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
+            for mother_cat, treatment in categories:
+                pop_in_group = pop.loc[(pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN] == mother_cat)
+                                       & (pop[project_globals.SCENARIO_COLUMN] == treatment)]
 
-            stats = self.get_cgf_stats(pop_in_group)
-            stats = {f'{k}_mother_{mother_cat}_treatment_{treatment}': v
-                     for k, v in stats.items()}
-            self.results.update(stats)
+                stats = self.get_cgf_stats(pop_in_group, tp_name)
+                stats = {f'{k}_mother_{mother_cat}_treatment_{treatment}': v
+                         for k, v in stats.items()}
+                self.results.update(stats)
 
     def get_results_template(self):
         stats = {}
-        categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS)
-        for mother_cat, treatment in categories:
+        timepoints = [i[0] for i in self.record_points]
+        categories = product(project_globals.MOTHER_NUTRITION_CATEGORIES, project_globals.TREATMENTS, timepoints)
+        for mother_cat, treatment, timepoint in categories:
             suffix = f'mother_{mother_cat}_treatment_{treatment}'
-            stats[f'wasting_z_score_mean_at_six_months_{suffix}'] = 0
-            stats[f'wasting_z_score_sd_at_six_months_{suffix}'] = 0
-            stats[f'stunting_z_score_mean_at_six_months_{suffix}'] = 0
-            stats[f'stunting_z_score_sd_at_six_months_{suffix}'] = 0
+            stats[f'wasting_z_score_mean_at_{timepoint}_{suffix}'] = 0
+            stats[f'wasting_z_score_sd_at_{timepoint}_{suffix}'] = 0
+            stats[f'stunting_z_score_mean_at_{timepoint}_{suffix}'] = 0
+            stats[f'stunting_z_score_sd_at_{timepoint}_{suffix}'] = 0
             for cat in ['cat1', 'cat2', 'cat3', 'cat4']:
-                stats[f'wasting_{cat}_exposed_at_six_months_{suffix}'] = 0
-                stats[f'stunting_{cat}_exposed_at_six_months_{suffix}'] = 0
+                stats[f'wasting_{cat}_exposed_at_{timepoint}_{suffix}'] = 0
+                stats[f'stunting_{cat}_exposed_at_{timepoint}_{suffix}'] = 0
 
         return stats
 
-    def get_cgf_stats(self, pop):
+    def get_cgf_stats(self, pop, timepoint):
         stats = {}
         if not pop.empty:
             pop = pop.drop(columns='age')
@@ -281,19 +285,35 @@ class ChildGrowthFailureObserver():
             pop['stunting_z'] = self.stunting(pop.index, skip_post_processor=True)
             pop['stunting_cat'] = self.stunting(pop.index)
 
-            stats[f'wasting_z_score_mean_at_six_months'] = pop.wasting_z.mean()
-            stats[f'wasting_z_score_sd_at_six_months'] = pop.wasting_z.std()
-            stats[f'stunting_z_score_mean_at_six_months'] = pop.stunting_z.mean()
-            stats[f'stunting_z_score_sd_at_six_months'] = pop.stunting_z.std()
+            stats[f'wasting_z_score_mean_at_{timepoint}'] = pop.wasting_z.mean()
+            stats[f'wasting_z_score_sd_at_{timepoint}'] = pop.wasting_z.std()
+            stats[f'stunting_z_score_mean_at_{timepoint}'] = pop.stunting_z.mean()
+            stats[f'stunting_z_score_sd_at_{timepoint}'] = pop.stunting_z.std()
             for cat, value in dict(pop.wasting_cat.value_counts()).items():
-                stats[f'wasting_{cat}_exposed_at_six_months'] = value
+                stats[f'wasting_{cat}_exposed_at_{timepoint}'] = value
             for cat, value in dict(pop.stunting_cat.value_counts()).items():
-                stats[f'stunting_{cat}_exposed_at_six_months'] = value
+                stats[f'stunting_{cat}_exposed_at_{timepoint}'] = value
         return stats
 
     def metrics(self, index, metrics):
         metrics.update(self.results)
         return metrics
+
+
+def get_age_from_sparse(age_values: pd.Series) -> float:
+    """ input is a pd.Series containing identical float values. I want a single float value
+        but no index value is always valid.
+    """
+    vc = age_values.value_counts()
+    return vc.index[0]
+
+
+def is_record_point(sim_ages, timepoints, step_size):
+    sim_age = get_age_from_sparse(sim_ages)
+    for name, value in timepoints:
+        if value <= sim_age and sim_age < value + to_years(step_size):
+            return (True, name, value)
+    return (False, None, None)
 
 
 class LBWSGObserver:
