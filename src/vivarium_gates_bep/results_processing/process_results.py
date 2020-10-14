@@ -164,8 +164,10 @@ def get_measure_data(data, measure, with_cause=True):
 def get_z_scores(data):
     data = pivot_data(data[project_globals.RESULT_COLUMNS('z_scores') + GROUPBY_COLUMNS])
     data['risk'], data['process'] = data.process.str.split('_z_score_').str
-    data['measure'], data['process'] = data.process.str.split('_at_six_months_mother_').str
-    data['mother_status'], data['treatment_group'] = data.process.str.split('_treatment_').str
+    data['measure'], data['process'] = data.process.str.split('_at_').str
+
+    data['timepoint'], data['process'] = data.process.str.split('_mother_').str
+    data['mother_status'] , data['treatment_group'] = data.process.str.split('_treatment_').str
     data = data.drop(columns='process')
     return sort_data(data)
 
@@ -173,8 +175,9 @@ def get_z_scores(data):
 def get_risk_categories(data):
     data = pivot_data(data[project_globals.RESULT_COLUMNS('category_counts') + GROUPBY_COLUMNS])
     data['risk'], data['process'] = data.process.str.split('_cat').str
-    data['measure'], data['process'] = data.process.str.split('_exposed_at_six_months_mother_').str
+    data['measure'], data['process'] = data.process.str.split('_exposed_at_').str
     data['measure'] = data['measure'].apply(lambda x: f'cat{x}')
+    data['timepoint'], data['process'] = data.process.str.split('_mother_').str
     data['mother_status'], data['treatment_group'] = data.process.str.split('_treatment_').str
     data = data.drop(columns='process')
     return sort_data(data)
