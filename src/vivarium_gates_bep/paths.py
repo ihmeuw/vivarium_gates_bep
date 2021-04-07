@@ -2,7 +2,7 @@ from pathlib import Path
 
 from vivarium_gates_bep import utilites, globals as project_globals
 
-BASE_DIR = Path(vivarium_gates_bep.__file__).resolve().parent
+BASE_DIR = Path(__file__).parent.absolute()
 ARTIFACT_ROOT = BASE_DIR / 'artifacts'
 MODEL_SPEC_DIR = BASE_DIR / 'model_specifications'
 LBWSG_DATA_ROOT = BASE_DIR / 'artifacts' / 'lbwsg'
