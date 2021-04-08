@@ -5,6 +5,7 @@ from jinja2 import Template
 from loguru import logger
 
 from vivarium_gates_bep import globals as project_globals
+from vivarium_gates_bep.paths import ARTIFACT_ROOT
 from vivarium_gates_bep.utilites import sanitize_location
 
 
@@ -52,5 +53,8 @@ def build_model_specifications(template: str, location: str, output_dir: str, su
         file_path = output_dir / f'{sanitized_location}{suffix}.yaml'
         with file_path.open('w+') as outfile:
             logger.debug(f'Writing {file_path.name}.')
-            rendered_template = jinja_template.render(location_proper=location, location_sanitized=sanitized_location)
+            rendered_template = jinja_template.render(
+                location_proper=location,
+                location_sanitized=sanitized_location,
+                artifact_root=ARTIFACT_ROOT)
             outfile.write(rendered_template)
