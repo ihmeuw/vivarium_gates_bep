@@ -4,10 +4,10 @@ vivarium_gates_bep
 
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4670783.svg
    :target: https://doi.org/10.5281/zenodo.4670783   
-   
+
 Cite as 
 
-   Nicole Young, Alison Bowman, Kjell Swedin, James Collins, Abraham Flaxman. (2021, Jan 14). ihmeuw/vivarium_gates_bep: Replication Archive (Version client_release). Zenodo.
+   Nicole Young, Alison Bowman, Kjell Swedin, James Collins, Christopher Troeger, Abraham Flaxman. (2021, Jan 14). ihmeuw/vivarium_gates_bep: Replication Archive (Version client_release). Zenodo.
 
 Research repository for the vivarium_gates_bep project.
 
