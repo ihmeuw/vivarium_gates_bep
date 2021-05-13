@@ -14,6 +14,15 @@ Research repository for the vivarium_gates_bep project.
 .. contents::
    :depth: 1
 
+Overview
+--------
+
+Following these instructions will create an environment that allows you to examine
+the code used in the vivarium_gates_bep project and to exercise this code running 
+small-scale simulations. The IHME environment, where we ran the simulations on which
+we based our paper, contains thousands of compute nodes and special tooling to 
+parallelize the processing. 
+
 Installation
 ------------
 
@@ -97,7 +106,7 @@ You'll find six directories inside the main
 
 - ``results``
 
-  The results of running the simulation.
+  The results from the IHME simulation runs.
 
 - ``results_processing``
 
@@ -123,12 +132,23 @@ from any directory.::
   2020-06-18 18:18:28.311 | 0:00:00.679701 | build_model_specifications:48 - Writing model spec(s) to "/REPO_INSTALLATION_DIRECTORY/vivarium_gates_bep/src/vivarium_gates_bep/model_specifications"
 
 As the log message indicates, the model specifications will be written to
-the ``model_specifications`` subdirectory in this repository. You can then
-run simulations by, e.g.::
+the ``model_specifications`` subdirectory in this repository. To run simulations, change to the 
+``model_specifications`` directory::
 
-   (vivarium_gates_bep) :~$ simulate run -v /<REPO_INSTALLATION_DIRECTORY>/vivarium_gates_bep/src/vivarium_gates_bep/model_specifications/china.yaml
+  (vivarium_gates_bep) :~$ cd /<REPO_INSTALLATION_DIRECTORY>/vivarium_gates_bep/src/vivarium_gates_bep/model_specifications/
+
+Examine the model specification files::
+
+  (vivarium_gates_bep) :~$ ls *.yaml
+  india.yaml  mali.yaml  pakistan.yaml  tanzania.yaml
+
+Choose one of the files and run it like so::
+
+  (vivarium_gates_bep) :~$ simulate run -v -o . india.yaml
 
 The ``-v`` flag will log verbosely, so you will get log messages every time
-step. For more ways to run simulations, see the tutorials at
+step. The ``-o`` flag indicates where to write the output files. In the above example,
+you will find results in a directory called ``india`` in the current directory. 
+For more ways to run simulations, see the tutorials at
 https://vivarium.readthedocs.io/en/latest/tutorials/running_a_simulation/index.html
 and https://vivarium.readthedocs.io/en/latest/tutorials/exploration.html
