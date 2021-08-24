@@ -68,7 +68,7 @@ class MaternalSupplementationCoverage:
             )
             return baseline_proportion_among_anc * anc_proportion
         else:
-            scale_up_proportion_among_anc = 0.9
+            scale_up_proportion_among_anc = builder.configuration.maternal_supplementation.scale_up
             return scale_up_proportion_among_anc * anc_proportion
 
     @staticmethod
