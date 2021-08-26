@@ -8,10 +8,10 @@ from vivarium_gates_bep import globals as project_globals
 
 
 SCENARIO_COLUMN = 'scenario'
-GROUPBY_COLUMNS = [project_globals.INPUT_DRAW_COLUMN, SCENARIO_COLUMN]
+GROUPBY_COLUMNS = [project_globals.INPUT_DRAW_COLUMN, SCENARIO_COLUMN, 'maternal_supplementation.scale_up']
 PERSON_YEAR_SCALE = 100_000
 DROP_COLUMNS = ['measure']
-SHARED_COLUMNS = ['age_group', 'treatment_group', 'mother_status', 'input_draw', 'scenario']
+SHARED_COLUMNS = ['age_group', 'treatment_group', 'mother_status', 'input_draw', 'scenario', 'maternal_supplementation.scale_up']
 
 
 def make_measure_data(data):
@@ -118,7 +118,7 @@ def pivot_data(data):
             .set_index(GROUPBY_COLUMNS)
             .stack()
             .reset_index()
-            .rename(columns={'level_2': 'process', 0: 'value'}))
+            .rename(columns={'level_3': 'process', 0: 'value'}))
 
 
 def sort_data(data):
