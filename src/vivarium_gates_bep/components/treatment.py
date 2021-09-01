@@ -68,8 +68,7 @@ class MaternalSupplementationCoverage:
             )
             return baseline_proportion_among_anc * anc_proportion
         else:
-            scale_up_proportion_among_anc = 0.9
-            return scale_up_proportion_among_anc * anc_proportion
+            return project_globals.ANC_SCALEUP * anc_proportion
 
     @staticmethod
     def load_anc_proportion(builder):
