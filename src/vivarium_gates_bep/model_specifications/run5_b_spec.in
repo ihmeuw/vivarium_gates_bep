@@ -1,0 +1,93 @@
+components:
+    vivarium_public_health:
+        disease:
+            - RiskAttributableDisease('cause.protein_energy_malnutrition', 'risk_factor.child_wasting')
+        risks:
+            - RiskEffect('risk_factor.child_wasting', 'cause.diarrheal_diseases.incidence_rate')
+            - RiskEffect('risk_factor.child_wasting', 'cause.measles.incidence_rate')
+            - RiskEffect('risk_factor.child_wasting', 'cause.lower_respiratory_infections.incidence_rate')
+
+            - RiskEffect('risk_factor.child_stunting', 'cause.diarrheal_diseases.incidence_rate')
+            - RiskEffect('risk_factor.child_stunting', 'cause.measles.incidence_rate')
+            - RiskEffect('risk_factor.child_stunting', 'cause.lower_respiratory_infections.incidence_rate')
+
+    vivarium_gates_bep.components:
+        - NewbornPopulation()
+        - Mortality()
+
+        - SIS('diarrheal_diseases')
+        - SIR_fixed_duration('measles', '10')
+        - NeonatalSIS('lower_respiratory_infections')
+
+        - BirthweightCorrelatedRisk('alternative_risk_factor.child_wasting')
+        - BirthweightCorrelatedRisk('alternative_risk_factor.child_stunting')
+
+        - LBWSGRisk()
+        - LBWSGRiskEffect('cause.affected_unmodeled.csmr')
+        - LBWSGRiskEffect('cause.lower_respiratory_infections.excess_mortality_rate')
+        - LBWSGRiskEffect('cause.diarrheal_diseases.excess_mortality_rate')
+
+        - MortalityObserver()
+        - DisabilityObserver()
+        - DiseaseObserver('diarrheal_diseases')
+        - DiseaseObserver('measles')
+        - DiseaseObserver('lower_respiratory_infections')
+        - DiseaseObserver('protein_energy_malnutrition')
+        - ChildGrowthFailureObserver()
+        - LBWSGObserver()
+
+        - MaternalMalnutrition()
+        - MaternalMalnutritionRiskEffect('False')
+
+        - MaternalSupplementationCoverage()
+        - MaternalSupplementationEffect()
+
+configuration:
+    input_data:
+        location: {{ location_proper }}
+        input_draw_number: 0
+        artifact_path: /share/costeffectiveness/artifacts/vivarium_gates_bep/{{ location_sanitized }}.hdf
+    interpolation:
+        order: 0
+        extrapolate: True
+    randomness:
+        map_size: 1_000_000
+        key_columns: ['index']
+        random_seed: 0
+    time:
+        start:
+            year: 2020
+            month: 7
+            day: 2
+        end:
+            year: 2022
+            month: 7
+            day: 2
+        step_size: 1 # Days
+    population:
+        population_size: 10_000
+        age_start: 0
+        age_end: 0
+    child_wasting:
+        category_thresholds: [7, 8, 9]
+    child_stunting:
+        category_thresholds: [7, 8, 9]
+    protein_energy_malnutrition:
+        threshold: ['cat1', 'cat2']
+        mortality: True
+        recoverable: True
+    maternal_supplementation:
+        scenario: 'baseline'
+    metrics:
+        mortality:
+            by_age: True
+        disability:
+            by_age: True
+        diarrheal_diseases_observer:
+            by_age: True
+        measles_observer:
+            by_age: True
+        lower_respiratory_infections_observer:
+            by_age: True
+        protein_energy_malnutrition_observer:
+            by_age: True
