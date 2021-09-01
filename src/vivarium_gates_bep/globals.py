@@ -191,6 +191,7 @@ BEP_CGF_SHIFT_SIZE_PARAMETERS = {
     'upper_bound': BEP_HD_CGF_SHIFT_SIZE_UPPER_BOUND
 }
 
+ANC_SCALEUP = 0.9
 
 #############
 # Data Keys #
