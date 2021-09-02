@@ -11,7 +11,7 @@ SCENARIO_COLUMN = 'scenario'
 GROUPBY_COLUMNS = [project_globals.INPUT_DRAW_COLUMN, SCENARIO_COLUMN]
 PERSON_YEAR_SCALE = 100_000
 DROP_COLUMNS = ['measure']
-SHARED_COLUMNS = ['age_group', 'treatment_group', 'mother_status', 'input_draw', 'scenario']
+SHARED_COLUMNS = ['year', 'sex', 'age_group', 'treatment_group', 'mother_status', 'input_draw', 'scenario']
 
 
 def make_measure_data(data):
