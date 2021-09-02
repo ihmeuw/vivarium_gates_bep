@@ -130,13 +130,14 @@ def sort_data(data):
 
 
 def split_processing_column(data, with_cause):
+    data['process'], data['treatment_group'] = data.process.str.split('_treatment_').str
+    data['process'], data['mother_status'] = data.process.str.split('_mother_').str
+    data['process'], data['age_group'] = data.process.str.split('_in_age_group_').str
+    data['process'], data['sex'] = data.process.str.split('_among_').str
+    data['year'] = data.process.str.split('_in_').str[-1]
+    data['measure'] = data.process.str.split('_in_').str[:-1].apply(lambda x: '_in_'.join(x))
     if with_cause:
-        data['measure'], data['process'] = data.process.str.split('_due_to_').str
-        data['cause'], data['process'] = data.process.str.split('_in_age_group_').str
-    else:
-        data['measure'], data['process'] = data.process.str.split('_in_age_group_').str
-    data['age_group'], data['process'] = data.process.str.split('_mother_').str
-    data['mother_status'], data['treatment_group'] = data.process.str.split('_treatment_').str
+        data['measure'], data['cause'] = data.measure.str.split('_due_to_').str
     return data.drop(columns='process')
 
 
