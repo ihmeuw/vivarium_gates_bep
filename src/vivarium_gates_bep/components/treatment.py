@@ -60,14 +60,14 @@ class MaternalSupplementationCoverage:
         self.population_view.update(treatment)
 
     def load_coverage(self, builder, scenario):
-        anc_proportion = self.load_anc_proportion(builder)
         if scenario == 'baseline':
-            baseline_proportion_among_anc = load_ifa_proportion_among_anc(
+            coverage = load_ifa_proportion_among_general_population(
                 builder.configuration.input_data.input_draw_number,
                 builder.configuration.input_data.location
             )
-            return baseline_proportion_among_anc * anc_proportion
+            return coverage
         else:
+            anc_proportion = self.load_anc_proportion(builder)
             return project_globals.ANC_SCALEUP * anc_proportion
 
     @staticmethod
@@ -83,11 +83,11 @@ class MaternalSupplementationCoverage:
         return sample_beta_distribution(seed, anc.loc['mean_value'], variance, 0, 1)
 
 
-def load_ifa_proportion_among_anc(draw, location):
+def load_ifa_proportion_among_general_population(draw, location):
     key = f'maternal_ifa_proportion_among_anc_draw_{draw}'
     seed = get_hash(key)
-    mean = project_globals.IFA_COVERAGE_AMONG_ANC_MEAN[location]
-    variance = project_globals.IFA_COVERAGE_AMONG_ANC_VARIANCE[location]
+    mean = project_globals.IFA_COVERAGE_MEAN[location]
+    variance = project_globals.IFA_COVERAGE_VARIANCE[location]
     return sample_beta_distribution(seed, mean, variance, 0, 1)
 
 
@@ -103,7 +103,7 @@ class MaternalSupplementationEffect:
     def setup(self, builder):
         tmp = builder.configuration.maternal_supplementation.scenario
         self.bep_treatment = tmp[:3] if tmp.startswith('bep') else tmp
-        self.p_ifa = load_ifa_proportion_among_anc(
+        self.p_ifa = load_ifa_proportion_among_general_population(
             builder.configuration.input_data.input_draw_number,
             builder.configuration.input_data.location
         )
@@ -166,7 +166,7 @@ class MaternalSupplementationEffect:
     def load_treatment_effects(builder):
         scenario = builder.configuration.maternal_supplementation.scenario
         bep_effect_chooser = (project_globals.EFFECT_CURRENT_EVIDENCE
-                           if '_ce_' in scenario else  project_globals.EFFECT_HOPES_AND_DREAMS)
+                              if '_ce_' in scenario else project_globals.EFFECT_HOPES_AND_DREAMS)
         draw = builder.configuration.input_data.input_draw_number
         seed = get_hash(f'ifa_effect_size_draw_{draw}')
         ifa_effect = sample_beta_distribution(seed, **project_globals.IFA_BIRTH_WEIGHT_SHIFT_SIZE_PARAMETERS)
@@ -176,8 +176,9 @@ class MaternalSupplementationEffect:
         bep_normal_effect = sample_beta_distribution(
             seed, **project_globals.BEP_BIRTH_WEIGHT_SHIFT_SIZE_NORMAL_PARAMETERS[bep_effect_chooser]
         )
-        bep_malnourished_effect = sample_beta_distribution(
-            seed, **project_globals.BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED_PARAMETERS[bep_effect_chooser]
+        bep_malnourished_parameters = project_globals.BEP_BIRTH_WEIGHT_SHIFT_SIZE_MALNOURISHED[bep_effect_chooser]
+        bep_malnourished_effect = bep_malnourished_parameters['distribution'](
+            seed, **bep_malnourished_parameters['parameters']
         )
         bep_cgf_effect = (sample_beta_distribution(
             seed, **project_globals.BEP_CGF_SHIFT_SIZE_PARAMETERS)
