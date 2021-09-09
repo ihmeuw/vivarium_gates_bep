@@ -60,7 +60,7 @@ class MaternalSupplementationCoverage:
         self.population_view.update(treatment)
 
     def load_coverage(self, builder, scenario):
-        if scenario == 'baseline':
+        if scenario == 'baseline' or '_low' in scenario:
             coverage = load_ifa_proportion_among_general_population(
                 builder.configuration.input_data.input_draw_number,
                 builder.configuration.input_data.location

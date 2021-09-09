@@ -3,4 +3,12 @@ random_seed_count: 10
 
 branches:
   - maternal_supplementation:
-      scenario: ['baseline', 'mmn_scale_up','bep_ce_scale_up', 'bep_ce_targeted_scale_up']
+      scenario: [
+          'baseline',
+          'mmn_scale_up_low',
+          'bep_ce_scale_up_low',
+          'bep_ce_targeted_scale_up_low',
+          'mmn_scale_up_high',
+          'bep_ce_scale_up_high',
+          'bep_ce_targeted_scale_up_high',
+      ]
