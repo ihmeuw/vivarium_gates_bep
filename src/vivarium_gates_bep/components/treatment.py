@@ -42,13 +42,18 @@ class MaternalSupplementationCoverage:
 
         treatment.loc[baseline_treated, project_globals.BASELINE_COLUMN] = project_globals.TREATMENTS.IFA
 
-        if self.scenario in [project_globals.SCENARIOS.BASELINE, project_globals.SCENARIOS.IFA]:
+        if self.scenario in [project_globals.SCENARIOS.BASELINE, project_globals.SCENARIOS.IFA_LOW,
+                             project_globals.SCENARIOS.IFA_HIGH]:
             treatment.loc[scenario_treated] = project_globals.TREATMENTS.IFA
-        elif self.scenario == project_globals.SCENARIOS.MMN:
+        elif self.scenario in [project_globals.SCENARIOS.MMN_LOW, project_globals.SCENARIOS.MMN_HIGH]:
             treatment.loc[scenario_treated] = project_globals.TREATMENTS.MMN
-        elif self.scenario in [project_globals.SCENARIOS.BEP_CE, project_globals.SCENARIOS.BEP_HD]:
+        elif self.scenario in [project_globals.SCENARIOS.BEP_CE_LOW, project_globals.SCENARIOS.BEP_HD_LOW,
+                               project_globals.SCENARIOS.BEP_CE_HIGH, project_globals.SCENARIOS.BEP_HD_HIGH]:
             treatment.loc[scenario_treated] = project_globals.TREATMENTS.BEP
-        elif self.scenario in [project_globals.SCENARIOS.BEP_CE_TARGETED, project_globals.SCENARIOS.BEP_HD_TARGETED]:
+        elif self.scenario in [project_globals.SCENARIOS.BEP_CE_TARGETED_LOW,
+                               project_globals.SCENARIOS.BEP_HD_TARGETED_LOW,
+                               project_globals.SCENARIOS.BEP_CE_TARGETED_HIGH,
+                               project_globals.SCENARIOS.BEP_HD_TARGETED_HIGH]:
             pop = self.population_view.subview([project_globals.MOTHER_NUTRITION_STATUS_COLUMN]).get(pop_data.index)
             mother_malnourished = (pop[project_globals.MOTHER_NUTRITION_STATUS_COLUMN]
                                    == project_globals.MOTHER_NUTRITION_MALNOURISHED)

@@ -409,12 +409,20 @@ THREE_SIX_SIX_DAYS = 1.002053388090349
 
 class __SCENARIOS(NamedTuple):
     BASELINE: str = 'baseline'
-    IFA: str = 'ifa_scale_up'
-    MMN: str = 'mmn_scale_up'
-    BEP_CE: str = 'bep_ce_scale_up'
-    BEP_HD: str = 'bep_hd_scale_up'
-    BEP_CE_TARGETED: str = 'bep_ce_targeted_scale_up'
-    BEP_HD_TARGETED: str = 'bep_hd_targeted_scale_up'
+    
+    IFA_LOW: str = 'ifa_scale_up_low'
+    MMN_LOW: str = 'mmn_scale_up_low'
+    BEP_CE_LOW: str = 'bep_ce_scale_up_low'
+    BEP_HD_LOW: str = 'bep_hd_scale_up_low'
+    BEP_CE_TARGETED_LOW: str = 'bep_ce_targeted_scale_up_low'
+    BEP_HD_TARGETED_LOW: str = 'bep_hd_targeted_scale_up_low'
+    
+    IFA_HIGH: str = 'ifa_scale_up_high'
+    MMN_HIGH: str = 'mmn_scale_up_high'
+    BEP_CE_HIGH: str = 'bep_ce_scale_up_high'
+    BEP_HD_HIGH: str = 'bep_hd_scale_up_high'
+    BEP_CE_TARGETED_HIGH: str = 'bep_ce_targeted_scale_up_high'
+    BEP_HD_TARGETED_HIGH: str = 'bep_hd_targeted_scale_up_high'
 
 
 SCENARIOS = __SCENARIOS()
