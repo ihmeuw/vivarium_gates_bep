@@ -3,4 +3,9 @@ random_seed_count: 10
 
 branches:
   - maternal_supplementation:
-      scenario:  ['bep_hd_scale_up', 'bep_hd_targeted_scale_up']
+      scenario:  [
+          'bep_hd_scale_up_low',
+          'bep_hd_targeted_scale_up_low',
+          'bep_hd_scale_up_high',
+          'bep_hd_targeted_scale_up_high',
+      ]

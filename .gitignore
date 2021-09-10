@@ -127,3 +127,4 @@ dmypy.json
 .idea/
 
 src/vivarium_gates_bep/model_specifications/*.yaml
+src/vivarium_gates_bep/model_specifications/run5*/*.yaml
