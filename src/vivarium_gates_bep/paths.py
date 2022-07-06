@@ -6,7 +6,6 @@ from vivarium_gates_bep import utilites, globals as project_globals
 BASE_DIR = Path(vivarium_gates_bep.__file__).resolve().parent
 
 ARTIFACT_ROOT = BASE_DIR / 'artifacts'
-#MODEL_SPEC_DIR = (Path(__file__).parent / 'model_specifications').resolve()
 MODEL_SPEC_DIR = BASE_DIR / 'model_specifications'
 LBWSG_DATA_ROOT = ARTIFACT_ROOT / 'lbwsg'
 BW_BINS_SPECFILE = 'bw_risk_corr_spec.in'
