@@ -25,7 +25,7 @@ if __name__ == "__main__":
         'click',
         'jinja2',
         'loguru',
-        "risk_distributions>=2.0.6",
+        "risk_distributions==2.0.3",
         'scipy',
         'pyyaml'
     ]
